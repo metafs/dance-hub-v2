@@ -1,0 +1,41 @@
+name: Feature
+description: Define a scoped product or engineering change
+title: "[Feature] "
+body:
+  - type: textarea
+    id: goal
+    attributes:
+      label: Goal
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why
+  - type: textarea
+    id: requirements
+    attributes:
+      label: Related requirement IDs
+      description: e.g. REQ-EVENT-002
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+    validations:
+      required: true
+  - type: textarea
+    id: constraints
+    attributes:
+      label: Constraints
+  - type: textarea
+    id: out_of_scope
+    attributes:
+      label: Out of scope
+  - type: textarea
+    id: docs
+    attributes:
+      label: Relevant documentation
+  - type: textarea
+    id: verification
+    attributes:
+      label: Verification
