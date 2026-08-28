@@ -110,7 +110,7 @@ DANCE HUBを管理するユーザー。
 特定の日、または開始日〜終了日でイベントを絞り込めること。
 
 #### REQ-DISCOVERY-003 — Location Filtering
-地域・エリアを利用してイベントを絞り込めること。地域区分の具体的設計は別途定義する。
+地域・エリアを利用してイベントを絞り込めること。初期対象地域は関東・関西の2エリアに限定する。Venueは都道府県単位のデータを保持し、関東・関西への分類（region_group）はアプリケーション層のマッピングとして管理する。これにより将来の対象地域拡張時にスキーマ変更を不要にする。
 
 #### REQ-DISCOVERY-004 — Event Type Filtering
 イベント種別による絞り込みができること。
@@ -143,6 +143,12 @@ Artist Detailページで最低限、名前、プロフィール、Webサイト�
 #### REQ-ARTIST-005 — Artist / Organization Separation
 ArtistとOrganizationは別Entityとして扱うこと。同じ実世界のカンパニーまたはコレクティブが、Artist（創作・表現主体）とOrganization（運営・公開主体）の両方として存在することを許容する。
 
+#### REQ-ARTIST-006 — Artist Edit Ownership
+Artistレコードは、それを作成したOrganizationのみが編集できること。他のOrganizationは閲覧・イベントへの参照のみ可能とする。Administratorは重複・誤情報の修正のため、すべてのArtistレコードを編集できる。
+
+#### REQ-ARTIST-007 — Organization Representation Link
+ArtistとOrganizationは、任意（optional）の1:1相互リンクを持てること。リンクはどちらか一方が存在しなくても成立可能とし、必須関係にしない。Artistは通常User Accountを持たないため、なりすまし・誤リンクを防ぐ目的でリンクの成立にはAdministrator承認を必須とする。
+
 ### 5.4 Venues
 
 #### REQ-VENUE-001 — Venue Entity
@@ -157,6 +163,9 @@ EventとVenueの関連は、会場名文字列ではなくVenue Entityとの参�
 #### REQ-VENUE-004 — Venue Map Data
 将来的な地図表示に利用できる位置情報を保持可能であること。
 
+#### REQ-VENUE-005 — Venue Edit Ownership
+Venueレコードは、それを作成したOrganizationのみが編集できること。他のOrganizationは閲覧・イベントへの参照（既存Venueの選択）のみ可能とする。Administratorは重複・誤情報の修正のため、すべてのVenueレコードを編集できる。
+
 ### 5.5 Organizations
 
 #### REQ-ORG-001 — Organization Entity
@@ -170,6 +179,9 @@ EventとVenueの関連は、会場名文字列ではなくVenue Entityとの参�
 
 #### REQ-ORG-004 — Membership Roles
 Organization内で最低限 Owner / Admin / Editor の権限を表現できること。
+
+#### REQ-ORG-005 — Organization Approval
+新規Organizationは作成直後は非公開状態（Pending）とし、Administratorによる事前承認を経てはじめて公開・Event公開が可能な状態（Approved）になること。承認前のOrganizationはDraft Eventの作成は許可してよいが、Eventの公開（REQ-PUBLISH-004）は行えない。
 
 ### 5.6 Authentication and Publishing
 
@@ -192,7 +204,7 @@ Organizer向け機能を利用するユーザーは認証されていること�
 Eventを公開せずDraftとして保存できること。
 
 #### REQ-PUBLISH-004 — Publish
-Draft Eventを公開できること。
+Draft Eventを公開できること。ただし、所属OrganizationがAdministratorによる承認（REQ-ORG-005、status = Approved）を受けている場合に限る。
 
 ### 5.7 Media
 
@@ -249,7 +261,8 @@ AI Agentが単一の標準コマンドからコード品質を検証できるこ
 ## 7. Product Constraints
 
 - ダンス・パフォーマンス領域を主対象とする
-- MVPでは日本語を主要言語とする
+- 初期対象地域は関東・関西の2エリアに限定する
+- MVPでは日本語を主要言語とする。英語対応はMVP完了後に行う（Event / Artist / Venue / Organizationのデータモデルには英語フィールドをあらかじめnullableで用意しておく）
 - Eventを中心とした構造化データを優先する
 - AccountとArtistは別Entityとして扱う
 - Artistには個人、ダンスカンパニー、コレクティブ等を含める
@@ -276,18 +289,23 @@ AI Agentが単一の標準コマンドからコード品質を検証できるこ
 5. Eventを公開する
 6. 公開後に編集する
 
-## 9. Open Questions
+## 9. Resolved Decisions
 
-- 初期対象地域を関東に限定するか、日本全国とするか
-- Workshop等をPerformanceと同じEventモデルに完全統合するか
+以下は検討済み・決定済みの事項。詳細な設計根拠はADRを参照する。
+
+- 初期対象地域は関東・関西の2エリアに限定する（REQ-DISCOVERY-003）
+- Workshop等はEvent Typeとして既存Eventモデルに統合し、Performanceとは別のEvent Type値として区別する（REQ-EVENT-004、変更なしのまま確定）
+- ArtistとOrganizationは任意の1:1相互リンクを持てる。片方が存在しなくても成立可能とし、リンクの成立にはAdministrator承認を必須とする（REQ-ARTIST-007、ADR-0005）
+- Venue / Artistの編集権限は作成したOrganizationのみに限定する。他Organizationは閲覧・参照のみ。Administratorは全レコードを編集可能（REQ-VENUE-005、REQ-ARTIST-006、ADR-0005）
+- 新規Organizationの作成にはAdministratorによる事前承認を必須とする。承認までは非公開でDraft作業のみ可能（REQ-ORG-005、ADR-0006）
+- 多言語対応はMVP完了後に英語から着手する。データモデルには英語フィールドをあらかじめ用意しておく（Product Constraints）
+- 既存データの取り込みはMVPでは主催者によるセルフサーブ入力のみとし、CSV一括インポートはPost-MVPのShould Have候補とする。スクレイピングやAIによる自動抽出はMVP・Should Haveでは行わない（`docs/product/scope.md` 参照）
+
+## 10. Open Questions
+
 - Open Call / Residency募集をEventとして扱うか
-- Artist同士のCompany / Collective membershipをMVPで構造化するか
-- 同一実世界団体に対応するArtistとOrganizationを明示的に関連付けるか
-- Venue情報を誰が作成・編集できるか
-- Artist情報を誰が作成・編集できるか
-- Organizationの新規作成・承認フロー
-- Event公開時に管理者承認を必要とするか
-- 多言語対応の開始時期
-- 既存データの取り込み方法
+- Artist同士のCompany / Collective membership構造化（MVP対象外はscope.mdで確定済みだが、データモデル上の下準備要否は未検討）
+- Event公開時に個別のAdministrator承認を必要とするか（Organization単位の事前承認とは別軸の論点）
+- Festivalが子Eventを持つか、単なるEvent Typeとして扱うか
 
 これらは推測で実装せず、決定後にRequirementsまたはADRへ反映する。

@@ -17,7 +17,7 @@ AI Agentは、本書に記載されていない機能を必要性の確認なく
 - Event詳細
 - Calendar
 - 日付による絞り込み
-- 地域による絞り込み
+- 地域による絞り込み（初期対象：関東・関西の2エリア）
 - Event Typeによる絞り込み
 - 基本的なテキスト検索
 - 過去イベントの閲覧
@@ -151,6 +151,14 @@ MVP以前の開発基盤として必須:
 - 過去Event検索
 - Archive専用UI
 
+### Data Import
+- Organization管理者向けCSV一括インポート
+- 提携劇場・団体からのデータ提供（フォーマットは個別検討）
+
+### Internationalization
+- 英語UI・英語コンテンツ対応（MVP完了後、日本語必須・英語任意から開始）
+- 3言語目以降の対応は本項目の実績を見て再検討する
+
 ## 4. Later
 
 ### User Features
@@ -211,6 +219,7 @@ AI機能はデータ品質と基本検索が成立してから検討する。
 - Recommendation algorithm
 - AI assistant
 - Generative AIによるEvent本文生成
+- 外部サイトの自動スクレイピングによるイベント情報取得
 - Magazine CMS
 - Native iOS App
 - Native Android App
