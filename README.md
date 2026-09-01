@@ -1,8 +1,6 @@
 # DANCE HUB
 
-DANCE HUB is a structured information platform for dance and performance events, artists, organizations, and venues.
-
-The repository is designed for AI-assisted development with Codex and Claude Code.
+DANCE HUB is a structured information platform for dance and performance events, artists, organizations, and venues. Public Event data is released through reviewed revisions.
 
 ## Documentation
 
@@ -10,7 +8,8 @@ The repository is designed for AI-assisted development with Codex and Claude Cod
 - Product scope: `docs/product/scope.md`
 - Domain glossary: `docs/product/glossary.md`
 - Architecture overview: `ARCHITECTURE.md`
-- Architecture decisions: `docs/adr/`
+- Accepted architecture decisions: `docs/adr/README.md`
+- MVP implementation roadmap: `docs/plans/mvp-implementation-roadmap.md`
 - AI development workflow: `docs/ai/workflow.md`
 
 ## Agent entry points
@@ -20,4 +19,4 @@ The repository is designed for AI-assisted development with Codex and Claude Cod
 
 ## Status
 
-Milestone 0: AI Development Harness — Draft
+The implementation plan is accepted. Application scaffolding begins in PR2.

@@ -1,6 +1,7 @@
 # ADR-0003: Use Cloudflare for application delivery and media
 
-**Status:** Proposed
+**Status:** Accepted
+**Accepted:** 2026-09-01
 
 ## Context
 
@@ -8,7 +9,7 @@ DANCE HUB will be public-content and media heavy. The project also wants an infr
 
 ## Decision
 
-Propose Cloudflare for:
+Use Cloudflare for:
 
 - DNS / CDN
 - Next.js runtime hosting on Workers where compatibility is acceptable

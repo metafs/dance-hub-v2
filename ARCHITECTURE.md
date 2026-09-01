@@ -1,69 +1,42 @@
 # DANCE HUB — Architecture Overview
 
-**Status:** Draft  
-**Version:** 0.1  
-**Last Updated:** 2026-08-21
+**Status:** Draft
+**Version:** 0.2
+**Last Updated:** 2026-09-01
 
-## 1. Purpose
+## Purpose
 
-This document is the high-level map of the DANCE HUB system. Detailed decisions belong in `docs/architecture/` and `docs/adr/`.
+This document is the high-level map of DANCE HUB. Detailed decisions live in `docs/adr/`; product behavior lives in `docs/product/requirements.md`.
 
-## 2. Architectural principles
+## Principles
 
-- Domain entities are modeled explicitly rather than embedded as duplicated text.
-- Public read paths and organizer write paths are separated conceptually.
-- Authorization must be enforced below the UI layer.
-- Database schema changes are migration-driven and reproducible.
-- Public content should remain indexable and suitable for server rendering.
-- The system should remain simple enough for reliable Codex / Claude Code operation.
-- Premature service decomposition is avoided.
+- Model domain entities and relationships explicitly; do not use duplicated text as a relation.
+- Separate public approved-revision reads from authenticated, Organization-scoped writes.
+- Enforce authorization below the UI layer and record moderation decisions.
+- Keep schema changes migration-driven and public pages server-rendered and indexable.
+- Prefer a simple system over premature service decomposition.
 
-## 3. Provisional runtime architecture
+## Runtime
 
 ```text
-Browser
-   |
-   v
-Cloudflare
-   |
-   v
-Next.js
-   |
-   +-- Server Components
-   +-- Server Actions / Route Handlers
-   |
-   v
-Supabase
-   +-- PostgreSQL
-   +-- Auth
-
-Cloudflare R2
-   +-- Event / Artist / Venue media
+Browser -> Cloudflare -> Next.js -> Supabase (PostgreSQL, Auth)
+                         |
+                         +-> Cloudflare R2 / Images for media
 ```
 
-The Cloudflare hosting and media choices are provisional until the related ADRs are accepted.
+Next.js, Supabase, and Cloudflare are accepted decisions (ADR-0001 through ADR-0003).
 
-## 4. Core domain
+## Core domain
 
-Primary domain entities:
+An Event is stable identity. Event Revision contains mutable content; only the Event's approved `published_revision_id` is public. Revisions own Schedules, Artist credits, tickets, links, and media. A Schedule references a Venue; a Venue references the Tokyo or Kanagawa Prefecture in the MVP.
 
-- User
-- Artist
-- Organization
-- Event
-- Venue
+Organization Members create and submit work. Platform Admin is a separate role that approves Organization Applications, shared Artist / Venue Candidates, Event Revisions, and cancellations. Artist and Organization stay distinct; Artist / Venue are shared canonical records after moderation.
 
-Supporting entities include schedules, organization memberships, event credits, ticket types, and media.
-
-`Artist` includes individuals, dance companies, collectives, and other creative / performing entities.
-
-`Artist` and `Organization` remain separate concepts. The same real-world group may have both an Artist representation (creative subject) and an Organization representation (operational / publishing subject).
-
-## 5. Source documents
+## Source documents
 
 - Product requirements: `docs/product/requirements.md`
+- Product scope: `docs/product/scope.md`
 - Domain model: `docs/architecture/data-model.md`
 - Authorization: `docs/architecture/auth.md`
-- Security: `docs/architecture/security.md`
-- Deployment: `docs/architecture/deployment.md`
-- Testing: `docs/architecture/testing.md`
+- ADR index: `docs/adr/README.md`
+- Implementation roadmap: `docs/plans/mvp-implementation-roadmap.md`
