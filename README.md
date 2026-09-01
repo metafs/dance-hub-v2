@@ -19,4 +19,16 @@ DANCE HUB is a structured information platform for dance and performance events,
 
 ## Status
 
-The implementation plan is accepted. Application scaffolding begins in PR2.
+## Development
+
+Prerequisites: Node.js 22, pnpm 9.7, and a Docker-compatible runtime for local Supabase.
+
+```bash
+pnpm install
+pnpm db:start
+pnpm dev
+```
+
+`pnpm check` runs lint, type checking, and unit tests. `pnpm verify` additionally builds the production application. `pnpm db:reset` rebuilds the local database from committed migrations and seed data; PR3 introduces the first migration.
+
+Cloudflare compatibility is exercised with `pnpm cf:build` and `pnpm cf:preview`. Deployment credentials are intentionally not part of this repository.
