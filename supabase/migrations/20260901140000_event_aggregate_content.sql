@@ -77,6 +77,106 @@ create unique index event_media_one_main_per_revision_idx
   on public.event_media (event_revision_id)
   where is_main;
 
+create function public.assert_event_revision_content_editable()
+returns trigger
+language plpgsql
+set search_path = public
+as $$
+declare
+  revision_status public.event_revision_status;
+begin
+  if tg_op <> 'INSERT' then
+    select status
+      into revision_status
+      from public.event_revisions
+      where id = old.event_revision_id
+      for update;
+
+    if revision_status is null and tg_op = 'DELETE' then
+      -- A permitted parent revision deletion reaches children through ON DELETE
+      -- CASCADE after the parent row is no longer visible to this query.
+      return old;
+    elsif revision_status is null then
+      raise exception 'event revision does not exist';
+    end if;
+
+    if revision_status not in ('draft', 'changes_requested') then
+      raise exception 'event revision content is locked while status is %', revision_status;
+    end if;
+  end if;
+
+  if tg_op = 'INSERT' then
+    select status
+      into revision_status
+      from public.event_revisions
+      where id = new.event_revision_id
+      for update;
+
+    if revision_status is null then
+      raise exception 'event revision does not exist';
+    end if;
+
+    if revision_status not in ('draft', 'changes_requested') then
+      raise exception 'event revision content is locked while status is %', revision_status;
+    end if;
+  elsif tg_op = 'UPDATE' and new.event_revision_id <> old.event_revision_id then
+    select status
+      into revision_status
+      from public.event_revisions
+      where id = new.event_revision_id
+      for update;
+
+    if revision_status is null then
+      raise exception 'event revision does not exist';
+    end if;
+
+    if revision_status not in ('draft', 'changes_requested') then
+      raise exception 'event revision content is locked while status is %', revision_status;
+    end if;
+  end if;
+
+  if tg_op = 'DELETE' then
+    return old;
+  end if;
+
+  return new;
+end;
+$$;
+
+create function public.assert_event_revision_deletable()
+returns trigger
+language plpgsql
+set search_path = public
+as $$
+begin
+  if old.status not in ('draft', 'changes_requested') then
+    raise exception 'event revision cannot be deleted while status is %', old.status;
+  end if;
+
+  return old;
+end;
+$$;
+
+create trigger assert_event_revision_deletable_trigger
+before delete on public.event_revisions
+for each row execute function public.assert_event_revision_deletable();
+
+create trigger assert_event_artists_editable_trigger
+before insert or update or delete on public.event_artists
+for each row execute function public.assert_event_revision_content_editable();
+
+create trigger assert_event_ticket_links_editable_trigger
+before insert or update or delete on public.event_ticket_links
+for each row execute function public.assert_event_revision_content_editable();
+
+create trigger assert_event_links_editable_trigger
+before insert or update or delete on public.event_links
+for each row execute function public.assert_event_revision_content_editable();
+
+create trigger assert_event_media_editable_trigger
+before insert or update or delete on public.event_media
+for each row execute function public.assert_event_revision_content_editable();
+
 create table public.event_content_audit_log (
   id bigint generated always as identity primary key,
   event_id uuid not null references public.events (id),
@@ -324,8 +424,69 @@ create policy "public reads published event artists"
 on public.event_artists for select
 using (
   exists (
-    select 1 from public.events event
-    where event.published_revision_id = event_revision_id
+    select 1
+    from public.events event
+    join public.event_revisions revision
+      on revision.id = event.published_revision_id
+    where revision.id = event_artists.event_revision_id
+      and revision.status = 'approved'
+  )
+);
+
+create policy "members create editable event artists"
+on public.event_artists for insert
+with check (
+  exists (
+    select 1
+    from public.event_revisions revision
+    join public.events event on event.id = revision.event_id
+    join public.organization_memberships membership
+      on membership.organization_id = event.owner_organization_id
+    where revision.id = event_artists.event_revision_id
+      and revision.status in ('draft', 'changes_requested')
+      and membership.user_id = auth.uid()
+  )
+);
+
+create policy "members update editable event artists"
+on public.event_artists for update
+using (
+  exists (
+    select 1
+    from public.event_revisions revision
+    join public.events event on event.id = revision.event_id
+    join public.organization_memberships membership
+      on membership.organization_id = event.owner_organization_id
+    where revision.id = event_artists.event_revision_id
+      and revision.status in ('draft', 'changes_requested')
+      and membership.user_id = auth.uid()
+  )
+)
+with check (
+  exists (
+    select 1
+    from public.event_revisions revision
+    join public.events event on event.id = revision.event_id
+    join public.organization_memberships membership
+      on membership.organization_id = event.owner_organization_id
+    where revision.id = event_artists.event_revision_id
+      and revision.status in ('draft', 'changes_requested')
+      and membership.user_id = auth.uid()
+  )
+);
+
+create policy "members delete editable event artists"
+on public.event_artists for delete
+using (
+  exists (
+    select 1
+    from public.event_revisions revision
+    join public.events event on event.id = revision.event_id
+    join public.organization_memberships membership
+      on membership.organization_id = event.owner_organization_id
+    where revision.id = event_artists.event_revision_id
+      and revision.status in ('draft', 'changes_requested')
+      and membership.user_id = auth.uid()
   )
 );
 
@@ -348,8 +509,69 @@ create policy "public reads published event ticket links"
 on public.event_ticket_links for select
 using (
   exists (
-    select 1 from public.events event
-    where event.published_revision_id = event_revision_id
+    select 1
+    from public.events event
+    join public.event_revisions revision
+      on revision.id = event.published_revision_id
+    where revision.id = event_ticket_links.event_revision_id
+      and revision.status = 'approved'
+  )
+);
+
+create policy "members create editable event ticket links"
+on public.event_ticket_links for insert
+with check (
+  exists (
+    select 1
+    from public.event_revisions revision
+    join public.events event on event.id = revision.event_id
+    join public.organization_memberships membership
+      on membership.organization_id = event.owner_organization_id
+    where revision.id = event_ticket_links.event_revision_id
+      and revision.status in ('draft', 'changes_requested')
+      and membership.user_id = auth.uid()
+  )
+);
+
+create policy "members update editable event ticket links"
+on public.event_ticket_links for update
+using (
+  exists (
+    select 1
+    from public.event_revisions revision
+    join public.events event on event.id = revision.event_id
+    join public.organization_memberships membership
+      on membership.organization_id = event.owner_organization_id
+    where revision.id = event_ticket_links.event_revision_id
+      and revision.status in ('draft', 'changes_requested')
+      and membership.user_id = auth.uid()
+  )
+)
+with check (
+  exists (
+    select 1
+    from public.event_revisions revision
+    join public.events event on event.id = revision.event_id
+    join public.organization_memberships membership
+      on membership.organization_id = event.owner_organization_id
+    where revision.id = event_ticket_links.event_revision_id
+      and revision.status in ('draft', 'changes_requested')
+      and membership.user_id = auth.uid()
+  )
+);
+
+create policy "members delete editable event ticket links"
+on public.event_ticket_links for delete
+using (
+  exists (
+    select 1
+    from public.event_revisions revision
+    join public.events event on event.id = revision.event_id
+    join public.organization_memberships membership
+      on membership.organization_id = event.owner_organization_id
+    where revision.id = event_ticket_links.event_revision_id
+      and revision.status in ('draft', 'changes_requested')
+      and membership.user_id = auth.uid()
   )
 );
 
@@ -372,8 +594,69 @@ create policy "public reads published event links"
 on public.event_links for select
 using (
   exists (
-    select 1 from public.events event
-    where event.published_revision_id = event_revision_id
+    select 1
+    from public.events event
+    join public.event_revisions revision
+      on revision.id = event.published_revision_id
+    where revision.id = event_links.event_revision_id
+      and revision.status = 'approved'
+  )
+);
+
+create policy "members create editable event links"
+on public.event_links for insert
+with check (
+  exists (
+    select 1
+    from public.event_revisions revision
+    join public.events event on event.id = revision.event_id
+    join public.organization_memberships membership
+      on membership.organization_id = event.owner_organization_id
+    where revision.id = event_links.event_revision_id
+      and revision.status in ('draft', 'changes_requested')
+      and membership.user_id = auth.uid()
+  )
+);
+
+create policy "members update editable event links"
+on public.event_links for update
+using (
+  exists (
+    select 1
+    from public.event_revisions revision
+    join public.events event on event.id = revision.event_id
+    join public.organization_memberships membership
+      on membership.organization_id = event.owner_organization_id
+    where revision.id = event_links.event_revision_id
+      and revision.status in ('draft', 'changes_requested')
+      and membership.user_id = auth.uid()
+  )
+)
+with check (
+  exists (
+    select 1
+    from public.event_revisions revision
+    join public.events event on event.id = revision.event_id
+    join public.organization_memberships membership
+      on membership.organization_id = event.owner_organization_id
+    where revision.id = event_links.event_revision_id
+      and revision.status in ('draft', 'changes_requested')
+      and membership.user_id = auth.uid()
+  )
+);
+
+create policy "members delete editable event links"
+on public.event_links for delete
+using (
+  exists (
+    select 1
+    from public.event_revisions revision
+    join public.events event on event.id = revision.event_id
+    join public.organization_memberships membership
+      on membership.organization_id = event.owner_organization_id
+    where revision.id = event_links.event_revision_id
+      and revision.status in ('draft', 'changes_requested')
+      and membership.user_id = auth.uid()
   )
 );
 
@@ -396,8 +679,69 @@ create policy "public reads published event media"
 on public.event_media for select
 using (
   exists (
-    select 1 from public.events event
-    where event.published_revision_id = event_revision_id
+    select 1
+    from public.events event
+    join public.event_revisions revision
+      on revision.id = event.published_revision_id
+    where revision.id = event_media.event_revision_id
+      and revision.status = 'approved'
+  )
+);
+
+create policy "members create editable event media"
+on public.event_media for insert
+with check (
+  exists (
+    select 1
+    from public.event_revisions revision
+    join public.events event on event.id = revision.event_id
+    join public.organization_memberships membership
+      on membership.organization_id = event.owner_organization_id
+    where revision.id = event_media.event_revision_id
+      and revision.status in ('draft', 'changes_requested')
+      and membership.user_id = auth.uid()
+  )
+);
+
+create policy "members update editable event media"
+on public.event_media for update
+using (
+  exists (
+    select 1
+    from public.event_revisions revision
+    join public.events event on event.id = revision.event_id
+    join public.organization_memberships membership
+      on membership.organization_id = event.owner_organization_id
+    where revision.id = event_media.event_revision_id
+      and revision.status in ('draft', 'changes_requested')
+      and membership.user_id = auth.uid()
+  )
+)
+with check (
+  exists (
+    select 1
+    from public.event_revisions revision
+    join public.events event on event.id = revision.event_id
+    join public.organization_memberships membership
+      on membership.organization_id = event.owner_organization_id
+    where revision.id = event_media.event_revision_id
+      and revision.status in ('draft', 'changes_requested')
+      and membership.user_id = auth.uid()
+  )
+);
+
+create policy "members delete editable event media"
+on public.event_media for delete
+using (
+  exists (
+    select 1
+    from public.event_revisions revision
+    join public.events event on event.id = revision.event_id
+    join public.organization_memberships membership
+      on membership.organization_id = event.owner_organization_id
+    where revision.id = event_media.event_revision_id
+      and revision.status in ('draft', 'changes_requested')
+      and membership.user_id = auth.uid()
   )
 );
 
@@ -405,4 +749,34 @@ create policy "platform admins read event content audit"
 on public.event_content_audit_log for select
 using (public.is_platform_admin());
 
+revoke all on table public.event_artists from anon, authenticated;
+revoke all on table public.event_ticket_links from anon, authenticated;
+revoke all on table public.event_links from anon, authenticated;
+revoke all on table public.event_media from anon, authenticated;
+revoke all on table public.event_content_audit_log from anon, authenticated;
+
+grant select on table
+  public.event_artists,
+  public.event_ticket_links,
+  public.event_links,
+  public.event_media
+to anon, authenticated;
+
+grant insert, update, delete on table
+  public.event_artists,
+  public.event_ticket_links,
+  public.event_links,
+  public.event_media
+to authenticated;
+
+grant select on table public.event_content_audit_log to authenticated;
+grant select (no_registration_required, proposed_parent_event_id)
+  on table public.event_revisions
+  to anon, authenticated;
+grant update (no_registration_required, proposed_parent_event_id)
+  on table public.event_revisions
+  to authenticated;
+
+revoke all on function public.assert_event_revision_content_editable() from public;
+revoke all on function public.assert_event_revision_deletable() from public;
 revoke all on function public.audit_festival_parent_change() from public;
