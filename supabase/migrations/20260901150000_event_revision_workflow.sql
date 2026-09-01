@@ -273,6 +273,11 @@ create policy "members read event audit"
 
 -- Column grants make immutable identity and workflow fields unreachable through
 -- ordinary PostgREST updates even when a row satisfies its RLS policy.
+revoke insert, update, delete on public.events, public.event_revisions,
+  public.event_schedules, public.event_artists, public.event_ticket_links,
+  public.event_links, public.event_media, public.event_cancellation_requests,
+  public.event_revision_audit_log from public, anon;
+
 revoke insert, update, delete on public.events from authenticated;
 grant insert (owner_organization_id) on public.events to authenticated;
 
