@@ -31,4 +31,6 @@ pnpm dev
 
 `pnpm check` runs lint, type checking, and unit tests. `pnpm verify` additionally builds the production application. `pnpm db:reset` rebuilds the local database from committed migrations and seed data; PR3 introduces the first migration.
 
+The first migration creates Organization Applications, Organizations, Memberships, Platform Admins, and canonical Tokyo / Kanagawa Venues. Organization approval must use `approve_organization_application`, which creates the Organization and initial Owner in the same transaction.
+
 Cloudflare compatibility is exercised with `pnpm cf:build` and `pnpm cf:preview`. Deployment credentials are intentionally not part of this repository.
