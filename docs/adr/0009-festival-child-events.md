@@ -1,6 +1,7 @@
 # ADR-0009: Model Festival as a self-referencing parent Event, limited to one level and one Organization
 
-**Status:** Proposed
+**Status:** Accepted
+**Accepted:** 2026-09-01
 
 ## Context
 
@@ -16,14 +17,14 @@ Two questions follow from that: how the parent-child relation is stored, and wha
 Event.parent_event_id   uuid null references Event(id)
 ```
 
-A self-referencing foreign key, not a join table. No requirement exists for one Event to belong to several Festivals, so a many-to-many relation would add ambiguity without buying anything.
+A self-referencing foreign key, not a join table. No requirement exists for one Event to belong to several Festivals, so a many-to-many relation would add ambiguity without buying anything. A proposed parent change is held in the child Event Revision and copied to this stable relation only when that Revision is approved.
 
 Constraints:
 
 - Only an Event with `type = festival` may be a parent.
 - A child's `type` must not be `festival`.
 - Nesting is limited to one level: an Event that has children may not itself have a parent. This also removes any possibility of cycles.
-- For MVP, parent and child must share the same `owner_organization_id`.
+- For MVP, parent and child must share the same owning Organization.
 
 ### Discovery
 

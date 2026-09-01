@@ -1,14 +1,13 @@
 # DANCE HUB — Security Rules
 
 **Status:** Draft
+**Version:** 0.2
+**Last Updated:** 2026-09-01
 
-These rules apply to humans and AI agents.
-
-- Never commit secrets.
-- Never expose service-role or equivalent privileged credentials to browser code.
-- Never disable authorization controls merely to unblock development.
-- Do not implement authorization solely in UI conditions.
-- Database changes must be migration-driven.
-- Production credentials must not be required for local tests.
-- User-controlled input must be treated as untrusted.
-- Generated or uploaded media must not be assumed safe solely from file extension.
+- Never commit secrets or expose service-role credentials to browser code.
+- Enforce Organization and Platform Admin authorization server-side and with RLS; never rely only on UI conditions.
+- Keep all schema changes migration-driven and local tests independent of production credentials.
+- Treat user-controlled input and uploaded media as untrusted; validate content type, size, object key, ownership, and delivery scope.
+- Do not expose drafts, in-review revisions, candidates, applications, decision notes, or unapproved media through public queries, metadata, or storage URLs.
+- Perform Organization Application approval and the resulting Organization / initial Owner creation in one transaction.
+- Preserve audit actor, time, state transition, and decision reason for moderation actions.

@@ -1,30 +1,33 @@
-# ADR-0006: Require Administrator pre-approval for new Organizations
+# ADR-0006: Create Organizations through approved applications
 
-**Status:** Proposed
+**Status:** Accepted
+**Accepted:** 2026-09-01
 
 ## Context
 
-`docs/product/requirements.md` Open Questions left the Organization creation/approval flow undecided. Organization is the publishing entity for Events (`Event.owner` is effectively an approved Organization via membership), so an unapproved or malicious Organization gaining publish rights carries direct public-facing risk (spam, impersonation of a real dance company, low-quality listings damaging trust in the platform).
+Organization is the operational entity that owns Event drafts and publishing work. The service needs to prevent unreviewed Organizations from acquiring publishing authority while avoiding Organizations with no accountable Owner.
 
 ## Decision
 
-- A newly created Organization is assigned `status = pending`.
-- A `pending` Organization is not publicly visible and cannot publish Events (`REQ-PUBLISH-004`), but its members may still create and edit Draft Events, so work is not blocked while awaiting review.
-- Administrator reviews and sets `status = approved` (or `rejected`) before the Organization can publish.
-- This approval gate is independent from, and a precondition for, the Organization-Artist link approval described in ADR-0005 — an unapproved Organization cannot propose a representation link.
+- An authenticated User submits an Organization Application instead of creating a live Organization directly.
+- A Platform Administrator reviews the application for legitimacy and duplication.
+- Approval creates the Organization and the applicant's initial Owner membership in one transaction.
+- Rejection records the decision without creating an Organization.
+- The MVP does not provide an emergency or self-service bypass for this approval path.
 
 ## Alternatives considered
 
-- Immediate self-service creation with post-hoc Administrator audit: rejected for MVP because it allows a brief but real window where unreviewed Organizations could publish public-facing content; revisit if the approval queue becomes an onboarding bottleneck.
-- Approval required only at first Event publish (Organization itself created instantly): rejected because it still allows an unreviewed Organization to exist and be referenced (e.g., in an Organization-Artist link proposal) before any human review has occurred.
+- Create a pending Organization immediately and approve it later.
+- Allow unrestricted self-service Organization creation.
+- Make Organization creation invitation-only.
 
 ## Consequences
 
-- Administrator needs a review queue / UI surface for `pending` Organizations (even a minimal one for MVP).
-- Legitimate Organizers experience a delay between signup and first publish, which should be communicated clearly in the product UI to avoid confusion ("your organization is awaiting approval").
-- The approval step becomes a single choke point; if Administrator review capacity does not scale with signups, this becomes an onboarding bottleneck (see Revisit when).
+- An applicant cannot create Event drafts until the Organization is approved and created.
+- Approval operations require an auditable trusted server path.
+- The initial Owner invariant is guaranteed at creation time.
 
 ## Revisit when
 
-- Organization signup volume makes manual Administrator review a bottleneck.
-- A verified-identity or invite-based onboarding path becomes available, which could allow trusted Organizations to skip manual review.
+- Review volume requires verified or invitation-based fast paths.
+- Organization onboarding needs to preserve drafts before approval.

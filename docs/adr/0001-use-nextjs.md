@@ -1,6 +1,7 @@
 # ADR-0001: Use Next.js for the application framework
 
-**Status:** Proposed
+**Status:** Accepted
+**Accepted:** 2026-09-01
 
 ## Context
 

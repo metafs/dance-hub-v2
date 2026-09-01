@@ -1,6 +1,7 @@
 # ADR-0002: Use Supabase PostgreSQL and Auth
 
-**Status:** Proposed
+**Status:** Accepted
+**Accepted:** 2026-09-01
 
 ## Context
 

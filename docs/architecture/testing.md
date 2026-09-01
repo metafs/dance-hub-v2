@@ -1,27 +1,28 @@
 # DANCE HUB — Testing Strategy
 
 **Status:** Draft
+**Version:** 0.2
+**Last Updated:** 2026-09-01
 
 ## Layers
 
-### Unit
-Domain and pure application logic.
+- **Unit:** validation, revision transitions, Event Type date rules, Tokyo calendar boundaries.
+- **Integration:** migrations, RLS, server-side authorization, approval transactions, public-query visibility.
+- **E2E:** visitor discovery and the Organizer-to-Platform-Admin review journey.
 
-### Integration
-Database-backed behavior, authorization rules, server-side use cases, and migrations where practical.
+## Critical journeys
 
-### E2E
-Critical user journeys.
-
-Initial critical journeys:
-- Visitor: event list -> event detail
-- Visitor: artist detail -> related event
-- Visitor: venue detail -> related event
-- Organizer: login -> create draft event -> publish
+- Visitor: Event list → Event detail; Artist / Venue detail → related Event.
+- Organizer: apply for Organization → approval grants initial Owner → create draft → submit.
+- Platform Admin: request changes or approve Revision → latest approved Revision becomes public.
+- Owner / Admin: request cancellation → approval preserves the public Event with a cancellation notice.
+- Member: create Artist / Venue Candidate → activation makes canonical record selectable.
 
 ## Standard validation contract
 
-Once application tooling is installed:
+Once tooling is installed:
 
-- `pnpm check`: lint + typecheck + unit tests
-- `pnpm verify`: check + build + critical E2E
+- `pnpm check`: lint, typecheck, and unit tests.
+- `pnpm verify`: `check`, build, and critical E2E.
+
+Every migration must be applicable to an empty local database with seed fixtures that cover Tokyo, Kanagawa, roles, revision states, candidates, apply Events, and Festival children.

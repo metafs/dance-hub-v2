@@ -1,178 +1,68 @@
 # DANCE HUB — Data Model
 
-**Status:** Draft  
-**Version:** 0.1  
-**Last Updated:** 2026-08-28
+**Status:** Draft
+**Version:** 0.2
+**Last Updated:** 2026-09-01
 
-## Core entities
-
-```text
-User
-  |
-  v
-OrganizationMembership --> Organization --> Event --> EventSchedule
-                                   |           |
-                                   |           +--> EventArtist --> Artist
-                                   |           +--> TicketType
-                                   |           +--> EventMedia
-                                   |
-                                   +------------------------------+
-                                                                  |
-Event ----------------------------------------------------------> Venue
-```
-
-## Artist
-
-Artist represents a creative or performing subject.
-
-Initial types:
-- Individual
-- Company
-- Collective
-- Other
-
-An Artist does not require a DANCE HUB User account.
-
-A company or collective may also have a corresponding Organization used for operational ownership and publishing, but the two representations remain separate.
-
-Potential later relation:
+## Core relations
 
 ```text
-Organization --optional representation link--> Artist
+User -> OrganizationApplication
+User -> OrganizationMembership -> Organization -> Event -> EventRevision
+                                                    |        |
+                                                    |        +-> EventSchedule -> Venue -> Prefecture
+                                                    |        +-> EventArtist -> Artist
+                                                    |        +-> Ticket / Link / Media
+                                                    |
+                                                    +-> published_revision_id
+
+Organization -> ArtistCandidate / VenueCandidate -> canonical Artist / Venue
 ```
 
-This relation is intentionally not required for the initial MVP.
+## Organizations and platform authority
 
-Potential later Artist membership relation:
+`organization_memberships` relates a User to an Organization with `owner`, `admin`, or `editor`. At least one owner is required. `platform_admins` is a separate platform-wide role and must not be inferred from Membership.
+
+`organization_applications` records the applicant, submitted metadata, decision, reviewer, and reason. Approving an application creates the Organization and its first owner Membership in one transaction; a rejected application creates neither.
+
+## Event and Event Revision
+
+`events` holds stable identity, owning Organization, `published_revision_id`, and cancellation fields. Mutable public content belongs to `event_revisions`.
 
 ```text
-Artist (Company / Collective)
-  |
-  +-- ArtistMembership --> Artist (member)
+EventRevision.status enum(draft, in_review, changes_requested, approved, superseded)
+EventRevision.event_type enum(performance, open_studio, talk, workshop,
+                              audition, open_call, residency, festival, other)
+EventRevision.application_deadline timestamptz nullable
+EventRevision.proposed_parent_event_id Event nullable
 ```
 
-Membership history is not required for the initial MVP.
+Approval atomically changes `Event.published_revision_id`; the formerly published revision remains available for audit. A cancellation request and reason are reviewed and, once approved, set the stable Event cancellation fields without removing the published revision.
 
-## Event
+Event Type Group is an application mapping, not a database enum: `watch`, `participate`, `apply`, `container`, `other`. `apply` revisions require `application_deadline` and may have no schedules. A non-Festival revision requires a Schedule for publication. A Festival may be drafted without children, but needs an approved child with a Schedule before publication.
 
-Event is the core activity entity. Performance is an Event Type, not the root entity.
+## Schedules, venues, and geography
 
-An Event may have multiple schedules and multiple credited Artists. Recruitment listings (`apply` group, below) may have zero schedules.
+`event_schedules` belongs to an Event Revision and references a required `venue_id`. A Venue holds structured address, `prefecture_code`, and optional coordinates. MVP permits only `TOKYO` and `KANAGAWA`; region filtering is derived through Schedule → Venue → Prefecture, never copied onto Event.
 
-## Event Type
+Schedule instants are stored as timezone-aware values. Input, calendar boundaries, display, and filtering use `Asia/Tokyo`.
 
-```text
-Event.type   enum(performance, open_studio, talk, workshop,
-                  audition, open_call, residency, festival, other)   required
-```
+## Artists, venues, and candidates
 
-Event Typeは必須・単一値。複数指定は許容しない。
+Artist is an independent entity with types Individual, Company, Collective, and Other; it does not require a User account. `event_artists` belongs to a Revision and stores Artist, credit, and display order.
 
-Event Type Groupはenumではなく、Event Type → Groupのマッピングをアプリケーション層で保持する。Venueの`prefecture` → `region_group`と同じ方針であり、Groupの見直しにスキーマ変更を不要にする。
+Artist and Venue are shared canonical records, not Organization-owned editable rows. Members create `artist_candidates` or `venue_candidates`; only their creator Organization and Platform Admin can see a pending candidate. Platform Admin can activate, reject, correct, or merge it. Edits to an active canonical record are separate reviewed change requests. Organization–Artist representation links are deferred.
 
-```text
-watch       = performance, open_studio, talk
-participate = workshop
-apply       = audition, open_call, residency
-container   = festival
-other       = other
-```
+## Festival relation
 
-Groupは絞り込みの単位であると同時に、Eventの主要な日付が何かを分ける境界でもある。詳細はADR-0008を参照。
+The Festival parent is proposed on the child Event Revision and copied to the stable child Event only on approval. A parent must be `festival`, a child cannot be `festival`, nesting is one level, and parent and child must have the same owning Organization in MVP.
 
-## Application Deadline
+## Media
 
-```text
-Event.application_deadline   timestamptz (nullable)
-```
+`event_media` belongs to an Event Revision. The schema supports ordered multiple media, while the MVP editor and publication validation expose exactly one main image with required alt text.
 
-応募型Event（`apply` グループ）における応募締切。`apply` グループでは必須、それ以外のグループではnullとする。この制約はEvent Typeに依存するため単純なNOT NULLでは表現できず、アプリケーション層で強制する。
+## Open questions
 
-Scheduleとは別概念であり、Calendarおよび日付による絞り込みの対象に含めない。
-
-過去判定（Past Event）はGroupによって分岐する。
-
-```text
-apply    -> application_deadline < now()
-それ以外 -> すべてのEventSchedule < now()
-```
-
-## Festival Child Events
-
-```text
-Event.parent_event_id   Event (FK, nullable, self-reference)
-```
-
-Festivalは独立したEntityではなくEventであり、親子関係はEventの自己参照で表現する。中間テーブルは用いない（1子Eventが複数Festivalに属する要件は存在しない）。
-
-制約:
-
-```text
-親は type = festival のみ
-子の type は festival 以外
-親自身は parent_event_id を持てない（入れ子は1段まで／循環防止）
-親子の owner_organization_id は同一（MVP制約）
-```
-
-Discovery上は子EventがCalendar・日付絞り込みの対象となり、Festival自身はEvent一覧に1件として会期（子Eventの日程範囲）で現れる。詳細はADR-0009を参照。
-
-## Region
-
-```text
-Venue.prefecture   enum (all 47 prefectures, for future extensibility)
-```
-
-`region_group`（KANTO / KANSAI）はDBのenumではなく、prefecture → region_groupのマッピングをアプリケーション層で保持する。MVPで対象とするのは関東・関西の2グループのみだが、`prefecture`自体はフルセットを許容し、対象地域を拡張する際にスキーマ変更を不要にする。
-
-関東 = 東京都, 神奈川県, 埼玉県, 千葉県, 茨城県, 栃木県, 群馬県
-関西 = 大阪府, 京都府, 兵庫県, 奈良県, 和歌山県, 滋賀県
-
-## Entity Ownership (Venue / Artist)
-
-```text
-Venue.owner_organization_id    Organization (FK, required)
-Artist.owner_organization_id   Organization (FK, required)
-```
-
-Venue / Artistは作成したOrganizationが編集権を持つ（owner）。他Organizationは参照・選択（Eventへの関連付け）のみ可能で、編集はできない。Administratorはowner_organization_idに関わらず全レコードを編集できる。詳細はADR-0005を参照。
-
-## Organization Artist Link
-
-```text
-organization_artist_link
-  organization_id   Organization (FK, unique)
-  artist_id         Artist (FK, unique)
-  status            enum(proposed, approved)
-  requested_by      User
-  approved_by       User (nullable, Administrator)
-```
-
-ArtistとOrganizationの相互representation linkは任意の1:1とし、行が存在しない場合は未リンクを意味する。Artistは通常User Accountを持たないため、リンクの成立にはAdministrator承認（status = approved）を必須とする。詳細はADR-0005を参照。
-
-## Organization Approval
-
-```text
-Organization.status   enum(pending, approved, rejected)
-```
-
-新規Organizationはstatus = pendingで作成される。Draft Eventの作成はpending状態でも可能だが、Eventの公開はstatus = approvedのOrganizationに限る。詳細はADR-0006を参照。
-
-## Venue
-
-Venue is referenced by ID from Event. Venue names must not be used as the relational key.
-
-## Organization
-
-Organization is an operational / publishing entity. Users gain permissions through OrganizationMembership.
-
-## Event Publication
-
-Eventの公開は、所属Organizationが`approved`であれば即時に反映される。Event単位の承認状態はスキーマ上に存在せず、`Event.status`はDraft / Published / Cancelledの3値のままである。詳細はADR-0007を参照。
-
-## Open design questions
-
-- Whether Artist membership (Company / Collective) should be modeled in MVP or post-MVP.
-- How to authorize Festival child Events owned by a different Organization than the parent (deferred to post-MVP by ADR-0009; the MVP schema constraint assumes same-Organization).
-- Whether Administrator takedown of a published Event needs an explicit requirement, given that ADR-0007 makes publication immediate and moves quality control after the fact.
-
-Resolved: Organization/Artist representation link (see "Organization Artist Link" above, ADR-0005). Resolved: region normalization (see "Region" above). Resolved: Event Type taxonomy and the `apply` group date semantics (see "Event Type" / "Application Deadline" above, ADR-0008). Resolved: Festival child Events (see "Festival Child Events" above, ADR-0009). Resolved: per-event publication approval (see "Event Publication" above, ADR-0007).
+- Online-only Event geography.
+- Municipality and custom-area expansion.
+- Artist claim and Company / Collective membership.

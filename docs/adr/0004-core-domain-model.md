@@ -1,6 +1,7 @@
 # ADR-0004: Use Event as the core activity entity and separate Artist from Organization
 
-**Status:** Proposed
+**Status:** Accepted
+**Accepted:** 2026-09-01
 
 ## Context
 

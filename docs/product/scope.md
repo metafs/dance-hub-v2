@@ -1,291 +1,72 @@
 # DANCE HUB — Product Scope
 
-**Status:** Draft  
-**Version:** 0.1  
-**Last Updated:** 2026-08-28
+**Status:** Draft
+**Version:** 0.2
+**Last Updated:** 2026-09-01
 
 ## 1. Purpose
 
-本書はDANCE HUBの初期開発において、今作るもの、後で作るもの、現在作らないものを明確にする。
-
-AI Agentは、本書に記載されていない機能を必要性の確認なく追加してはならない。
+本書は初期開発で作るものと後続へ送るものを定める。記載のない機能は必要性を確認せず追加しない。
 
 ## 2. MVP Scope
 
-### Public Event Discovery
-- Event一覧
-- Event詳細
-- Calendar
-- 日付による絞り込み
-- 地域による絞り込み（初期対象：関東・関西の2エリア）
-- Event Typeによる絞り込み
-- 基本的なテキスト検索
-- 応募型イベント（Audition / Open Call / Residency）の締切順一覧
-- 過去イベントの閲覧
+### Public discovery
 
-### Artist
-- Artist Entity
-- Artist Type: Individual / Company / Collective / Other
-- Artist一覧
-- Artist詳細
-- Artistプロフィール
-- ArtistとEventの関連
-- Event内でのCredit / Role
-- Artistに関連するEvent一覧
+- Event 一覧・詳細、Calendar、日付・Event Type・テキスト検索
+- 東京都・神奈川県の Venue を起点にした地域絞り込み
+- Open Call / Audition / Residency の応募締切順一覧
+- 過去 Event と Cancelled Event の公開・中止表示
+- Festival の親子表示（同一 Organization、1 段）
 
-Artist自身によるプロフィールClaim / 編集機能、およびArtist同士のmembership構造はMVP必須としない。
+### Organizations and authorization
 
-### Venue
-- Venue Entity
-- Venue一覧
-- Venue詳細
-- 住所
-- Webサイト
-- 地域情報
-- 座標保持
-- Venueに関連するEvent一覧
+- Organization Application と Platform Admin による承認
+- 承認時の Organization・初期 Owner の原子的作成
+- Owner / Admin / Editor Membership と複数 Organization 所属
+- Platform Admin を Organization Role と分離した認可
 
-地図UIは実装候補とするが、Event公開フロー完成より優先しない。
+### Moderated data creation
 
-### Organization
-- Organization Entity
-- Organization membership
-- Owner / Admin / Editor等のRole
-- OrganizationとEventの関連
-- 1ユーザーの複数Organization所属
+- Artist / Venue Candidate の作成、審査、activation、rejection、merge
+- canonical Artist / Venue の変更 request
+- Event の stable identity と Event Revision
+- Revision の draft、提出、差戻し、承認、公開 pointer 更新
+- Owner / Admin による Cancelled Event の申請と Platform Admin 審査
 
-高度なOrganization管理UIは後回しにできる。
+### Event editing
 
-### Authentication
-- Organizer login
-- Logout
-- Authenticated session
-- Organization based authorization
+- Draft 保存、Schedule の追加・削除、Venue 指定、Artist / Credit、Ticket / 申込情報、外部 URL
+- `apply` Event の応募締切（Schedule 0 件を許容）
+- Festival 子 Event 紐づけ
+- Event Revision ごとの main image 1 枚と alt text
 
-Social Login / MFA / Enterprise SSOはMVP必須としない。
+### Development foundation
 
-### Event Publishing
-Organizerが以下を行えること。
-- Event作成
-- Draft保存
-- Event編集
-- Event公開
-- Eventキャンセル
-- Schedule追加・削除
-- 応募締切の入力（応募型イベント）
-- Venue指定
-- Artist / Credit追加
-- Ticket情報入力
-- 画像登録
-- Festivalへの子Event紐づけ（同一Organization内）
+- Next.js、Supabase PostgreSQL、Cloudflare の採用に沿う project scaffold
+- migration、seed、lint、type check、unit / critical E2E、build、CI
+- Row Level Security と server-side authorization の検証
 
-### Media
-最低限:
-- Event main image
-- Image upload
-- Image display
-- Alt text保持
+## 3. After Core MVP
 
-データモデル上は複数Mediaへ拡張可能にする。
+- 地図 UI、複数画像、Flyer PDF、Video URL、sold out、doors open、duration
+- 公開 Organization profile、Member invitation / management UI
+- Artist aliases、英語名、Artist Claim、Company / Collective membership
+- Festival への他 Organization Event の参加
+- 市区町村・独自エリア、オンライン Event の地理モデル
+- 検索ランキング、地図検索、関連 Event、通知、Favorites
+- CSV import、提携先からのデータ提供、英語 UI・コンテンツ
 
-### SEO
-- Event metadata
-- Artist metadata
-- Venue metadata
-- Open Graph基本対応
-- sitemap生成可能な構造
-- 公開ページのServer Rendering
+## 4. Explicitly Out of Scope for MVP
 
-### Testing / Development Infrastructure
-MVP以前の開発基盤として必須:
-- Lint
-- Type check
-- Unit tests
-- Critical E2E tests
-- Build verification
-- CI
-- Local DB
-- Migration
-- Seed
-- AI Agent instructions
-- Architecture documentation
-- Prompt templates
+- 独自チケット決済・発券・Stripe 決済
+- SNS、DM、コメント、レビュー、評価
+- レコメンド algorithm、生成 AI による本文生成、外部サイトの自動スクレイピング
+- Magazine CMS、Native mobile apps、real-time collaborative editing
+- 有料プラン、広告、複雑な分析 dashboard
 
-## 3. Should Have After Core MVP
+## 5. Architecture Constraints
 
-### Discovery
-- 検索ランキング改善
-- 複数条件フィルター
-- 地図検索
-- 現在地周辺検索
-- ルールベースの関連Event表示
-
-### Artist
-- Artist aliases
-- 英語名
-- Artist category
-- ArtistによるプロフィールClaim
-- Company / Collective membership history
-
-### Venue
-- Venue画像
-- Venue設備情報
-- Venue capacity
-- Accessibility情報
-
-### Event
-- 複数画像
-- Flyer PDF
-- Video URL
-- Sold out表示
-- Doors open time
-- Duration
-- Age restriction
-- Language information
-- Festivalへの他Organization公演の参加（認可設計が必要。ADR-0009）
-- Residencyの滞在期間の構造化フィールド
-- Event Type候補の追加（Screening / Exhibition等。運用実績を見て判断）
-
-### Organization
-- 公開Organization profile
-- Member invitation
-- Member management UI
-- Artist representationとの明示的関連
-
-### Archive
-- 年別Event閲覧
-- 過去Event検索
-- Archive専用UI
-
-### Data Import
-- Organization管理者向けCSV一括インポート
-- 提携劇場・団体からのデータ提供（フォーマットは個別検討）
-
-### Internationalization
-- 英語UI・英語コンテンツ対応（MVP完了後、日本語必須・英語任意から開始）
-- 3言語目以降の対応は本項目の実績を見て再検討する
-
-## 4. Later
-
-### Event Types
-- 定期クラス（Class）の掲載。繰り返しスケジュールの表現が必要になるため、EventScheduleモデルの拡張を伴う（ADR-0008）
-
-### User Features
-- Favorites
-- Watchlist
-- User profile
-- Event attendance history
-- Notification
-- Personalized feed
-
-### Editorial
-- Magazine
-- Interviews
-- Reviews
-- Essays
-- Curated collections
-- Editorial recommendations
-
-### Analytics
-- 年別公演数
-- 地域別公演数
-- Artist活動履歴可視化
-- Venue利用傾向
-- Artist network analysis
-- Public statistics dashboard
-
-### AI / ML
-- Semantic search
-- Event recommendation
-- Automatic metadata extraction
-- Flyer information extraction
-- Duplicate detection
-- Artist / Venue entity resolution
-- Natural language discovery
-- Archive research assistant
-
-AI機能はデータ品質と基本検索が成立してから検討する。
-
-### Monetization
-- Paid listing
-- Premium placement
-- Organization subscription
-- Stripe integration
-- Sponsored Event
-
-## 5. Explicitly Out of Scope for Initial MVP
-
-- 独自チケット決済
-- DANCE HUB内でのチケット発券
-- Stripe決済
-- SNSタイムライン
-- DM / Chat
-- User-to-user messaging
-- Comments
-- User reviews
-- Ratings
-- Favorites
-- Recommendation algorithm
-- AI assistant
-- Generative AIによるEvent本文生成
-- 外部サイトの自動スクレイピングによるイベント情報取得
-- Magazine CMS
-- Native iOS App
-- Native Android App
-- Real-time collaborative editing
-- Complex analytics dashboard
-- Paid plans
-- Advertisement platform
-- Ticket inventory management
-
-## 6. Architecture Scope Constraints
-
-### Keep
-- Event中心のDomain Model
-- Artist / Venue / Organizationの独立Entity
-- ArtistにIndividual / Company / Collectiveを含める
-- ArtistとOrganizationは分離する
-- Multiple schedules
-- Historical Event retention
-- Database relation by ID
-- Explicit authorization
-
-### Avoid
-- Entity情報の文字列コピーによるRelation
-- 巨大なEventテーブルへの全情報集約
-- UI Layerのみのアクセス制御
-- 不要なMicroservices
-- MVP段階での検索専用インフラ
-- premature optimization
-- 利用予定のないCloud service導入
-
-## 7. AI Development Scope
-
-Milestone 0ではプロダクト機能開発より先にAI開発環境を整備する。
-
-含めるもの:
-- `AGENTS.md`
-- `CLAUDE.md`
-- Product docs
-- Architecture docs
-- ADR
-- Planning template
-- Prompt templates
-- GitHub Issue templates
-- PR template
-- Automated validation
-- Codex / Claude Code review workflow
-
-基本ルール:
-
-`1 Issue = 1 Branch = 1 Worktree = 1 Primary Agent`
-
-他Agentは主としてPlanまたはReviewに利用する。
-
-## 8. Scope Change Rule
-
-新しい機能が提案された場合、MVP / Should Have / Later / Out of Scope のいずれかに分類する。
-分類できない機能を直接実装しない。
-
-MVP Scopeを変更する場合は、この文書と必要なRequirementsを更新する。
-Architecture上の新しい判断が必要な場合はADRを作成する。
+- Event、Revision、Schedule、Venue、Artist、Organization は独立 Entity とし、関係を文字列コピーで表現しない。
+- Schedule は Venue を参照し、地域は Venue の Prefecture から導出する。
+- 公開内容は承認済み Revision のみとし、UI だけに認可を依存しない。
+- `Asia/Tokyo` を日時の標準とし、過去・中止情報を削除しない。

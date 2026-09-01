@@ -1,6 +1,7 @@
 # ADR-0008: Event Type as a flat required enum with application-layer grouping
 
-**Status:** Proposed
+**Status:** Accepted
+**Accepted:** 2026-09-01
 
 ## Context
 
@@ -28,7 +29,7 @@ Event Type is single-valued and required. Composite events ("公演＋アフタ�
 
 Event Type is a flat PostgreSQL enum. Grouping (`watch` / `participate` / `apply` / `container` / `other`) is an application-layer mapping, not a database structure.
 
-This follows the pattern the repository already uses for Region: `Venue.prefecture` stores the full 47-prefecture enum while `region_group` (KANTO / KANSAI) is an application-layer mapping. The same reasoning applies — regrouping requires no migration, the enum keeps DB/TypeScript type sharing (NFR-TYPE-001), and Japanese/English labels have to live in the application i18n layer regardless.
+Grouping stays in the application layer because regrouping must not require a migration. The enum keeps DB/TypeScript type sharing (NFR-TYPE-001), and display labels belong in the application layer.
 
 Adding a value costs one `ALTER TYPE ... ADD VALUE` migration, which satisfies REQ-EVENT-004's extensibility requirement.
 
