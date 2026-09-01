@@ -118,7 +118,7 @@ select ok(exists (
 select ok(exists (
   select 1 from pg_policies where schemaname = 'public'
     and tablename = 'organization_audit_log'
-    and policyname = 'organization members read audit log'
+    and policyname = 'owners read their organization audit log'
 ), 'organization audit read policy exists');
 select ok(exists (
   select 1 from pg_policies where schemaname = 'public'
@@ -136,7 +136,12 @@ select ok(exists (
     and policyname = 'public reads published events'
 ), 'published event policy exists');
 select ok(
-  has_table_privilege('authenticated', 'public.event_artists', 'INSERT'),
+  has_column_privilege(
+    'authenticated',
+    'public.event_artists',
+    'event_revision_id',
+    'INSERT'
+  ),
   'authenticated members can attempt artist-credit inserts through RLS'
 );
 select ok(
