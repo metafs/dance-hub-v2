@@ -2,7 +2,7 @@
 
 **Status:** Draft  
 **Version:** 0.1  
-**Last Updated:** 2026-08-21
+**Last Updated:** 2026-08-28
 
 ## 1. Product Definition
 
@@ -89,8 +89,28 @@ DANCE HUBを管理するユーザー。
 #### REQ-EVENT-003 — Multiple Schedules
 1つのイベントに複数の日程を登録できること。
 
+ただし応募型イベント（Event Type Groupが `apply` のもの。REQ-EVENT-004参照）は、実施日が未定のまま公開されることが常態であるため、Scheduleを1件も持たない状態を許容する。その場合の時間軸はREQ-EVENT-008の応募締切が担う。
+
 #### REQ-EVENT-004 — Event Type
-イベントに種別を設定できること。初期候補は Performance / Workshop / Talk / Audition / Open Studio / Festival / Other とし、将来的に変更・拡張可能な設計とする。
+イベントに種別（Event Type）を設定できること。Event Typeは必須とし、1イベントにつき1つのみ設定できる。複数指定は許容しない。「公演＋アフタートーク」のような複合的なイベントは、主たる性質のEvent Type 1つと本文で表現する。
+
+Event Typeの値は以下の9種とする。
+
+| value | ラベル | Group | 定義 |
+| --- | --- | --- | --- |
+| `performance` | 公演 | `watch` | 作品の上演 |
+| `open_studio` | オープンスタジオ | `watch` | 制作過程の公開、ショーイング、試演会 |
+| `talk` | トーク | `watch` | トークイベント、レクチャー、シンポジウム |
+| `workshop` | ワークショップ | `participate` | 参加者が実技・創作に加わるもの |
+| `audition` | オーディション | `apply` | 出演者・参加者の募集 |
+| `open_call` | 公募 | `apply` | 作品・企画・プログラム参加者の公募 |
+| `residency` | レジデンス | `apply` | 滞在制作（Artist in Residence）の募集 |
+| `festival` | フェスティバル | `container` | 複数の子Eventを束ねる会期（REQ-EVENT-009） |
+| `other` | その他 | `other` | 上記に該当しないもの |
+
+Event Type GroupはDBスキーマではなくアプリケーション層のマッピングとして管理する（`region_group`と同じ方針）。Groupは絞り込みUIの単位であると同時に、日付の意味が変わる境界でもある（REQ-EVENT-007、REQ-EVENT-008）。
+
+Event Typeの値は将来的に追加・変更可能とする。詳細はADR-0008を参照。
 
 #### REQ-EVENT-005 — Event Status
 イベントは最低限 Draft / Published / Cancelled の状態を持つこと。日時が過去になったことと公開状態は別概念として扱う。
@@ -101,10 +121,38 @@ DANCE HUBを管理するユーザー。
 #### REQ-EVENT-007 — Historical Retention
 終了したイベントを自動削除せず、過去イベントとして参照できること。
 
+イベントが終了したと判定される条件はEvent Type Groupによって異なる。
+
+- `apply` グループ: 応募締切（REQ-EVENT-008）を経過したとき
+- それ以外のグループ: すべてのScheduleが過去となったとき
+
+いずれの場合も、この判定はEvent Status（REQ-EVENT-005）とは独立した派生的な概念である。
+
+#### REQ-EVENT-008 — Application Deadline
+応募型イベント（Event Type Groupが `apply`）に応募締切を設定できること。`apply` グループでは応募締切を必須とする。
+
+応募締切はScheduleとは別の概念として保持する。Scheduleが開催日時を表すのに対し、応募締切は応募を受け付ける期限を表す。応募締切はカレンダー（REQ-DISCOVERY-001）の対象に含めない。
+
+レジデンスの滞在期間は、MVPでは本文テキストによる記述に留め、構造化フィールドとしては保持しない。
+
+#### REQ-EVENT-009 — Festival Child Events
+Event Typeが `festival` のEventは、複数の子Eventを持てること。
+
+- 親となれるのはEvent Typeが `festival` のEventのみとする。
+- 子EventのEvent Typeは `festival` 以外とする。
+- 入れ子は1段までとし、子を持つEvent自身が他のEventの子になることを許容しない。
+- MVPでは、親Eventと子Eventの所有Organizationが同一であることを必須とする。他Organizationの公演をFestivalの子として含める運用はPost-MVPとする。
+
+一覧・カレンダーにおける親子の表示規則はREQ-DISCOVERY-001に従う。詳細はADR-0009を参照。
+
 ### 5.2 Calendar and Discovery
 
 #### REQ-DISCOVERY-001 — Calendar
 イベントを日付単位で閲覧できること。
+
+カレンダーが対象とする日付は開催日（Schedule）のみとする。応募締切（REQ-EVENT-008）はカレンダーに表示せず、REQ-DISCOVERY-006の別導線で提供する。
+
+Festivalとその子Eventについては、カレンダーおよび日付による絞り込みの対象を子Eventとする。Festival自身はEvent一覧上で1件として会期（子Eventの日程範囲）で表現し、子EventはFestival詳細ページで一覧する。Event Typeによる絞り込み（REQ-DISCOVERY-004）で `performance` を選択した場合に返るのは子Eventであり、Festivalではない。
 
 #### REQ-DISCOVERY-002 — Date Filtering
 特定の日、または開始日〜終了日でイベントを絞り込めること。
@@ -117,6 +165,9 @@ DANCE HUBを管理するユーザー。
 
 #### REQ-DISCOVERY-005 — Search
 最低限、イベント名、アーティスト名、会場名、組織名を検索対象にできること。
+
+#### REQ-DISCOVERY-006 — Open Call Listing
+応募型イベント（Event Type Groupが `apply`）を、応募締切順の一覧として閲覧できること。カレンダーとは別の導線として提供する。
 
 ### 5.3 Artists
 
@@ -205,6 +256,8 @@ Eventを公開せずDraftとして保存できること。
 
 #### REQ-PUBLISH-004 — Publish
 Draft Eventを公開できること。ただし、所属OrganizationがAdministratorによる承認（REQ-ORG-005、status = Approved）を受けている場合に限る。
+
+承認済みOrganizationのメンバーによる公開は即時に反映される。Event単位の個別承認は要求しない。公開済みEventの編集も再審査を経ずに即時反映される。人的レビューはOrganization承認の1回に集約し、公開後の品質担保はAdministratorによる事後対応に依存する。詳細はADR-0007を参照。
 
 ### 5.7 Media
 
@@ -300,12 +353,17 @@ AI Agentが単一の標準コマンドからコード品質を検証できるこ
 - 新規Organizationの作成にはAdministratorによる事前承認を必須とする。承認までは非公開でDraft作業のみ可能（REQ-ORG-005、ADR-0006）
 - 多言語対応はMVP完了後に英語から着手する。データモデルには英語フィールドをあらかじめ用意しておく（Product Constraints）
 - 既存データの取り込みはMVPでは主催者によるセルフサーブ入力のみとし、CSV一括インポートはPost-MVPのShould Have候補とする。スクレイピングやAIによる自動抽出はMVP・Should Haveでは行わない（`docs/product/scope.md` 参照）
+- Open Call / Residencyの募集はEventとして扱い、Performance等とは別のEvent Typeとして区別する（REQ-EVENT-004、ADR-0008）
+- Event Typeは9値・単一値・必須とする。DBはフラットなenumとし、Groupへの分類はアプリケーション層のマッピングで管理する（REQ-EVENT-004、ADR-0008）
+- 応募型イベントは応募締切を必須とし、Scheduleを持たない状態を許容する。過去判定も締切基準に分岐する（REQ-EVENT-003、REQ-EVENT-007、REQ-EVENT-008、ADR-0008）
+- カレンダーは開催日のみを対象とし、応募締切は締切順の別一覧として提供する（REQ-DISCOVERY-001、REQ-DISCOVERY-006、ADR-0008）
+- FestivalはEvent Typeであり、子Eventを持てる。入れ子は1段までとし、MVPでは親子の所有Organizationを同一に限定する（REQ-EVENT-009、ADR-0009）
+- Eventの公開に個別のAdministrator承認は必要としない。人的レビューはOrganization承認（REQ-ORG-005）の1回に集約し、公開後の品質担保は事後対応とする（REQ-PUBLISH-004、ADR-0007）
 
 ## 10. Open Questions
 
-- Open Call / Residency募集をEventとして扱うか
 - Artist同士のCompany / Collective membership構造化（MVP対象外はscope.mdで確定済みだが、データモデル上の下準備要否は未検討）
-- Event公開時に個別のAdministrator承認を必要とするか（Organization単位の事前承認とは別軸の論点）
-- Festivalが子Eventを持つか、単なるEvent Typeとして扱うか
+- AdministratorがEventを非公開化（takedown）できる要件を明文化するか。ADR-0007でEvent公開を即時とした結果、品質担保は事後対応に依存することになったが、対応する機能要件が現時点で存在しない
+- Festivalの子Eventに他Organizationの公演を含める場合の認可設計（Post-MVPで扱う前提だが、方針は未検討。ADR-0009参照）
 
 これらは推測で実装せず、決定後にRequirementsまたはADRへ反映する。

@@ -18,7 +18,9 @@ Constraints:
 - add or update tests
 - update documentation when behavior, domain language, or architecture changes
 
-Run the repository validation commands required by `AGENTS.md`.
+After implementation, apply the `sip` verification approach defined in
+`docs/ai/paperthin.md`: run the repository validation commands required by `AGENTS.md`
+and report actual evidence. Do not claim that an unavailable command passed.
 
 At completion report:
 

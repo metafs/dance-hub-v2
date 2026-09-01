@@ -2,6 +2,9 @@
 
 Review the proposed change without modifying files.
 
+This independent review is required by the workflow and is not replaced by the
+Paperthin patterns described in `docs/ai/paperthin.md`.
+
 Review against:
 
 1. Issue acceptance criteria

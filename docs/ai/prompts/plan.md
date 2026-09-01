@@ -2,6 +2,11 @@
 
 Read `AGENTS.md` and all documentation relevant to the task.
 
+When interpretation is materially ambiguous, apply `readchk` as defined in
+`docs/ai/paperthin.md` before planning. Do not ask questions that repository context
+already answers. Flag architecture/domain decisions for deliberate review rather than
+silently settling them.
+
 Do not modify files yet.
 
 Analyze the issue and produce:

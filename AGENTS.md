@@ -15,6 +15,7 @@ Before making changes, read the documentation relevant to the task:
 - Architecture decisions: `docs/adr/`
 - Security: `docs/architecture/security.md`
 - AI workflow: `docs/ai/workflow.md`
+- Paperthin design patterns for AI work: `docs/ai/paperthin.md`
 
 If documents disagree, do not guess. Report the conflict and use the more specific, more recently approved source only when that precedence is explicit.
 

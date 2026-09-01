@@ -2,7 +2,7 @@
 
 **Status:** Draft  
 **Version:** 0.1  
-**Last Updated:** 2026-08-21
+**Last Updated:** 2026-08-28
 
 ## 1. Purpose
 
@@ -20,6 +20,7 @@ AI Agentは、本書に記載されていない機能を必要性の確認なく
 - 地域による絞り込み（初期対象：関東・関西の2エリア）
 - Event Typeによる絞り込み
 - 基本的なテキスト検索
+- 応募型イベント（Audition / Open Call / Residency）の締切順一覧
 - 過去イベントの閲覧
 
 ### Artist
@@ -71,10 +72,12 @@ Organizerが以下を行えること。
 - Event公開
 - Eventキャンセル
 - Schedule追加・削除
+- 応募締切の入力（応募型イベント）
 - Venue指定
 - Artist / Credit追加
 - Ticket情報入力
 - 画像登録
+- Festivalへの子Event紐づけ（同一Organization内）
 
 ### Media
 最低限:
@@ -139,6 +142,9 @@ MVP以前の開発基盤として必須:
 - Duration
 - Age restriction
 - Language information
+- Festivalへの他Organization公演の参加（認可設計が必要。ADR-0009）
+- Residencyの滞在期間の構造化フィールド
+- Event Type候補の追加（Screening / Exhibition等。運用実績を見て判断）
 
 ### Organization
 - 公開Organization profile
@@ -160,6 +166,9 @@ MVP以前の開発基盤として必須:
 - 3言語目以降の対応は本項目の実績を見て再検討する
 
 ## 4. Later
+
+### Event Types
+- 定期クラス（Class）の掲載。繰り返しスケジュールの表現が必要になるため、EventScheduleモデルの拡張を伴う（ADR-0008）
 
 ### User Features
 - Favorites

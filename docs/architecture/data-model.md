@@ -2,7 +2,7 @@
 
 **Status:** Draft  
 **Version:** 0.1  
-**Last Updated:** 2026-08-21
+**Last Updated:** 2026-08-28
 
 ## Core entities
 
@@ -55,9 +55,66 @@ Membership history is not required for the initial MVP.
 
 ## Event
 
-Event is the core time-based activity entity. Performance is an Event Type, not the root entity.
+Event is the core activity entity. Performance is an Event Type, not the root entity.
 
-An Event may have multiple schedules and multiple credited Artists.
+An Event may have multiple schedules and multiple credited Artists. Recruitment listings (`apply` group, below) may have zero schedules.
+
+## Event Type
+
+```text
+Event.type   enum(performance, open_studio, talk, workshop,
+                  audition, open_call, residency, festival, other)   required
+```
+
+Event Typeは必須・単一値。複数指定は許容しない。
+
+Event Type Groupはenumではなく、Event Type → Groupのマッピングをアプリケーション層で保持する。Venueの`prefecture` → `region_group`と同じ方針であり、Groupの見直しにスキーマ変更を不要にする。
+
+```text
+watch       = performance, open_studio, talk
+participate = workshop
+apply       = audition, open_call, residency
+container   = festival
+other       = other
+```
+
+Groupは絞り込みの単位であると同時に、Eventの主要な日付が何かを分ける境界でもある。詳細はADR-0008を参照。
+
+## Application Deadline
+
+```text
+Event.application_deadline   timestamptz (nullable)
+```
+
+応募型Event（`apply` グループ）における応募締切。`apply` グループでは必須、それ以外のグループではnullとする。この制約はEvent Typeに依存するため単純なNOT NULLでは表現できず、アプリケーション層で強制する。
+
+Scheduleとは別概念であり、Calendarおよび日付による絞り込みの対象に含めない。
+
+過去判定（Past Event）はGroupによって分岐する。
+
+```text
+apply    -> application_deadline < now()
+それ以外 -> すべてのEventSchedule < now()
+```
+
+## Festival Child Events
+
+```text
+Event.parent_event_id   Event (FK, nullable, self-reference)
+```
+
+Festivalは独立したEntityではなくEventであり、親子関係はEventの自己参照で表現する。中間テーブルは用いない（1子Eventが複数Festivalに属する要件は存在しない）。
+
+制約:
+
+```text
+親は type = festival のみ
+子の type は festival 以外
+親自身は parent_event_id を持てない（入れ子は1段まで／循環防止）
+親子の owner_organization_id は同一（MVP制約）
+```
+
+Discovery上は子EventがCalendar・日付絞り込みの対象となり、Festival自身はEvent一覧に1件として会期（子Eventの日程範囲）で現れる。詳細はADR-0009を参照。
 
 ## Region
 
@@ -108,10 +165,14 @@ Venue is referenced by ID from Event. Venue names must not be used as the relati
 
 Organization is an operational / publishing entity. Users gain permissions through OrganizationMembership.
 
+## Event Publication
+
+Eventの公開は、所属Organizationが`approved`であれば即時に反映される。Event単位の承認状態はスキーマ上に存在せず、`Event.status`はDraft / Published / Cancelledの3値のままである。詳細はADR-0007を参照。
+
 ## Open design questions
 
 - Whether Artist membership (Company / Collective) should be modeled in MVP or post-MVP.
-- Whether festivals contain child Events or are simply an Event Type in MVP.
-- Whether individual Event publication requires per-event Administrator approval, separate from Organization-level approval.
+- How to authorize Festival child Events owned by a different Organization than the parent (deferred to post-MVP by ADR-0009; the MVP schema constraint assumes same-Organization).
+- Whether Administrator takedown of a published Event needs an explicit requirement, given that ADR-0007 makes publication immediate and moves quality control after the fact.
 
-Resolved: Organization/Artist representation link (see "Organization Artist Link" above, ADR-0005). Resolved: region normalization (see "Region" above).
+Resolved: Organization/Artist representation link (see "Organization Artist Link" above, ADR-0005). Resolved: region normalization (see "Region" above). Resolved: Event Type taxonomy and the `apply` group date semantics (see "Event Type" / "Application Deadline" above, ADR-0008). Resolved: Festival child Events (see "Festival Child Events" above, ADR-0009). Resolved: per-event publication approval (see "Event Publication" above, ADR-0007).
