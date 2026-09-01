@@ -265,7 +265,7 @@ using (public.is_platform_admin());
 -- pending. Review state and canonical links are writable only through the trusted
 -- moderation functions below. Start from an explicit deny so deployment-specific
 -- default privileges cannot expose moderation transitions.
-revoke all on public.artist_candidates from anon, authenticated;
+revoke all on public.artist_candidates from public, anon, authenticated;
 grant select on public.artist_candidates to authenticated;
 grant insert (
   creator_organization_id,
@@ -277,7 +277,7 @@ grant insert (
 grant update (name, artist_type, profile, website_url)
   on public.artist_candidates to authenticated;
 
-revoke all on public.venue_candidates from anon, authenticated;
+revoke all on public.venue_candidates from public, anon, authenticated;
 grant select on public.venue_candidates to authenticated;
 grant insert (
   creator_organization_id,
@@ -299,7 +299,7 @@ grant update (
   website_url
 ) on public.venue_candidates to authenticated;
 
-revoke all on public.artist_change_requests from anon, authenticated;
+revoke all on public.artist_change_requests from public, anon, authenticated;
 grant select on public.artist_change_requests to authenticated;
 grant insert (
   artist_id,
@@ -317,7 +317,7 @@ grant update (
   proposed_website_url
 ) on public.artist_change_requests to authenticated;
 
-revoke all on public.venue_change_requests from anon, authenticated;
+revoke all on public.venue_change_requests from public, anon, authenticated;
 grant select on public.venue_change_requests to authenticated;
 grant insert (
   venue_id,
@@ -341,9 +341,9 @@ grant update (
   proposed_website_url
 ) on public.venue_change_requests to authenticated;
 
-revoke all on public.artists from anon, authenticated;
-revoke all on public.venues from anon, authenticated;
-revoke all on public.shared_entity_moderation_audit from anon, authenticated;
+revoke all on public.artists from public, anon, authenticated;
+revoke all on public.venues from public, anon, authenticated;
+revoke all on public.shared_entity_moderation_audit from public, anon, authenticated;
 grant select on public.artists to anon, authenticated;
 grant select on public.venues to anon, authenticated;
 grant select on public.shared_entity_moderation_audit to authenticated;
