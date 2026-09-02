@@ -22,7 +22,8 @@ test("candidate activation produces canonical data without cross-organization di
   await page.goto(`/workspace/${fixtureOrganizationId}/entities`);
   await page.getByRole("heading", { name: "Artist Candidate" }).locator("..").getByLabel("Artist名").fill("E2E Artist");
   await page.getByRole("button", { name: "Artist候補を提出" }).click();
-  await expect(page.getByText("E2E Artist")).toBeVisible();
+  const candidates = page.getByRole("heading", { name: "このOrganizationの候補" }).locator("..");
+  await expect(candidates.getByText("E2E Artist", { exact: true })).toBeVisible();
   await logout(page);
 
   await login(page, "other@example.com");
@@ -40,5 +41,6 @@ test("candidate activation produces canonical data without cross-organization di
 
   await login(page, "owner@example.com");
   await page.goto(`/workspace/${fixtureOrganizationId}/entities`);
-  await expect(page.getByRole("article").filter({ hasText: "E2E Artist" })).toBeVisible();
+  const canonicalSearch = page.getByRole("heading", { name: "Canonical search" }).locator("..");
+  await expect(canonicalSearch.getByText("E2E Artist", { exact: true })).toBeVisible();
 });
