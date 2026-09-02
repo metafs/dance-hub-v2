@@ -62,6 +62,11 @@ export default async function OrganizationWorkspacePage({
             Organization設定
           </Link>
         ) : null}
+        {hasOrganizationCapability(role, "createCandidates") ? (
+          <Link className="button button-primary" href={`/workspace/${organizationId}/entities`}>
+            Artist / Venueを管理
+          </Link>
+        ) : null}
       </section>
       <section className="section-block" aria-labelledby="permissions-title">
         <div className="section-heading">
