@@ -1,6 +1,6 @@
 # M3 — Moderated Artist and Venue data
 
-**Status:** Active
+**Status:** Complete
 
 **Understood as:** A Member can search canonical Artist and Venue data, submit and edit only their Organization's pending candidates, and a Platform Admin can activate, reject, or merge them without exposing pending data to another Organization.
 
