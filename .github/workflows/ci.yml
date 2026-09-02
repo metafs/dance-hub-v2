@@ -38,5 +38,12 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm db:start
       - run: pnpm db:verify
+      - name: Export local Supabase environment
+        run: |
+          echo "NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321" >> "$GITHUB_ENV"
+          anon_key="$(pnpm supabase status -o env | sed -n 's/^ANON_KEY="\(.*\)"$/\1/p')"
+          echo "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=$anon_key" >> "$GITHUB_ENV"
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm e2e
       - if: always()
         run: pnpm supabase stop --no-backup

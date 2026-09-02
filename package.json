@@ -10,6 +10,7 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
+    "e2e": "playwright test",
     "check": "pnpm lint && pnpm typecheck && pnpm test",
     "verify": "pnpm check && pnpm build",
     "db:start": "supabase start",
@@ -26,6 +27,7 @@
     "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts"
   },
   "dependencies": {
+    "@supabase/ssr": "^0.12.5",
     "@supabase/supabase-js": "^2.112.4",
     "next": "16.3.4",
     "react": "19.2.8",
@@ -33,6 +35,7 @@
   },
   "devDependencies": {
     "@opennextjs/cloudflare": "^1.20.5",
+    "@playwright/test": "^1.62.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
