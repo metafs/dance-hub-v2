@@ -1,7 +1,7 @@
 begin;
 
 create extension if not exists pgtap with schema extensions;
-select plan(74);
+select plan(75);
 
 select has_type('public', 'organization_role', 'organization role enum exists');
 select has_type('public', 'application_status', 'application status enum exists');
@@ -54,6 +54,10 @@ select ok(
 select ok(
   to_regprocedure('public.remove_organization_member(uuid,uuid)') is not null,
   'organization member removal transition exists'
+);
+select ok(
+  to_regprocedure('public.is_organization_member(uuid,uuid)') is not null,
+  'non-recursive organization membership predicate exists'
 );
 select ok(
   to_regprocedure('public.approve_artist_change_request(uuid,text)') is not null,
