@@ -1,6 +1,11 @@
 begin;
 
 create extension if not exists pgtap with schema extensions;
+-- The test switches to PostgREST roles to exercise RLS. Keep the pgTAP
+-- assertion helpers executable for those temporary roles; the transaction is
+-- rolled back at the end of this file.
+grant usage on schema extensions to anon, authenticated;
+grant execute on all functions in schema extensions to anon, authenticated;
 select plan(19);
 
 insert into public.events (id, owner_organization_id)
