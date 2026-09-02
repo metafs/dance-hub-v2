@@ -5,7 +5,28 @@ create extension if not exists pgtap with schema extensions;
 -- assertion helpers executable for those temporary roles; the transaction is
 -- rolled back at the end of this file.
 grant usage on schema extensions to anon, authenticated;
-grant execute on all functions in schema extensions to anon, authenticated;
+do $$
+declare
+  assertion_function record;
+begin
+  for assertion_function in
+    select procedure.oid::regprocedure as signature
+    from pg_catalog.pg_proc procedure
+    join pg_catalog.pg_depend dependency
+      on dependency.classid = 'pg_catalog.pg_proc'::regclass
+      and dependency.objid = procedure.oid
+      and dependency.deptype = 'e'
+    join pg_catalog.pg_extension extension
+      on extension.oid = dependency.refobjid
+    where extension.extname = 'pgtap'
+  loop
+    execute format(
+      'grant execute on function %s to anon, authenticated',
+      assertion_function.signature
+    );
+  end loop;
+end;
+$$;
 select plan(21);
 
 insert into public.events (id, owner_organization_id)
@@ -182,6 +203,12 @@ select throws_ok(
   'event revision content is immutable in status superseded',
   'superseded revisions reject ticket offer inserts'
 );
+
+-- The draft factory correctly refuses to create a second open revision. The
+-- in-review row above exists only to test immutability, so remove that fixture
+-- before exercising the factory against the published revision.
+delete from public.event_revisions
+where id = 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeee3';
 
 set local role authenticated;
 select set_config('request.jwt.claim.sub', '33333333-3333-4333-8333-333333333333', true);

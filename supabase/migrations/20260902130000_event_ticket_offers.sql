@@ -116,6 +116,65 @@ create policy "public reads published revisions"
     and public.is_current_published_event_revision(id)
   );
 
+-- Older Event content migrations created several member-only policies without
+-- an explicit role. PostgreSQL therefore also evaluates them for anon reads,
+-- which makes a public query attempt to read the private membership table.
+-- Restrict those predicates to authenticated users and make each public
+-- content policy explicit about the PostgREST roles it serves.
+alter policy "members read organization events"
+  on public.events to authenticated;
+alter policy "members read revisions"
+  on public.event_revisions to authenticated;
+alter policy "members read schedules"
+  on public.event_schedules to authenticated;
+
+alter policy "members and admins read event artists"
+  on public.event_artists to authenticated;
+alter policy "members create editable event artists"
+  on public.event_artists to authenticated;
+alter policy "members update editable event artists"
+  on public.event_artists to authenticated;
+alter policy "members delete editable event artists"
+  on public.event_artists to authenticated;
+alter policy "public reads published event artists"
+  on public.event_artists to anon, authenticated;
+
+alter policy "members and admins read event ticket links"
+  on public.event_ticket_links to authenticated;
+alter policy "members create editable event ticket links"
+  on public.event_ticket_links to authenticated;
+alter policy "members update editable event ticket links"
+  on public.event_ticket_links to authenticated;
+alter policy "members delete editable event ticket links"
+  on public.event_ticket_links to authenticated;
+alter policy "public reads published event ticket links"
+  on public.event_ticket_links to anon, authenticated;
+
+alter policy "members and admins read event links"
+  on public.event_links to authenticated;
+alter policy "members create editable event links"
+  on public.event_links to authenticated;
+alter policy "members update editable event links"
+  on public.event_links to authenticated;
+alter policy "members delete editable event links"
+  on public.event_links to authenticated;
+alter policy "public reads published event links"
+  on public.event_links to anon, authenticated;
+
+alter policy "members and admins read event media"
+  on public.event_media to authenticated;
+alter policy "members create editable event media"
+  on public.event_media to authenticated;
+alter policy "members update editable event media"
+  on public.event_media to authenticated;
+alter policy "members delete editable event media"
+  on public.event_media to authenticated;
+alter policy "public reads published event media"
+  on public.event_media to anon, authenticated;
+
+alter policy "platform admins read event content audit"
+  on public.event_content_audit_log to authenticated;
+
 create policy "members and admins read event ticket offers"
 on public.event_ticket_offers for select
 to authenticated
