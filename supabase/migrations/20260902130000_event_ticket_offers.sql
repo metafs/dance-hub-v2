@@ -70,6 +70,52 @@ create table public.event_ticket_offers (
 
 alter table public.event_ticket_offers enable row level security;
 
+-- Public Event and EventRevision policies reference each other. This helper
+-- evaluates the published pointer as the table owner, so the Ticket Offer
+-- policy does not re-enter that RLS cycle.
+create function public.is_current_published_event_revision(target_revision_id uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = pg_catalog, public
+as $$
+  select exists (
+    select 1
+    from public.events event
+    join public.event_revisions revision
+      on revision.id = event.published_revision_id
+    where revision.id = target_revision_id
+      and revision.status = 'approved'
+  );
+$$;
+
+revoke all on function public.is_current_published_event_revision(uuid) from public;
+grant execute on function public.is_current_published_event_revision(uuid) to anon, authenticated;
+
+-- The two original public policies reference each other's RLS-protected table.
+-- Rebuild them on the helper so public Event, Revision, and child-content
+-- reads all use the same non-recursive published-pointer check.
+drop policy "public reads published events" on public.events;
+create policy "public reads published events"
+  on public.events
+  for select
+  to anon, authenticated
+  using (
+    published_revision_id is not null
+    and public.is_current_published_event_revision(published_revision_id)
+  );
+
+drop policy "public reads published revisions" on public.event_revisions;
+create policy "public reads published revisions"
+  on public.event_revisions
+  for select
+  to anon, authenticated
+  using (
+    status = 'approved'
+    and public.is_current_published_event_revision(id)
+  );
+
 create policy "members and admins read event ticket offers"
 on public.event_ticket_offers for select
 to authenticated
@@ -90,14 +136,7 @@ create policy "public reads published event ticket offers"
 on public.event_ticket_offers for select
 to anon, authenticated
 using (
-  exists (
-    select 1
-    from public.events event
-    join public.event_revisions revision
-      on revision.id = event.published_revision_id
-    where revision.id = event_ticket_offers.event_revision_id
-      and revision.status = 'approved'
-  )
+  public.is_current_published_event_revision(event_ticket_offers.event_revision_id)
 );
 
 create policy "members create editable event ticket offers"

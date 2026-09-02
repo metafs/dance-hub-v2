@@ -6,7 +6,7 @@ create extension if not exists pgtap with schema extensions;
 -- rolled back at the end of this file.
 grant usage on schema extensions to anon, authenticated;
 grant execute on all functions in schema extensions to anon, authenticated;
-select plan(19);
+select plan(21);
 
 insert into public.events (id, owner_organization_id)
 values ('eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa');
@@ -102,6 +102,16 @@ select throws_ok(
 );
 
 set local role anon;
+select is(
+  (select count(*)::integer from public.events where id = 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee'),
+  1,
+  'anonymous readers see the published event without RLS recursion'
+);
+select is(
+  (select count(*)::integer from public.event_revisions where id = 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeee1'),
+  1,
+  'anonymous readers see the current approved revision without RLS recursion'
+);
 select is(
   (select count(*)::integer from public.event_ticket_offers where event_revision_id = 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeee1'),
   5,
