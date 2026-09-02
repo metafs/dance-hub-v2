@@ -25,7 +25,7 @@ test("Event revision is reviewed before public release, then cancellation remain
   const draft = page.getByRole("heading", { name: "新しいEventを作成" }).locator("..");
   await draft.getByLabel("Event名").fill(eventTitle);
   await draft.getByLabel("説明").fill("First reviewable M4 event");
-  await draft.getByLabel("種別").selectOption("performance");
+  await draft.getByLabel("種別", { exact: true }).selectOption("performance");
   await draft.getByLabel("Artist（canonical）").selectOption(fixtureArtistId);
   await draft.getByLabel("会場（canonical）").selectOption(fixtureVenueId);
   await draft.getByLabel("開始日時（東京都）").fill("2030-04-01T19:00");
