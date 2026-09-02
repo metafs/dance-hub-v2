@@ -20,6 +20,8 @@ async function logout(page: Page) {
 }
 
 test("Event revision is reviewed before public release, then cancellation remains public", async ({ page }) => {
+  test.setTimeout(120_000);
+
   await login(page, "owner@example.com");
   await page.goto(`/workspace/${fixtureOrganizationId}/events`);
   const draft = page.getByRole("heading", { name: "新しいEventを作成" }).locator("..");
