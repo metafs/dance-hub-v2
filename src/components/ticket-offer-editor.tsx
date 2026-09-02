@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useSyncExternalStore } from "react";
 
 import { ticketPriceTypes, type TicketOfferDraft, type TicketPriceType } from "@/lib/events/ticket-offers";
 
@@ -15,6 +15,8 @@ const labels: Record<TicketPriceType, string> = {
   included: "別料金・Pass等に含まれる",
 };
 
+const subscribeToHydration = () => () => undefined;
+
 function value(value: string | number | null | undefined) {
   return value == null ? "" : String(value);
 }
@@ -22,6 +24,7 @@ function value(value: string | number | null | undefined) {
 export function TicketOfferEditor({ initialOffers = [] }: { initialOffers?: TicketOfferDraft[] }) {
   const nextKey = useRef(initialOffers.length);
   const [offers, setOffers] = useState<TicketOfferDraft[]>(initialOffers);
+  const isHydrated = useSyncExternalStore(subscribeToHydration, () => true, () => false);
 
   function addOffer() {
     const key = `new-${nextKey.current++}`;
@@ -56,7 +59,7 @@ export function TicketOfferEditor({ initialOffers = [] }: { initialOffers?: Tick
           </div>
         );
       })}
-      <button className="button button-secondary" onClick={addOffer} type="button">料金を追加</button>
+      <button className="button button-secondary" disabled={!isHydrated} onClick={addOffer} type="button">料金を追加</button>
     </fieldset>
   );
 }

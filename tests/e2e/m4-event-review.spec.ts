@@ -31,11 +31,15 @@ test("Event revision is reviewed before public release, then cancellation remain
   await draft.getByLabel("開始日時（東京都）").fill("2030-04-01T19:00");
   await draft.getByLabel("終了日時（東京都）").fill("2030-04-01T20:30");
   const offers = draft.getByRole("group", { name: "Ticket Offer（料金）" });
-  await offers.getByRole("button", { name: "料金を追加" }).click();
+  const addOffer = offers.getByRole("button", { name: "料金を追加" });
+  await expect(addOffer).toBeEnabled();
+  await addOffer.click();
+  await expect(offers.locator(".ticket-offer-row")).toHaveCount(1);
   const advance = offers.locator(".ticket-offer-row").nth(0);
   await advance.getByLabel("ラベル").fill("一般前売");
   await advance.getByLabel("金額（最小通貨単位）").fill("3000");
-  await offers.getByRole("button", { name: "料金を追加" }).click();
+  await addOffer.click();
+  await expect(offers.locator(".ticket-offer-row")).toHaveCount(2);
   const under25 = offers.locator(".ticket-offer-row").nth(1);
   await under25.getByLabel("ラベル").fill("U25");
   await under25.getByLabel("金額（最小通貨単位）").fill("2000");
