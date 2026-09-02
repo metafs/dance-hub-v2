@@ -116,7 +116,8 @@ Organization は複数 Member を持ち、User は複数 Organization に所属�
 
 | Action | Owner | Admin | Editor | Platform Admin |
 | --- | --- | --- | --- | --- |
-| Organization 設定・Role 管理 | Yes | No | No | No |
+| Organizationプロフィール編集 | Yes | Yes | No | No |
+| Member・Role管理 | Yes | No | No | No |
 | Event Revision の編集・提出 | Yes | Yes | Yes | No |
 | 中止申請 | Yes | Yes | No | Yes (review) |
 | Artist / Venue Candidate 作成 | Yes | Yes | Yes | Yes (review) |

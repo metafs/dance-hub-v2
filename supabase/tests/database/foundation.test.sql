@@ -1,7 +1,7 @@
 begin;
 
 create extension if not exists pgtap with schema extensions;
-select plan(69);
+select plan(75);
 
 select has_type('public', 'organization_role', 'organization role enum exists');
 select has_type('public', 'application_status', 'application status enum exists');
@@ -56,6 +56,10 @@ select ok(
   'organization member removal transition exists'
 );
 select ok(
+  to_regprocedure('public.is_organization_member(uuid,uuid)') is not null,
+  'non-recursive organization membership predicate exists'
+);
+select ok(
   to_regprocedure('public.approve_artist_change_request(uuid,text)') is not null,
   'artist change approval transition exists'
 );
@@ -96,6 +100,10 @@ select ok(exists (
   select 1 from pg_indexes where schemaname = 'public'
     and indexname = 'event_media_one_main_per_revision_idx'
 ), 'one-main-image index exists');
+select ok(exists (
+  select 1 from pg_indexes where schemaname = 'public'
+    and indexname = 'organization_applications_one_submitted_per_applicant_idx'
+), 'one submitted application per applicant index exists');
 
 select ok(exists (
   select 1 from pg_policies where schemaname = 'public'
@@ -165,6 +173,32 @@ select ok(
     'UPDATE'
   ),
   'anonymous users cannot update registration opt-out'
+);
+select ok(
+  has_column_privilege(
+    'authenticated',
+    'public.organization_applications',
+    'applicant_id',
+    'INSERT'
+  ),
+  'authenticated users can create their applications through RLS'
+);
+select ok(
+  not has_column_privilege(
+    'authenticated',
+    'public.organization_applications',
+    'status',
+    'UPDATE'
+  ),
+  'authenticated users cannot update application review state directly'
+);
+select ok(
+  not has_table_privilege('anon', 'public.organization_applications', 'SELECT'),
+  'anonymous users cannot read organization applications'
+);
+select ok(
+  has_table_privilege('authenticated', 'public.organization_memberships', 'SELECT'),
+  'authenticated users can read organization memberships through RLS'
 );
 
 select * from finish();
