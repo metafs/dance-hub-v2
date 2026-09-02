@@ -1,7 +1,7 @@
 begin;
 
 create extension if not exists pgtap with schema extensions;
-select plan(75);
+select plan(76);
 
 select has_type('public', 'organization_role', 'organization role enum exists');
 select has_type('public', 'application_status', 'application status enum exists');
@@ -82,6 +82,11 @@ select ok(
 select ok(
   to_regprocedure('public.approve_event_cancellation(uuid,text)') is not null,
   'event cancellation approval transition exists'
+);
+
+select ok(
+  to_regprocedure('public.create_event_revision_draft(uuid)') is not null,
+  'published event revision can be copied into an organizer draft'
 );
 
 select col_is_pk('public', 'organizations', 'id', 'organization id is primary key');

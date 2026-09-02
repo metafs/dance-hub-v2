@@ -95,6 +95,9 @@ tbody tr:last-child td { border-bottom: 0; }
 .details-list dt { color: var(--muted); font-size: .8rem; font-weight: 750; }
 .details-list dd { margin: 0; overflow-wrap: anywhere; }
 .review-form { display: grid; gap: 1rem; border-top: 1px solid var(--line); padding-top: 1.2rem; }
+.image-placeholder { display: grid; min-height: 230px; place-content: center; gap: .8rem; border: 1px solid var(--ink); border-radius: 1rem; padding: 2rem; background: linear-gradient(135deg, #e8ff8e, #fffdf8); text-align: center; }
+.image-placeholder span { color: var(--muted); font-size: .75rem; font-weight: 800; letter-spacing: .14em; }
+.image-placeholder strong { font-size: 1.3rem; }
 .permission-list { overflow: hidden; border: 1px solid var(--line); border-radius: 1rem; background: var(--surface); }
 .permission-row { display: flex; justify-content: space-between; gap: 1rem; border-bottom: 1px solid var(--line); padding: 1rem 1.2rem; }
 .permission-row:last-child { border-bottom: 0; }

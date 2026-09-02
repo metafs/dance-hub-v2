@@ -130,6 +130,7 @@ export default async function WorkspaceIndex({
           <span>Platform Admin</span>
           <Link href="/admin/applications">Organization申請の審査キュー →</Link>
           <Link href="/admin/entities">Artist / Venue候補の審査 →</Link>
+          <Link href="/admin/events">Event公開・中止の審査 →</Link>
         </div>
       ) : null}
     </main>

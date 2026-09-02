@@ -70,3 +70,12 @@ values
   ('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', '44444444-4444-4444-8444-444444444444', 'editor')
   ,('bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb', '55555555-5555-4555-8555-555555555555', 'owner')
 on conflict (organization_id, user_id) do nothing;
+
+-- Canonical content used to exercise the Event aggregate flow locally and in CI.
+insert into public.artists (id, name, artist_type)
+values ('cccccccc-cccc-4ccc-8ccc-cccccccccccc', 'Fixture Dance Artist', 'individual')
+on conflict (id) do nothing;
+
+insert into public.venues (id, name, prefecture, address_line1)
+values ('dddddddd-dddd-4ddd-8ddd-dddddddddddd', 'Fixture Dance Venue', 'TOKYO', '東京都渋谷区 fixture 1-1')
+on conflict (id) do nothing;
