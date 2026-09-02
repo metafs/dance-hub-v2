@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { logout } from "@/app/login/actions";
 import { requirePlatformAdmin } from "@/lib/auth/authorization";
+import { formatTokyoDateTime } from "@/lib/datetime";
 import { ticketOfferPrice, type TicketOfferInput, type TicketPriceType } from "@/lib/events/ticket-offers";
 
 import {
@@ -102,7 +103,7 @@ export default async function EventReviewQueue({
                 </div>
                 <dl className="details-list">
                   <div><dt>種別</dt><dd>{revision.event_type ?? "未設定"}</dd></div>
-                  <div><dt>申込締切</dt><dd>{revision.application_deadline ? new Intl.DateTimeFormat("ja-JP", { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Tokyo" }).format(new Date(revision.application_deadline)) : "なし"}</dd></div>
+                  <div><dt>申込締切</dt><dd>{revision.application_deadline ? formatTokyoDateTime(revision.application_deadline) : "なし"}</dd></div>
                   <div><dt>説明</dt><dd>{revision.description ?? "—"}</dd></div>
                 </dl>
                 {revisionTicketOffers.length ? <div className="ticket-offer-list" aria-label="審査対象の料金">{revisionTicketOffers.map((offer) => {

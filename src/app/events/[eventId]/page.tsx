@@ -1,16 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { formatTokyoDateTime } from "@/lib/datetime";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { ticketOfferPrice, type TicketOfferInput, type TicketPriceType } from "@/lib/events/ticket-offers";
-
-function japaneseDate(value: string) {
-  return new Intl.DateTimeFormat("ja-JP", {
-    dateStyle: "medium",
-    timeStyle: "short",
-    timeZone: "Asia/Tokyo",
-  }).format(new Date(value));
-}
 
 export default async function PublicEventPage({
   params,
@@ -67,7 +60,7 @@ export default async function PublicEventPage({
         <div className="details-list">
           {schedules?.map((schedule, index) => {
             const venue = Array.isArray(schedule.venues) ? schedule.venues[0] : schedule.venues;
-            return <div key={`${schedule.starts_at}-${index}`}><dt>{venue?.name ?? "会場"}</dt><dd>{schedule.all_day ? japaneseDate(schedule.starts_at).slice(0, 11) : `${japaneseDate(schedule.starts_at)}${schedule.ends_at ? ` — ${japaneseDate(schedule.ends_at)}` : ""}`}（東京時間）</dd></div>;
+            return <div key={`${schedule.starts_at}-${index}`}><dt>{venue?.name ?? "会場"}</dt><dd>{schedule.all_day ? formatTokyoDateTime(schedule.starts_at).slice(0, 11) : `${formatTokyoDateTime(schedule.starts_at)}${schedule.ends_at ? ` — ${formatTokyoDateTime(schedule.ends_at)}` : ""}`}（東京時間）</dd></div>;
           })}
         </div>
       </section>
@@ -86,7 +79,7 @@ export default async function PublicEventPage({
         })}</div> : null}
         {revision.no_registration_required ? <p>申込不要</p> : null}
         <div className="button-row">{accessLinks?.map((item) => <a className="button button-secondary" href={item.url} key={`${item.kind}-${item.display_order}`} rel="noreferrer" target="_blank">{item.label || (item.kind === "ticket" ? "チケット" : "申込")}</a>)}</div>
-        {revision.application_deadline ? <p>申込締切: {japaneseDate(revision.application_deadline)}（東京時間）</p> : null}
+        {revision.application_deadline ? <p>申込締切: {formatTokyoDateTime(revision.application_deadline)}（東京時間）</p> : null}
       </section>
       {links?.length ? <section className="section-block"><h2>関連リンク</h2><div className="button-row">{links.map((item) => <a className="button button-quiet" href={item.url} key={item.display_order} rel="noreferrer" target="_blank">{item.label}</a>)}</div></section> : null}
     </main>

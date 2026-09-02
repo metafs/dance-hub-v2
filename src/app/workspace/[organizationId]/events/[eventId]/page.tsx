@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { requireOrganizationCapability } from "@/lib/auth/authorization";
 import { hasOrganizationCapability } from "@/lib/auth/roles";
+import { toTokyoDateTimeLocal } from "@/lib/datetime";
 
 import { EventFields } from "../page";
 import {
@@ -12,14 +13,6 @@ import {
   saveEventDraft,
   submitEventDraft,
 } from "../actions";
-
-function localTokyo(value: string | null) {
-  if (!value) return "";
-  const date = new Date(value);
-  const parts = new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Tokyo", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).formatToParts(date);
-  const part = (type: string) => parts.find((item) => item.type === type)?.value ?? "00";
-  return `${part("year")}-${part("month")}-${part("day")}T${part("hour")}:${part("minute")}`;
-}
 
 const errors: Record<string, string> = {
   "save-failed": "このRevisionは編集できません。審査中または承認済みの可能性があります。",
@@ -53,7 +46,7 @@ export default async function EventEditPage({ params, searchParams }: { params: 
     supabase.from("event_links").select("label, url").eq("event_revision_id", revision.id).order("display_order").limit(1).maybeSingle(),
     supabase.from("event_media").select("object_key, content_type, alt_text").eq("event_revision_id", revision.id).eq("is_main", true).maybeSingle(),
   ]);
-  const defaults = { title: revision.title, description: revision.description, eventType: revision.event_type, applicationDeadline: localTokyo(revision.application_deadline), proposedParentEventId: revision.proposed_parent_event_id, noRegistrationRequired: revision.no_registration_required, artistId: credit?.artist_id, artistRole: credit?.role, venueId: schedule?.venue_id, startsAt: localTokyo(schedule?.starts_at ?? null), endsAt: localTokyo(schedule?.ends_at ?? null), allDay: schedule?.all_day, ticketKind: ticket?.kind, ticketUrl: ticket?.url, ticketLabel: ticket?.label, externalUrl: link?.url, externalLabel: link?.label, imageObjectKey: image?.object_key, imageContentType: image?.content_type, imageAlt: image?.alt_text };
+  const defaults = { title: revision.title, description: revision.description, eventType: revision.event_type, applicationDeadline: toTokyoDateTimeLocal(revision.application_deadline), proposedParentEventId: revision.proposed_parent_event_id, noRegistrationRequired: revision.no_registration_required, artistId: credit?.artist_id, artistRole: credit?.role, venueId: schedule?.venue_id, startsAt: toTokyoDateTimeLocal(schedule?.starts_at ?? null), endsAt: toTokyoDateTimeLocal(schedule?.ends_at ?? null), allDay: schedule?.all_day, ticketKind: ticket?.kind, ticketUrl: ticket?.url, ticketLabel: ticket?.label, externalUrl: link?.url, externalLabel: link?.label, imageObjectKey: image?.object_key, imageContentType: image?.content_type, imageAlt: image?.alt_text };
   const editable = revision.status === "draft" || revision.status === "changes_requested";
   const canRequestCancellation = hasOrganizationCapability(role, "requestCancellation");
   const canCreateNextDraft = Boolean(event?.published_revision_id) && !event?.cancelled_at && !revisions?.some((candidate) => ["draft", "in_review", "changes_requested"].includes(candidate.status));

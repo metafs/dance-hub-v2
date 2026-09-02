@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 
 import { requireOrganizationCapability } from "@/lib/auth/authorization";
 import type { Database } from "@/lib/db/database.types";
+import { tokyoDateTime } from "@/lib/datetime";
 import { parseTicketOffers } from "@/lib/events/ticket-offers";
 
 type EventType = Database["public"]["Enums"]["event_type"];
@@ -39,15 +40,6 @@ function url(value: string) {
   } catch {
     return null;
   }
-}
-
-// datetime-local has no offset. M4's product decision is that organizer input
-// is Tokyo local time, so persist it as an explicit Asia/Tokyo instant.
-function tokyoDateTime(value: string) {
-  if (!value) return null;
-  const withSeconds = value.length === 16 ? `${value}:00` : value;
-  const parsed = new Date(`${withSeconds}+09:00`);
-  return Number.isNaN(parsed.getTime()) ? null : parsed.toISOString();
 }
 
 function eventPath(organizationId: string, eventId?: string) {
