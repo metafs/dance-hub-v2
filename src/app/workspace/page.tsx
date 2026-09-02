@@ -126,10 +126,11 @@ export default async function WorkspaceIndex({
       </section>
 
       {isPlatformAdmin === true ? (
-        <Link className="admin-banner" href="/admin/applications">
+        <div className="admin-banner">
           <span>Platform Admin</span>
-          Organization申請の審査キューを開く →
-        </Link>
+          <Link href="/admin/applications">Organization申請の審査キュー →</Link>
+          <Link href="/admin/entities">Artist / Venue候補の審査 →</Link>
+        </div>
       ) : null}
     </main>
   );
