@@ -174,12 +174,18 @@ reset role;
 delete from public.event_ticket_offers where event_revision_id = 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeee2';
 delete from public.event_revisions where id = 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeee2';
 
+-- Keep the in-review immutability fixture on another Event. An in-review
+-- Revision is intentionally not deletable and would correctly prevent the
+-- published Event below from opening a new draft.
+insert into public.events (id, owner_organization_id)
+values ('ffffffff-ffff-4fff-8fff-ffffffffffff', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa');
+
 insert into public.event_revisions (
   id, event_id, created_by, status, title, description, event_type
 ) values
   (
     'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeee3',
-    'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee',
+    'ffffffff-ffff-4fff-8fff-ffffffffffff',
     '33333333-3333-4333-8333-333333333333',
     'in_review', 'Locked review', 'Review content is locked.', 'performance'
   ),
@@ -203,12 +209,6 @@ select throws_ok(
   'event revision content is immutable in status superseded',
   'superseded revisions reject ticket offer inserts'
 );
-
--- The draft factory correctly refuses to create a second open revision. The
--- in-review row above exists only to test immutability, so remove that fixture
--- before exercising the factory against the published revision.
-delete from public.event_revisions
-where id = 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeee3';
 
 set local role authenticated;
 select set_config('request.jwt.claim.sub', '33333333-3333-4333-8333-333333333333', true);
