@@ -4,12 +4,19 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { requireOrganizationCapability } from "@/lib/auth/authorization";
+import type { Database } from "@/lib/database.types";
 import { parseTicketOffers } from "@/lib/events/ticket-offers";
 
-const eventTypes = new Set([
+type EventType = Database["public"]["Enums"]["event_type"];
+
+const eventTypes: EventType[] = [
   "performance", "open_studio", "talk", "workshop", "audition", "open_call",
   "residency", "festival", "other",
-]);
+];
+
+function isEventType(value: string): value is EventType {
+  return eventTypes.some((eventType) => eventType === value);
+}
 
 function text(formData: FormData, name: string) {
   return String(formData.get(name) ?? "").trim();
@@ -70,7 +77,7 @@ function content(formData: FormData) {
     startsAt,
     endsAt,
     allDay: formData.get("allDay") === "on",
-    ticketKind: text(formData, "ticketKind") === "registration" ? "registration" : "ticket",
+    ticketKind: text(formData, "ticketKind") === "registration" ? "registration" as const : "ticket" as const,
     ticketUrl,
     ticketLabel: text(formData, "ticketLabel") || null,
     ticketOffers,
@@ -140,11 +147,16 @@ function revisionFields(formData: FormData) {
   const eventType = text(formData, "eventType");
   const deadlineInput = text(formData, "applicationDeadline");
   const applicationDeadline = tokyoDateTime(deadlineInput);
-  if (!title || title.length > 200 || (eventType && !eventTypes.has(eventType)) || (deadlineInput && !applicationDeadline)) return null;
+  if (!title || title.length > 200 || (deadlineInput && !applicationDeadline)) return null;
+  let validatedEventType: EventType | null = null;
+  if (eventType) {
+    if (!isEventType(eventType)) return null;
+    validatedEventType = eventType;
+  }
   return {
     title,
     description: text(formData, "description") || null,
-    event_type: eventType || null,
+    event_type: validatedEventType,
     application_deadline: applicationDeadline,
     proposed_parent_event_id: text(formData, "proposedParentEventId") || null,
     no_registration_required: formData.get("noRegistrationRequired") === "on",

@@ -15,9 +15,9 @@ export type TicketOfferInput = {
   price_type: TicketPriceType;
   label: string | null;
   currency: string | null;
-  amount_minor: string | null;
-  min_amount_minor: string | null;
-  max_amount_minor: string | null;
+  amount_minor: number | null;
+  min_amount_minor: number | null;
+  max_amount_minor: number | null;
   notes: string | null;
   display_order: number;
 };
@@ -34,7 +34,6 @@ export type TicketOfferDraft = {
 };
 
 const priceTypeSet = new Set<string>(ticketPriceTypes);
-const postgresBigintMax = BigInt("9223372036854775807");
 
 function formText(formData: FormData, name: string) {
   return String(formData.get(name) ?? "").trim();
@@ -42,7 +41,8 @@ function formText(formData: FormData, name: string) {
 
 function minorUnit(value: string) {
   if (!/^\d+$/.test(value)) return null;
-  return BigInt(value) <= postgresBigintMax ? value : null;
+  const parsed = Number(value);
+  return Number.isSafeInteger(parsed) ? parsed : null;
 }
 
 function validAmounts(offer: Omit<TicketOfferInput, "display_order">) {
@@ -110,7 +110,11 @@ function formatMinorUnit(value: string | number, currency: string) {
   return formatter.formatToParts(whole).map((part) => part.type === "fraction" ? fraction : part.value).join("");
 }
 
-export function ticketOfferPrice(offer: Omit<TicketOfferInput, "display_order">) {
+export function ticketOfferPrice(offer: Omit<TicketOfferInput, "display_order" | "amount_minor" | "min_amount_minor" | "max_amount_minor"> & {
+  amount_minor: string | number | null;
+  min_amount_minor: string | number | null;
+  max_amount_minor: string | number | null;
+}) {
   const { price_type: type, currency, amount_minor: amount, min_amount_minor: min, max_amount_minor: max } = offer;
   if ((type === "fixed" || type === "sliding_scale") && currency && amount) return formatMinorUnit(amount, currency);
   if (type === "range" && currency && min && max) return `${formatMinorUnit(min, currency)}〜${formatMinorUnit(max, currency)}`;
