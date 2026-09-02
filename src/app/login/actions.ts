@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { formRawText, formText } from "@/lib/forms/input";
 
 function safeNextPath(value: FormDataEntryValue | null) {
   return typeof value === "string" && value.startsWith("/") && !value.includes("\\") && !value.startsWith("//")
@@ -11,8 +12,8 @@ function safeNextPath(value: FormDataEntryValue | null) {
 }
 
 export async function login(formData: FormData) {
-  const email = String(formData.get("email") ?? "").trim();
-  const password = String(formData.get("password") ?? "");
+  const email = formText(formData, "email");
+  const password = formRawText(formData, "password");
   const nextPath = safeNextPath(formData.get("next"));
 
   if (!email || !password) {
