@@ -1,6 +1,6 @@
 # M2 — Identity and Organization Onboarding
 
-**Status:** Active
+**Status:** Complete
 
 **Understood as:** M2 is complete only when a cookie-backed Supabase session, Organization application and review UI, Organization workspace selection, and server-side role checks form one tested end-to-end journey.
 
