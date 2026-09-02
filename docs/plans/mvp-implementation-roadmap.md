@@ -1,7 +1,7 @@
 # DANCE HUB — MVP Implementation Roadmap
 
 **Status:** Active
-**Last Updated:** 2026-09-01
+**Last Updated:** 2026-09-02
 
 ## MVP outcome
 
@@ -52,7 +52,7 @@ DANCE HUB の MVP は、東京都・神奈川県のダンス Event を一般ユ�
 
 **Goal:** Organizer が公開要件を満たす Event Revision を作り、Platform Admin が審査できる。
 
-**Scope:** Draft editor、Schedule / Venue、Artist credit、Ticket / 申込、外部 Link、main image 1 枚と alt text、Festival child、submit、changes requested、approve、公開後 Revision、cancellation review。
+**Scope:** Draft editor、Schedule / Venue、Artist credit、Ticket Offer、Ticket / 申込 Link、外部 Link、main image 1 枚と alt text、Festival child、submit、changes requested、approve、公開後 Revision、cancellation review。
 
 **Done when:** E2E で「Draft → 提出 → 差戻し → 再提出 → 承認 → 公開後変更」と「中止申請 → 承認 → 中止表示」が通る。公開ページは審査中も直前の承認 Revision を表示する。
 

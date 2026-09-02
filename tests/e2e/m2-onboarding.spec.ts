@@ -22,7 +22,7 @@ test("application approval creates the initial Owner workspace", async ({ page }
 
   await login(page, "applicant@example.com");
   await page.goto(`/workspace/${fixtureOrganizationId}`);
-  await expect(page.getByRole("alert")).toContainText("アクセスする権限がありません");
+  await expect(page.locator('.notice[role="alert"]')).toContainText("アクセスする権限がありません");
 
   await page.getByRole("link", { name: "Organizationを申請" }).click();
   await page.getByLabel(/Organization名/).fill("E2E Dance Organization");
@@ -51,5 +51,5 @@ test("application approval creates the initial Owner workspace", async ({ page }
 
   await login(page, "editor@example.com");
   await page.goto(`/workspace/${fixtureOrganizationId}/settings`);
-  await expect(page.getByRole("alert")).toContainText("Owner権限が必要です");
+  await expect(page.locator('.notice[role="alert"]')).toContainText("Owner権限が必要です");
 });

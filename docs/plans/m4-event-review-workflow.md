@@ -1,8 +1,10 @@
 # M4 — Event draft and review workflow
 
-**Status:** Active
+**Status:** Complete
 
 **Understood as:** Event content is editable only while draft or changes-requested, submitted and reviewed through trusted database transitions, and an approved revision becomes the sole public pointer while prior approved content remains visible during a later review.
+
+Editors, Admins, and Owners may edit and submit an Event Revision. Only an Owner or Admin may request cancellation; only a Platform Admin may request changes or approve publication and cancellation. A cancellation leaves the published Revision public with its cancellation reason and prevents further Revision creation.
 
 ## Requirements
 
@@ -13,7 +15,7 @@
 
 ## Acceptance criteria
 
-- Members create and edit drafts with schedules, canonical Artist credits, access links, external links, and one main-image record with alt text.
+- Members create and edit drafts with schedules, canonical Artist credits, structured Ticket Offers, independent access links, external links, and one main-image record with alt text.
 - Submission and review use the trusted Revision functions.
 - Platform Admin can request changes or approve; a later approved Revision supersedes the published pointer atomically.
 - Owner and Admin can request cancellation and Platform Admin can approve it.

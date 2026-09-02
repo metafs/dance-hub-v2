@@ -1,8 +1,8 @@
 # DANCE HUB — Architecture Overview
 
 **Status:** Draft
-**Version:** 0.2
-**Last Updated:** 2026-09-01
+**Version:** 0.3
+**Last Updated:** 2026-09-02
 
 ## Purpose
 
@@ -28,7 +28,7 @@ Next.js, Supabase, and Cloudflare are accepted decisions (ADR-0001 through ADR-0
 
 ## Core domain
 
-An Event is stable identity. Event Revision contains mutable content; only the Event's approved `published_revision_id` is public. Revisions own Schedules, Artist credits, tickets, links, and media. A Schedule references a Venue; a Venue references the Tokyo or Kanagawa Prefecture in the MVP.
+An Event is stable identity. Event Revision contains mutable content; only the Event's approved `published_revision_id` is public. Revisions own Schedules, Artist credits, ticket offers, ticket/registration links, external links, and media. A Ticket Offer describes pricing independently from the external Ticket Link used to sell or register. A Schedule references a Venue; a Venue references the Tokyo or Kanagawa Prefecture in the MVP.
 
 Organization Members create and submit work. Platform Admin is a separate role that approves Organization Applications, shared Artist / Venue Candidates, Event Revisions, and cancellations. Artist and Organization stay distinct; Artist / Venue are shared canonical records after moderation.
 

@@ -1,8 +1,8 @@
 # DANCE HUB — Product Scope
 
 **Status:** Draft
-**Version:** 0.2
-**Last Updated:** 2026-09-01
+**Version:** 0.3
+**Last Updated:** 2026-09-02
 
 ## 1. Purpose
 
@@ -35,7 +35,7 @@
 
 ### Event editing
 
-- Draft 保存、Schedule の追加・削除、Venue 指定、Artist / Credit、Ticket / 申込情報、外部 URL
+- Draft 保存、Schedule の追加・削除、Venue 指定、Artist / Credit、Ticket Offer、Ticket / 申込 Link、外部 URL
 - `apply` Event の応募締切（Schedule 0 件を許容）
 - Festival 子 Event 紐づけ
 - Event Revision ごとの main image 1 枚と alt text
@@ -59,6 +59,7 @@
 ## 4. Explicitly Out of Scope for MVP
 
 - 独自チケット決済・発券・Stripe 決済
+- EventScheduleごとのTicket Offer、Ticket OfferとTicket Linkの関連付け、Dynamic Pricingの計算・同期
 - SNS、DM、コメント、レビュー、評価
 - レコメンド algorithm、生成 AI による本文生成、外部サイトの自動スクレイピング
 - Magazine CMS、Native mobile apps、real-time collaborative editing
