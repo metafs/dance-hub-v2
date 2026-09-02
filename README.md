@@ -29,7 +29,7 @@ pnpm db:start
 pnpm dev
 ```
 
-`pnpm check` runs lint, type checking, and unit tests. `pnpm verify` additionally builds the production application. `pnpm db:reset` rebuilds the local database from committed migrations and seed data; PR3 introduces the first migration.
+`pnpm check` runs lint, type checking, and unit tests. `pnpm verify` additionally builds the production application. `pnpm db:reset` rebuilds the local database from committed migrations and seed data. `pnpm db:types` generates `src/lib/db/database.types.ts` from that schema, and `pnpm db:types:check` fails when the committed artifact is stale.
 
 The first migration creates Organization Applications, Organizations, Memberships, Platform Admins, and canonical Tokyo / Kanagawa Venues. Organization approval must use `approve_organization_application`, which creates the Organization and initial Owner in the same transaction.
 

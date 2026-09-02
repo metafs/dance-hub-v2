@@ -35,7 +35,7 @@ export async function approveEventRevision(formData: FormData) {
   const { supabase } = await requirePlatformAdmin();
   const { error } = await supabase.rpc("approve_event_revision", {
     target_revision_id: values.targetId,
-    review_reason: values.reason || null,
+    review_reason: values.reason || undefined,
   });
 
   if (error) redirect("/admin/events?error=revision-review-failed");
