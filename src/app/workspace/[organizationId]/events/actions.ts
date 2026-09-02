@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { requireOrganizationCapability } from "@/lib/auth/authorization";
+import { parseTicketOffers } from "@/lib/events/ticket-offers";
 
 const eventTypes = new Set([
   "performance", "open_studio", "talk", "workshop", "audition", "open_call",
@@ -44,6 +45,7 @@ function invalid(organizationId: string, eventId?: string): never {
 }
 
 function content(formData: FormData) {
+  const ticketOffers = parseTicketOffers(formData);
   const startsAt = tokyoDateTime(text(formData, "startsAt"));
   const endsAt = tokyoDateTime(text(formData, "endsAt"));
   const objectKey = text(formData, "imageObjectKey");
@@ -52,7 +54,7 @@ function content(formData: FormData) {
   const ticketUrlInput = text(formData, "ticketUrl");
   const externalUrlInput = text(formData, "externalUrl");
 
-  if ((startsAt && !text(formData, "venueId")) || (endsAt && !startsAt)) return null;
+  if (!ticketOffers || (startsAt && !text(formData, "venueId")) || (endsAt && !startsAt)) return null;
   if (startsAt && endsAt && new Date(endsAt) <= new Date(startsAt)) return null;
   if (Boolean(objectKey) !== Boolean(contentType) || Boolean(objectKey) !== Boolean(imageAlt)) return null;
   if (contentType && !contentType.toLowerCase().startsWith("image/")) return null;
@@ -71,6 +73,7 @@ function content(formData: FormData) {
     ticketKind: text(formData, "ticketKind") === "registration" ? "registration" : "ticket",
     ticketUrl,
     ticketLabel: text(formData, "ticketLabel") || null,
+    ticketOffers,
     externalUrl,
     externalLabel: text(formData, "externalLabel") || "公式サイト",
     imageObjectKey: objectKey || null,
@@ -84,7 +87,7 @@ async function replaceRevisionContent(
   revisionId: string,
   values: NonNullable<ReturnType<typeof content>>,
 ) {
-  const tables = ["event_artists", "event_schedules", "event_ticket_links", "event_links", "event_media"] as const;
+  const tables = ["event_artists", "event_schedules", "event_ticket_offers", "event_ticket_links", "event_links", "event_media"] as const;
   for (const table of tables) {
     const { error } = await supabase.from(table).delete().eq("event_revision_id", revisionId);
     if (error) return error;
@@ -108,6 +111,12 @@ async function replaceRevisionContent(
       event_revision_id: revisionId, kind: values.ticketKind, label: values.ticketLabel,
       url: values.ticketUrl, display_order: 0,
     });
+    if (error) return error;
+  }
+  if (values.ticketOffers.length) {
+    const { error } = await supabase.from("event_ticket_offers").insert(
+      values.ticketOffers.map((offer) => ({ event_revision_id: revisionId, ...offer })),
+    );
     if (error) return error;
   }
   if (values.externalUrl) {

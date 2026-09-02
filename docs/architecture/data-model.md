@@ -1,8 +1,8 @@
 # DANCE HUB — Data Model
 
 **Status:** Draft
-**Version:** 0.2
-**Last Updated:** 2026-09-01
+**Version:** 0.3
+**Last Updated:** 2026-09-02
 
 ## Core relations
 
@@ -12,7 +12,8 @@ User -> OrganizationMembership -> Organization -> Event -> EventRevision
                                                     |        |
                                                     |        +-> EventSchedule -> Venue -> Prefecture
                                                     |        +-> EventArtist -> Artist
-                                                    |        +-> Ticket / Link / Media
+                                                    |        +-> TicketOffer
+                                                    |        +-> TicketLink / EventLink / Media
                                                     |
                                                     +-> published_revision_id
 
@@ -60,6 +61,27 @@ The Festival parent is proposed on the child Event Revision and copied to the st
 ## Media
 
 `event_media` belongs to an Event Revision. The schema supports ordered multiple media, while the MVP editor and publication validation expose exactly one main image with required alt text.
+
+## Ticket offers and links
+
+`event_ticket_offers` belongs to an Event Revision and stores structured pricing independently from `event_ticket_links`, which stores external sales or registration URLs. Neither table references the other, and Ticket Offers are not related to individual Schedules in the MVP.
+
+```text
+TicketOffer.price_type enum(fixed, free, range, donation,
+                            pay_what_you_can, sliding_scale, dynamic, included)
+TicketOffer.currency text nullable       -- ISO 4217 uppercase alpha-3
+TicketOffer.amount_minor bigint nullable
+TicketOffer.min_amount_minor bigint nullable
+TicketOffer.max_amount_minor bigint nullable
+TicketOffer.label text nullable
+TicketOffer.notes text nullable
+```
+
+`fixed` uses one exact amount; `range` uses required minimum and maximum amounts. `free`, `donation`, `dynamic`, and `included` have no structured amount. `pay_what_you_can` may carry a minimum amount. Each `sliding_scale` price level is a separate Offer with a required human label and exact amount. All numeric values use the currency's minor unit and are non-negative.
+
+`range` means that the stated price itself lies between two bounds. `sliding_scale` means the organizer presents distinct levels and the attendee chooses according to their situation; qualifiers and tier names remain human-authored labels rather than enums.
+
+Ticket Offers follow the same Revision visibility and immutability rules as schedules, credits, links, and media. A published Event reads Offers only from its current approved Revision. Creating a post-publication Draft copies its Offers so later edits preserve the approved history.
 
 ## Open questions
 

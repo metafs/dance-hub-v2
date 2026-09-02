@@ -1,13 +1,13 @@
 # DANCE HUB — Glossary
 
 **Status:** Draft
-**Version:** 0.2
-**Last Updated:** 2026-09-01
+**Version:** 0.3
+**Last Updated:** 2026-09-02
 
 ## Core terms
 
 **Event**: stable identity for an activity; its mutable content lives in Event Revisions.
-**Event Revision**: a versioned editable aggregate of Event details, schedules, credits, links, tickets, media, and proposed Festival parent.
+**Event Revision**: a versioned editable aggregate of Event details, schedules, credits, Ticket Offers, Ticket Links, external links, media, and proposed Festival parent.
 **Published revision**: the approved Revision referenced by `Event.published_revision_id`; the only Revision visible publicly.
 **Schedule**: one physical occurrence of a Revision; it references a Venue and has Tokyo-time start/end instants.
 **Application Deadline**: application closing time for an `apply` Event; it is not a Schedule or a Calendar date.
@@ -21,6 +21,8 @@
 **Candidate**: a pending Artist or Venue record, visible only to its creator Organization and Platform Admin until activation.
 **Change request**: reviewed change to an active canonical Artist or Venue.
 **Credit**: an Artist's role in an Event Revision.
+**Ticket Offer**: pricing information owned by an Event Revision. It describes a fixed, free, ranged, donation, pay-what-you-can, sliding-scale, dynamic, or included offer without selling the ticket.
+**Ticket Link**: an external ticket-sales or registration URL owned by an Event Revision. It is independent from Ticket Offers.
 **Festival**: an Event Type that groups same-Organization child Events for one level.
 **Cancelled Event**: a publicly retained Event with an approved cancellation time and reason.
 **Past Event**: derived status: an `apply` deadline has passed, normal Event schedules have ended, or a Festival's child schedule range has ended.
@@ -33,6 +35,7 @@
 
 - Event ≠ Event Revision
 - Event ≠ Schedule
+- Ticket Offer ≠ Ticket Link
 - Schedule ≠ Application Deadline
 - Artist ≠ User
 - Artist ≠ Organization

@@ -1,8 +1,8 @@
 # DANCE HUB — Product Requirements
 
 **Status:** Draft
-**Version:** 0.2
-**Last Updated:** 2026-09-01
+**Version:** 0.3
+**Last Updated:** 2026-09-02
 
 ## 1. Product Definition
 
@@ -34,7 +34,7 @@ DANCE HUB は、ダンス・パフォーマンスの Event、Artist、Venue、Or
 
 #### REQ-EVENT-002 — Event detail
 
-Event は安定した identity とし、公開詳細は `published_revision_id` が指す承認済み Event Revision から表示する。詳細には、タイトル、説明、種別、日程、会場、Artist credit、主催 Organization、チケット・申込情報、main image を含められること。
+Event は安定した identity とし、公開詳細は `published_revision_id` が指す承認済み Event Revision から表示する。詳細には、タイトル、説明、種別、日程、会場、Artist credit、主催 Organization、Ticket Offer、外部チケット・申込先、main image を含められること。
 
 #### REQ-EVENT-003 — Schedules and venues
 
@@ -66,7 +66,9 @@ Event Revision は `draft`、`in_review`、`changes_requested`、`approved`、`s
 
 #### REQ-EVENT-006 — Event relationships
 
-Revision 内で外部 URL、Ticket / 申込情報、Artist credit、Media、Festival 親 Event を編集できること。Ticket / 申込情報は有効な外部 URL または `no_registration_required` を必須とする。Artist credit は role（または uncredited 値）付きの canonical Artist を参照する。Festival は同一 Organization の非 Festival 子 Event のみを 1 段で持てること。親子関係の変更は子 Revision の承認時に反映する。
+Revision 内で外部 URL、Ticket Offer、Ticket / 申込 Link、Artist credit、Media、Festival 親 Event を編集できること。Ticket Offerは料金、Ticket Linkは外部販売・申込先を表し、相互に独立する。公開時のTicket / 参加情報は、1件以上のTicket Offer、1件以上の有効な外部Ticket / 申込Link、または `no_registration_required` のいずれかを必須とする。Artist credit は role（または uncredited 値）付きの canonical Artist を参照する。Festival は同一 Organization の非 Festival 子 Event のみを 1 段で持てること。親子関係の変更は子 Revision の承認時に反映する。
+
+Ticket Offerは `fixed`、`free`、`range`、`donation`、`pay_what_you_can`、`sliding_scale`、`dynamic`、`included` のいずれかを持つ。通貨はISO 4217形式の大文字3文字コードとし、金額は最小通貨単位の整数で保存する。前売、当日、学生、U25等はenum化せず `label` とする。`range` は上下限のある価格そのもの、`sliding_scale` は観客が自身の状況等に応じて選択する複数の価格水準であり、各水準を個別のTicket Offerとして表現する。Ticket OfferをScheduleまたはTicket Linkへ関連付けない。
 
 #### REQ-EVENT-007 — Archive and cancellation
 
@@ -74,7 +76,7 @@ Revision 内で外部 URL、Ticket / 申込情報、Artist credit、Media、Fest
 
 #### REQ-EVENT-008 — Publication validation
 
-Draft 保存時は、作成者が所属する Organization とタイトルを必須とする。審査提出時は、タイトル、説明、Event Type、alt text 付き main image、少なくとも 1 件の Artist credit、Ticket / 申込情報を必須とする。さらに、`apply` は応募締切、通常の非 Festival Event は Venue 付き Schedule、Festival は公開前に Venue 付き Schedule を持つ承認済み子 Event を必須とする。
+Draft 保存時は、作成者が所属する Organization とタイトルを必須とする。審査提出時は、タイトル、説明、Event Type、alt text 付き main image、少なくとも 1 件の Artist credit、Ticket Offer・Ticket / 申込 Link・`no_registration_required` のいずれかを必須とする。さらに、`apply` は応募締切、通常の非 Festival Event は Venue 付き Schedule、Festival は公開前に Venue 付き Schedule を持つ承認済み子 Event を必須とする。
 
 ### 4.2 Discovery
 

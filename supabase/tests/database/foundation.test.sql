@@ -1,7 +1,7 @@
 begin;
 
 create extension if not exists pgtap with schema extensions;
-select plan(76);
+select plan(81);
 
 select has_type('public', 'organization_role', 'organization role enum exists');
 select has_type('public', 'application_status', 'application status enum exists');
@@ -15,6 +15,7 @@ select has_type('public', 'shared_entity_moderation_action', 'shared entity mode
 select has_type('public', 'event_access_link_kind', 'event access link kind enum exists');
 select has_type('public', 'event_cancellation_status', 'event cancellation status enum exists');
 select has_type('public', 'event_review_action', 'event review action enum exists');
+select has_type('public', 'event_ticket_price_type', 'ticket offer price type enum exists');
 
 select has_table('public', 'organization_applications', 'organization applications exist');
 select has_table('public', 'organizations', 'organizations exist');
@@ -33,6 +34,7 @@ select has_table('public', 'venue_change_requests', 'venue change requests exist
 select has_table('public', 'shared_entity_moderation_audit', 'shared entity moderation audit exists');
 select has_table('public', 'event_artists', 'event artist credits exist');
 select has_table('public', 'event_ticket_links', 'event ticket links exist');
+select has_table('public', 'event_ticket_offers', 'event ticket offers exist');
 select has_table('public', 'event_links', 'event external links exist');
 select has_table('public', 'event_media', 'event media exists');
 select has_table('public', 'event_content_audit_log', 'event content audit exists');
@@ -101,6 +103,7 @@ select has_trigger('public', 'artist_change_requests', 'audit_artist_change_requ
 select has_trigger('public', 'venue_change_requests', 'audit_venue_change_request_submission', 'venue request audit trigger exists');
 select has_trigger('public', 'event_media', 'assert_event_media_editable_trigger', 'event media edit guard exists');
 select has_trigger('public', 'event_schedules', 'guard_mutable_event_schedule', 'event schedule edit guard exists');
+select has_trigger('public', 'event_ticket_offers', 'guard_mutable_event_ticket_offer', 'event ticket offer edit guard exists');
 select ok(exists (
   select 1 from pg_indexes where schemaname = 'public'
     and indexname = 'event_media_one_main_per_revision_idx'
@@ -145,6 +148,11 @@ select ok(exists (
 ), 'published event media policy exists');
 select ok(exists (
   select 1 from pg_policies where schemaname = 'public'
+    and tablename = 'event_ticket_offers'
+    and policyname = 'public reads published event ticket offers'
+), 'published ticket offer policy exists');
+select ok(exists (
+  select 1 from pg_policies where schemaname = 'public'
     and tablename = 'events'
     and policyname = 'public reads published events'
 ), 'published event policy exists');
@@ -160,6 +168,10 @@ select ok(
 select ok(
   not has_table_privilege('anon', 'public.event_artists', 'INSERT'),
   'anonymous users cannot insert artist credits'
+);
+select ok(
+  not has_table_privilege('anon', 'public.event_ticket_offers', 'INSERT'),
+  'anonymous users cannot insert ticket offers'
 );
 select ok(
   has_column_privilege(

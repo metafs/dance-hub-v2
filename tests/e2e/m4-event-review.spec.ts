@@ -30,7 +30,15 @@ test("Event revision is reviewed before public release, then cancellation remain
   await draft.getByLabel("会場（canonical）").selectOption(fixtureVenueId);
   await draft.getByLabel("開始日時（東京都）").fill("2030-04-01T19:00");
   await draft.getByLabel("終了日時（東京都）").fill("2030-04-01T20:30");
-  await draft.getByLabel("チケット／登録URL").fill("https://tickets.example.com/m4");
+  const offers = draft.getByRole("group", { name: "Ticket Offer（料金）" });
+  await offers.getByRole("button", { name: "料金を追加" }).click();
+  const advance = offers.locator(".ticket-offer-row").nth(0);
+  await advance.getByLabel("ラベル").fill("一般前売");
+  await advance.getByLabel("金額（最小通貨単位）").fill("3000");
+  await offers.getByRole("button", { name: "料金を追加" }).click();
+  const under25 = offers.locator(".ticket-offer-row").nth(1);
+  await under25.getByLabel("ラベル").fill("U25");
+  await under25.getByLabel("金額（最小通貨単位）").fill("2000");
   await draft.getByLabel("object key").fill("events/m4-e2e/cover.jpg");
   await draft.getByLabel("content type").fill("image/jpeg");
   await draft.getByLabel("代替テキスト").fill("M4 E2E Eventのメイン画像");
@@ -66,17 +74,23 @@ test("Event revision is reviewed before public release, then cancellation remain
   await page.goto(`/events/${eventId}`);
   await expect(page.getByRole("heading", { name: eventTitle })).toBeVisible();
   await expect(page.getByText("Updated after Platform Admin feedback")).toBeVisible();
+  await expect(page.getByText("一般前売")).toBeVisible();
+  await expect(page.getByText(/3,000/)).toBeVisible();
+  await expect(page.getByText("U25")).toBeVisible();
 
   await login(page, "owner@example.com");
   await page.goto(`/workspace/${fixtureOrganizationId}/events/${eventId}`);
   await page.getByRole("button", { name: "次のRevisionを作成" }).click();
   await page.getByLabel("説明").fill("Published update is now ready for review");
+  await page.locator(".ticket-offer-row").nth(0).getByLabel("金額（最小通貨単位）").fill("3500");
   await page.getByRole("button", { name: "審査へ提出" }).click();
   await logout(page);
 
   await page.goto(`/events/${eventId}`);
   await expect(page.getByText("Updated after Platform Admin feedback")).toBeVisible();
   await expect(page.getByText("Published update is now ready for review")).toHaveCount(0);
+  await expect(page.getByText(/3,000/)).toBeVisible();
+  await expect(page.getByText(/3,500/)).toHaveCount(0);
 
   await login(page, "admin@example.com");
   await page.goto("/admin/events");
@@ -86,6 +100,7 @@ test("Event revision is reviewed before public release, then cancellation remain
 
   await page.goto(`/events/${eventId}`);
   await expect(page.getByText("Published update is now ready for review")).toBeVisible();
+  await expect(page.getByText(/3,500/)).toBeVisible();
 
   await login(page, "owner@example.com");
   await page.goto(`/workspace/${fixtureOrganizationId}/events/${eventId}`);

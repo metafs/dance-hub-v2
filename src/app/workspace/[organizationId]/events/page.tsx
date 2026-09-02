@@ -1,6 +1,8 @@
 import Link from "next/link";
 
 import { requireOrganizationCapability } from "@/lib/auth/authorization";
+import { TicketOfferEditor } from "@/components/ticket-offer-editor";
+import type { TicketOfferDraft } from "@/lib/events/ticket-offers";
 
 import { createEventDraft } from "./actions";
 
@@ -28,7 +30,7 @@ export default async function EventListPage({ params, searchParams }: { params: 
   </main>;
 }
 
-export function EventFields({ artists, venues, festivalParents, defaults }: { artists: { id: string; name: string }[]; venues: { id: string; name: string; prefecture?: string }[]; festivalParents: { id: string; title: string }[]; defaults?: Record<string, string | boolean | null> }) {
+export function EventFields({ artists, venues, festivalParents, ticketOffers = [], defaults }: { artists: { id: string; name: string }[]; venues: { id: string; name: string; prefecture?: string }[]; festivalParents: { id: string; title: string }[]; ticketOffers?: TicketOfferDraft[]; defaults?: Record<string, string | boolean | null> }) {
   const value = (name: string) => typeof defaults?.[name] === "string" ? defaults[name] as string : "";
   return <>
     <label>Event名<input name="title" defaultValue={value("title")} maxLength={200} required/></label>
@@ -41,9 +43,8 @@ export function EventFields({ artists, venues, festivalParents, defaults }: { ar
     <label>開始日時（東京都）<input name="startsAt" type="datetime-local" defaultValue={value("startsAt")}/></label>
     <label>終了日時（東京都）<input name="endsAt" type="datetime-local" defaultValue={value("endsAt")}/></label>
     <label><input name="allDay" type="checkbox" defaultChecked={defaults?.allDay === true}/> 終日</label>
-    <label>チケット／登録URL<input name="ticketUrl" type="url" defaultValue={value("ticketUrl")} placeholder="https://…"/></label>
-    <label>種別<select name="ticketKind" defaultValue={value("ticketKind") || "ticket"}><option value="ticket">ticket</option><option value="registration">registration</option></select></label>
-    <label>リンク表示名<input name="ticketLabel" defaultValue={value("ticketLabel")} maxLength={120}/></label>
+    <TicketOfferEditor initialOffers={ticketOffers}/>
+    <fieldset><legend>Ticket Link（外部販売・申込先）</legend><label>URL<input name="ticketUrl" type="url" defaultValue={value("ticketUrl")} placeholder="https://…"/></label><label>種別<select name="ticketKind" defaultValue={value("ticketKind") || "ticket"}><option value="ticket">ticket</option><option value="registration">registration</option></select></label><label>リンク表示名<input name="ticketLabel" defaultValue={value("ticketLabel")} maxLength={120}/></label></fieldset>
     <label><input name="noRegistrationRequired" type="checkbox" defaultChecked={defaults?.noRegistrationRequired === true}/> チケット・登録は不要</label>
     <label>外部リンクURL<input name="externalUrl" type="url" defaultValue={value("externalUrl")} placeholder="https://…"/></label>
     <label>外部リンク表示名<input name="externalLabel" defaultValue={value("externalLabel") || "公式サイト"} maxLength={120}/></label>

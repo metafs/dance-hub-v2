@@ -15,7 +15,7 @@ Editors, Admins, and Owners may edit and submit an Event Revision. Only an Owner
 
 ## Acceptance criteria
 
-- Members create and edit drafts with schedules, canonical Artist credits, access links, external links, and one main-image record with alt text.
+- Members create and edit drafts with schedules, canonical Artist credits, structured Ticket Offers, independent access links, external links, and one main-image record with alt text.
 - Submission and review use the trusted Revision functions.
 - Platform Admin can request changes or approve; a later approved Revision supersedes the published pointer atomically.
 - Owner and Admin can request cancellation and Platform Admin can approve it.

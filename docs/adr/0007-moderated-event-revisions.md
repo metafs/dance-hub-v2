@@ -13,7 +13,7 @@ Every public Event and public change requires Platform Administrator approval. O
 - Editable Event aggregate content belongs to `EventRevision`.
 - `Event.published_revision_id` identifies the current approved public revision; a null value means the Event has never been published.
 - Revisions use the workflow `draft`, `in_review`, `changes_requested`, `approved`, and `superseded`.
-- Schedules, Artist credits, ticket data, external links, media, and proposed Festival parent changes belong to the revision under review.
+- Schedules, Artist credits, Ticket Offers, Ticket Links, external links, media, and proposed Festival parent changes belong to the revision under review. Ticket Offers and Ticket Links remain independent as defined by ADR-0011.
 - Owner, Admin, and Editor may create drafts and submit reviews. Only Platform Administrators may request changes or approve. `created_by` is immutable Revision authorship and does not itself grant access after membership changes.
 - Approval atomically updates the public revision and applies approved structural changes such as Festival parent assignment.
 - An approved cancellation decision sets `Event.cancelled_at` and a public cancellation reason without removing its published revision.
@@ -27,7 +27,7 @@ Review submission requires:
 - title, description, and Event Type;
 - a main image with alt text;
 - one or more Artist credits;
-- ticket or participation information; and
+- ticket pricing, ticket/registration link, or explicit no-registration information; and
 - either the applicable time contract below or a valid Festival child structure.
 
 Time contract:
@@ -38,7 +38,7 @@ Time contract:
 
 All review-submission requirements are rechecked at approval. A Revision which no longer satisfies them is returned as `changes_requested`; an approved Revision always becomes the public revision immediately.
 
-Ticket or participation information means at least one valid external ticket/registration URL or an explicit `no_registration_required` value. Artist credits reference activated canonical Artists and include a role or explicit uncredited role value.
+Ticket or participation information means at least one valid Ticket Offer, one valid external ticket/registration URL, or an explicit `no_registration_required` value. Artist credits reference activated canonical Artists and include a role or explicit uncredited role value.
 
 ## Alternatives considered
 

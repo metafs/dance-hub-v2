@@ -23,6 +23,7 @@ ADRs capture architectural decisions that should remain understandable to future
 | [0008](0008-event-type-taxonomy.md) | Use a flat Event Type enum with application-layer grouping | Accepted |
 | [0009](0009-festival-child-events.md) | Model Festival as a one-level parent Event | Accepted |
 | [0010](0010-geography-venue-schedule.md) | Model geography through Prefecture, Venue, and EventSchedule | Accepted |
+| [0011](0011-separate-ticket-offers-from-ticket-links.md) | Separate structured Ticket Offers from external Ticket Links | Accepted |
 
 ## Template
 

@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { logout } from "@/app/login/actions";
 import { requirePlatformAdmin } from "@/lib/auth/authorization";
+import { ticketOfferPrice, type TicketOfferInput, type TicketPriceType } from "@/lib/events/ticket-offers";
 
 import {
   approveEventCancellation,
@@ -42,7 +43,7 @@ export default async function EventReviewQueue({
   const [{ data: revisions }, { data: cancellations }] = await Promise.all([
     supabase
       .from("event_revisions")
-      .select("id, event_id, title, description, event_type, application_deadline, created_at, events!inner(owner_organization_id, organizations(name))")
+      .select("id, event_id, title, description, event_type, application_deadline, created_at, event_ticket_offers(price_type, label, currency, amount_minor, min_amount_minor, max_amount_minor, notes, display_order), events!inner(owner_organization_id, organizations(name))")
       .eq("status", "in_review")
       .order("created_at"),
     supabase
@@ -92,6 +93,10 @@ export default async function EventReviewQueue({
                   <div><dt>申込締切</dt><dd>{revision.application_deadline ? new Intl.DateTimeFormat("ja-JP", { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Tokyo" }).format(new Date(revision.application_deadline)) : "なし"}</dd></div>
                   <div><dt>説明</dt><dd>{revision.description ?? "—"}</dd></div>
                 </dl>
+                {revision.event_ticket_offers.length ? <div className="ticket-offer-list" aria-label="審査対象の料金">{revision.event_ticket_offers.sort((left, right) => left.display_order - right.display_order).map((offer) => {
+                  const typedOffer: Omit<TicketOfferInput, "display_order"> = { ...offer, price_type: offer.price_type as TicketPriceType, amount_minor: offer.amount_minor == null ? null : String(offer.amount_minor), min_amount_minor: offer.min_amount_minor == null ? null : String(offer.min_amount_minor), max_amount_minor: offer.max_amount_minor == null ? null : String(offer.max_amount_minor) };
+                  return <article className="ticket-offer-public" key={offer.display_order}><strong>{offer.label || ticketOfferPrice(typedOffer)}</strong>{offer.label ? <span>{ticketOfferPrice(typedOffer)}</span> : null}{offer.notes ? <p>{offer.notes}</p> : null}</article>;
+                })}</div> : <p className="field-help">Ticket Offerなし（Ticket Linkまたは申込不要で提出）</p>}
                 <form className="review-form">
                   <input name="eventId" type="hidden" value={revision.event_id} />
                   <input name="targetId" type="hidden" value={revision.id} />
