@@ -19,6 +19,8 @@ DANCE HUB is a structured information platform for dance and performance events,
 
 ## Status
 
+M1 through M4 are complete: database integrity, Organization onboarding, moderated Artist/Venue data, and Event Revision review are implemented. M5 public discovery and M6 release-candidate work are planned. R2 main-image upload and delivery is an explicit cross-cutting MVP blocker tracked in `docs/plans/media-delivery.md`.
+
 ## Development
 
 Prerequisites: Node.js 22, pnpm 9.7, and a Docker-compatible runtime for local Supabase.
