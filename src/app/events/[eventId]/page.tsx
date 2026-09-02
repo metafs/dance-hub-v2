@@ -81,7 +81,7 @@ export default async function PublicEventPage({
       <section className="section-block">
         <h2>参加方法</h2>
         {ticketOffers?.length ? <div className="ticket-offer-list">{ticketOffers.map((offer) => {
-          const typedOffer: Omit<TicketOfferInput, "display_order"> = { ...offer, price_type: offer.price_type as TicketPriceType, amount_minor: offer.amount_minor == null ? null : String(offer.amount_minor), min_amount_minor: offer.min_amount_minor == null ? null : String(offer.min_amount_minor), max_amount_minor: offer.max_amount_minor == null ? null : String(offer.max_amount_minor) };
+          const typedOffer: Omit<TicketOfferInput, "display_order"> = { ...offer, price_type: offer.price_type as TicketPriceType };
           return <article className="ticket-offer-public" key={offer.display_order}><strong>{offer.label || ticketOfferPrice(typedOffer)}</strong>{offer.label ? <span>{ticketOfferPrice(typedOffer)}</span> : null}{offer.notes ? <p>{offer.notes}</p> : null}</article>;
         })}</div> : null}
         {revision.no_registration_required ? <p>申込不要</p> : null}

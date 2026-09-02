@@ -106,7 +106,7 @@ export default async function EventReviewQueue({
                   <div><dt>説明</dt><dd>{revision.description ?? "—"}</dd></div>
                 </dl>
                 {revisionTicketOffers.length ? <div className="ticket-offer-list" aria-label="審査対象の料金">{revisionTicketOffers.map((offer) => {
-                  const typedOffer: Omit<TicketOfferInput, "display_order"> = { ...offer, price_type: offer.price_type as TicketPriceType, amount_minor: offer.amount_minor == null ? null : String(offer.amount_minor), min_amount_minor: offer.min_amount_minor == null ? null : String(offer.min_amount_minor), max_amount_minor: offer.max_amount_minor == null ? null : String(offer.max_amount_minor) };
+                  const typedOffer: Omit<TicketOfferInput, "display_order"> = { ...offer, price_type: offer.price_type as TicketPriceType };
                   return <article className="ticket-offer-public" key={offer.display_order}><strong>{offer.label || ticketOfferPrice(typedOffer)}</strong>{offer.label ? <span>{ticketOfferPrice(typedOffer)}</span> : null}{offer.notes ? <p>{offer.notes}</p> : null}</article>;
                 })}</div> : <p className="field-help">Ticket Offerなし（Ticket Linkまたは申込不要で提出）</p>}
                 <form className="review-form">

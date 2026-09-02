@@ -30,7 +30,7 @@ export default async function EventListPage({ params, searchParams }: { params: 
   </main>;
 }
 
-export function EventFields({ artists, venues, festivalParents, ticketOffers = [], defaults }: { artists: { id: string; name: string }[]; venues: { id: string; name: string; prefecture?: string }[]; festivalParents: { id: string; title: string }[]; ticketOffers?: TicketOfferDraft[]; defaults?: Record<string, string | boolean | null> }) {
+export function EventFields({ artists, venues, festivalParents, ticketOffers = [], defaults }: { artists: { id: string; name: string }[]; venues: { id: string; name: string; prefecture?: string }[]; festivalParents: { id: string; title: string }[]; ticketOffers?: TicketOfferDraft[]; defaults?: Record<string, string | boolean | null | undefined> }) {
   const value = (name: string) => typeof defaults?.[name] === "string" ? defaults[name] as string : "";
   return <>
     <label>Event名<input name="title" defaultValue={value("title")} maxLength={200} required/></label>

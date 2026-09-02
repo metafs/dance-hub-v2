@@ -12,14 +12,14 @@ function offerForm(values: Record<string, string>) {
 describe("parseTicketOffers", () => {
   it("parses fixed prices as integer minor units and normalizes currency", () => {
     const offers = parseTicketOffers(offerForm({ priceType: "fixed", label: "一般前売", currency: "jpy", amountMinor: "3000" }));
-    expect(offers).toEqual([{ price_type: "fixed", label: "一般前売", currency: "JPY", amount_minor: "3000", min_amount_minor: null, max_amount_minor: null, notes: null, display_order: 0 }]);
+    expect(offers).toEqual([{ price_type: "fixed", label: "一般前売", currency: "JPY", amount_minor: 3000, min_amount_minor: null, max_amount_minor: null, notes: null, display_order: 0 }]);
   });
 
   it("accepts a range and a pay-what-you-can minimum", () => {
     const range = parseTicketOffers(offerForm({ priceType: "range", currency: "EUR", minAmountMinor: "1000", maxAmountMinor: "3000" }));
     const payWhatYouCan = parseTicketOffers(offerForm({ priceType: "pay_what_you_can", currency: "GBP", minAmountMinor: "500" }));
-    expect(range?.[0]).toMatchObject({ min_amount_minor: "1000", max_amount_minor: "3000" });
-    expect(payWhatYouCan?.[0]).toMatchObject({ min_amount_minor: "500", max_amount_minor: null });
+    expect(range?.[0]).toMatchObject({ min_amount_minor: 1000, max_amount_minor: 3000 });
+    expect(payWhatYouCan?.[0]).toMatchObject({ min_amount_minor: 500, max_amount_minor: null });
   });
 
   it("accepts pay-what-you-can without a minimum and discards the unused currency", () => {
@@ -32,7 +32,7 @@ describe("parseTicketOffers", () => {
     expect(parseTicketOffers(offerForm({ priceType: "free", currency: "JPY", amountMinor: "0" }))).toBeNull();
   });
 
-  it("rejects unlabeled sliding scales and values outside PostgreSQL bigint", () => {
+  it("rejects unlabeled sliding scales and values outside JavaScript's safe integer range", () => {
     expect(parseTicketOffers(offerForm({ priceType: "sliding_scale", currency: "JPY", amountMinor: "1000" }))).toBeNull();
     expect(parseTicketOffers(offerForm({ priceType: "fixed", currency: "JPY", amountMinor: "9223372036854775808" }))).toBeNull();
   });
