@@ -1,13 +1,17 @@
 import { z } from "zod";
 
+import type { Database } from "@/lib/db/database.types";
 import { formText, httpUrl, tokyoDateTime } from "../forms/input";
 import type { EventRevisionField, EventRevisionFieldErrors } from "./revision-action-state";
 import { parseTicketOffers, type TicketOfferInput } from "./ticket-offers";
 
-const eventTypes = new Set([
+type EventType = Database["public"]["Enums"]["event_type"];
+
+const eventTypeValues = [
   "performance", "open_studio", "talk", "workshop", "audition", "open_call",
   "residency", "festival", "other",
-]);
+] as const;
+const eventTypes = new Set<string>(eventTypeValues);
 const applyEventTypes = new Set(["audition", "open_call", "residency"]);
 
 export type EventRevisionInput = {
@@ -17,7 +21,7 @@ export type EventRevisionInput = {
   fields: {
     title: string;
     description: string | null;
-    event_type: string | null;
+    event_type: EventType | null;
     application_deadline: string | null;
     proposed_parent_event_id: string | null;
     no_registration_required: boolean;
@@ -44,6 +48,10 @@ export type EventRevisionInput = {
 type ParseResult =
   | { success: true; data: EventRevisionInput }
   | { success: false; errors: EventRevisionFieldErrors };
+
+function isEventType(value: string): value is EventType {
+  return eventTypes.has(value);
+}
 
 const eventRevisionFields = new Set<EventRevisionField>([
   "title", "description", "eventType", "applicationDeadline", "artistId", "artistRole",
@@ -183,7 +191,7 @@ export function parseEventRevisionInput(
       fields: {
         title: value.title,
         description: value.description || null,
-        event_type: value.eventType || null,
+        event_type: value.eventType && isEventType(value.eventType) ? value.eventType : null,
         application_deadline: tokyoDateTime(value.applicationDeadline),
         proposed_parent_event_id: value.proposedParentEventId || null,
         no_registration_required: value.noRegistrationRequired,

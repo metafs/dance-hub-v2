@@ -9,7 +9,7 @@ type Props = {
   venues: { id: string; name: string; prefecture?: string }[];
   festivalParents: { id: string; title: string }[];
   ticketOffers?: TicketOfferDraft[];
-  defaults?: Record<string, string | boolean | null>;
+  defaults?: Record<string, string | boolean | null | undefined>;
   errors?: EventRevisionFieldErrors;
 };
 

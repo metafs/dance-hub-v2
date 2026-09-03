@@ -19,6 +19,8 @@ DANCE HUB is a structured information platform for dance and performance events,
 
 ## Status
 
+M1 through M4 are complete: database integrity, Organization onboarding, moderated Artist/Venue data, and Event Revision review are implemented. M5 public discovery and M6 release-candidate work are planned. R2 main-image upload and delivery is an explicit cross-cutting MVP blocker tracked in `docs/plans/media-delivery.md`.
+
 ## Development
 
 Prerequisites: Node.js 22, pnpm 9.7, and a Docker-compatible runtime for local Supabase.
@@ -29,7 +31,7 @@ pnpm db:start
 pnpm dev
 ```
 
-`pnpm check` runs lint, type checking, and unit tests. `pnpm verify` additionally builds the production application. `pnpm db:reset` rebuilds the local database from committed migrations and seed data; PR3 introduces the first migration.
+`pnpm check` runs lint, type checking, and unit tests. `pnpm verify` additionally builds the production application. `pnpm db:reset` rebuilds the local database from committed migrations and seed data. `pnpm db:types` generates `src/lib/db/database.types.ts` from that schema, and `pnpm db:types:check` fails when the committed artifact is stale.
 
 The first migration creates Organization Applications, Organizations, Memberships, Platform Admins, and canonical Tokyo / Kanagawa Venues. Organization approval must use `approve_organization_application`, which creates the Organization and initial Owner in the same transaction.
 
