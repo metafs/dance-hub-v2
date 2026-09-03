@@ -47,6 +47,20 @@ describe("parseEventRevisionInput", () => {
     });
   });
 
+  it("maps schema constraint failures to typed fields", () => {
+    const formData = baseForm();
+    formData.set("artistRole", "x".repeat(121));
+    formData.set("applicationDeadline", "2030-02-30T19:00");
+    const result = parseEventRevisionInput(formData, { forSubmission: false });
+    expect(result).toMatchObject({
+      success: false,
+      errors: {
+        artistRole: ["クレジット表記は120文字以内で入力してください。"],
+        applicationDeadline: ["有効な応募締切を入力してください。"],
+      },
+    });
+  });
+
   it("uses the apply deadline contract without requiring a schedule", () => {
     const formData = baseForm();
     formData.set("description", "募集内容");

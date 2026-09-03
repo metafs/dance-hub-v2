@@ -3,7 +3,7 @@
 import { useActionState } from "react";
 
 import { createEventDraft } from "@/app/workspace/[organizationId]/events/actions";
-import { initialEventRevisionActionState } from "@/lib/events/revision-input";
+import { initialEventRevisionActionState } from "@/lib/events/revision-action-state";
 
 import { EventFields } from "./event-fields";
 

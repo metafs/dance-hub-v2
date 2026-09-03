@@ -1,7 +1,7 @@
 "use client";
 
 import { TicketOfferEditor } from "@/components/ticket-offer-editor";
-import type { EventRevisionFieldErrors } from "@/lib/events/revision-input";
+import type { EventRevisionFieldErrors } from "@/lib/events/revision-action-state";
 import type { TicketOfferDraft } from "@/lib/events/ticket-offers";
 
 type Props = {

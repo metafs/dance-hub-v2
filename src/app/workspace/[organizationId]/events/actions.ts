@@ -4,7 +4,8 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { requireOrganizationCapability } from "@/lib/auth/authorization";
-import { parseEventRevisionInput, type EventRevisionActionState } from "@/lib/events/revision-input";
+import type { EventRevisionActionState } from "@/lib/events/revision-action-state";
+import { parseEventRevisionInput } from "@/lib/events/revision-input";
 import { replaceEventRevisionContent } from "@/lib/events/revision-service";
 import { formText } from "@/lib/forms/input";
 
