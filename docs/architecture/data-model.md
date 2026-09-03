@@ -18,6 +18,7 @@ User -> OrganizationMembership -> Organization -> Event -> EventRevision
                                                     +-> published_revision_id
 
 Organization -> ArtistCandidate / VenueCandidate -> canonical Artist / Venue
+AuditLog -> ReviewNotification -> recipient User
 ```
 
 ## Organizations and platform authority
@@ -39,6 +40,14 @@ EventRevision.proposed_parent_event_id Event nullable
 ```
 
 Approval atomically changes `Event.published_revision_id`; the formerly published revision remains available for audit. A cancellation request and reason are reviewed and, once approved, set the stable Event cancellation fields without removing the published revision.
+
+## Review notifications
+
+`review_notifications` is a persistent in-app inbox for moderation outcomes. Organization and Event trusted transitions first write their existing audit record; an `AFTER INSERT` audit trigger creates the notification in the same transaction. This keeps the notification coupled to a successful, auditable decision without allowing application code or authenticated users to forge one.
+
+Each notification snapshots its kind, reviewed subject, and decision reason and references exactly one source audit row. Organization Application outcomes target the applicant. Event Revision outcomes target the actor of that Revision's latest submission audit record. Cancellation outcomes target the request's `requested_by` User. RLS exposes a notification only to `recipient_user_id`; notification content is immutable and only `read_at` may change.
+
+The MVP has no Email, push, external provider delivery, general announcement, or marketing notification model.
 
 Event Type Group is an application mapping, not a database enum: `watch`, `participate`, `apply`, `container`, `other`. `apply` revisions require `application_deadline` and may have no schedules. A non-Festival revision requires a Schedule for publication. A Festival may be drafted without children, but needs an approved child with a Schedule before publication.
 

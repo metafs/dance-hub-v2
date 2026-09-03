@@ -13,6 +13,9 @@ export default async function WorkspaceLayout({ children }: { children: React.Re
           DANCE HUB
         </Link>
         <div className="account-menu">
+          <Link className="text-link" href="/workspace/notifications">
+            審査結果の通知
+          </Link>
           <span>{user.email}</span>
           <form action={logout}>
             <button className="button button-quiet" type="submit">

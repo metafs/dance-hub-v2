@@ -11,3 +11,4 @@
 - Do not expose drafts, in-review revisions, candidates, applications, decision notes, or unapproved media through public queries, metadata, or storage URLs.
 - Perform Organization Application approval and the resulting Organization / initial Owner creation in one transaction.
 - Preserve audit actor, time, state transition, and decision reason for moderation actions.
+- Create review notifications only from trusted audit records in the same transaction. Restrict notification reads to the recipient and updates to read state; never expose decision content to anonymous or unrelated users.
