@@ -2,7 +2,7 @@ name: Generate review notification database types
 
 on:
   push:
-    branches: [feature/review-notifications]
+    branches: [feature/review-notifications-main]
 
 permissions:
   contents: read
