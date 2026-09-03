@@ -1,14 +1,14 @@
 import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
 
-import type { Database } from "@/lib/db/database.types";
 import { validateEnvironment } from "@/lib/env";
+import type { SupabaseDatabase } from "@/lib/db/supabase.types";
 
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
   const { supabasePublishableKey, supabaseUrl } = validateEnvironment();
 
-  const supabase = createServerClient<Database>(supabaseUrl, supabasePublishableKey, {
+  const supabase = createServerClient<SupabaseDatabase>(supabaseUrl, supabasePublishableKey, {
     cookies: {
       getAll: () => request.cookies.getAll(),
       setAll: (cookiesToSet) => {

@@ -17,14 +17,6 @@ import {
 
 type TicketKind = Database["public"]["Enums"]["event_access_link_kind"];
 
-function hasSafeTicketAmounts(offers: NonNullable<ReturnType<typeof parseTicketOffers>>) {
-  return offers.every((offer) => [
-    offer.amount_minor,
-    offer.min_amount_minor,
-    offer.max_amount_minor,
-  ].every((amount) => amount === null || Number.isSafeInteger(Number(amount))));
-}
-
 function text(formData: FormData, name: string) {
   return String(formData.get(name) ?? "").trim();
 }
@@ -63,7 +55,7 @@ function content(formData: FormData) {
   const ticketUrlInput = text(formData, "ticketUrl");
   const externalUrlInput = text(formData, "externalUrl");
 
-  if (!ticketOffers || !hasSafeTicketAmounts(ticketOffers) || (startsAt && !text(formData, "venueId")) || (endsAt && !startsAt)) return null;
+  if (!ticketOffers || (startsAt && !text(formData, "venueId")) || (endsAt && !startsAt)) return null;
   if (startsAt && endsAt && new Date(endsAt) <= new Date(startsAt)) return null;
   if (!mainImage) return null;
 
@@ -121,14 +113,8 @@ async function replaceRevisionContent(
     if (error) return error;
   }
   if (values.ticketOffers.length) {
-    const ticketOffers = values.ticketOffers.map((offer) => ({
-      ...offer,
-      amount_minor: offer.amount_minor === null ? null : Number(offer.amount_minor),
-      min_amount_minor: offer.min_amount_minor === null ? null : Number(offer.min_amount_minor),
-      max_amount_minor: offer.max_amount_minor === null ? null : Number(offer.max_amount_minor),
-    }));
     const { error } = await supabase.from("event_ticket_offers").insert(
-      ticketOffers.map((offer) => ({ event_revision_id: revisionId, ...offer })),
+      values.ticketOffers.map((offer) => ({ event_revision_id: revisionId, ...offer })),
     );
     if (error) return error;
   }
