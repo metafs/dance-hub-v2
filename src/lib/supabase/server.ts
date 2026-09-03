@@ -3,24 +3,14 @@ import "server-only";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
+import { validateEnvironment } from "@/lib/env";
 import type { SupabaseDatabase } from "@/lib/db/supabase.types";
-
-function supabaseEnvironment() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const publishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
-
-  if (!url || !publishableKey) {
-    throw new Error("Supabase public environment variables are not configured.");
-  }
-
-  return { publishableKey, url };
-}
 
 export async function createSupabaseServerClient() {
   const cookieStore = await cookies();
-  const { publishableKey, url } = supabaseEnvironment();
+  const { supabasePublishableKey, supabaseUrl } = validateEnvironment();
 
-  return createServerClient<SupabaseDatabase>(url, publishableKey, {
+  return createServerClient<SupabaseDatabase>(supabaseUrl, supabasePublishableKey, {
     cookies: {
       getAll: () => cookieStore.getAll(),
       setAll: (cookiesToSet) => {
