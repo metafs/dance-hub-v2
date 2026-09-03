@@ -1,4 +1,4 @@
-# ADR-0012: Persist review outcomes in an in-app inbox
+# ADR-0013: Persist review outcomes in an in-app inbox
 
 **Status:** Accepted
 **Accepted:** 2026-09-03
