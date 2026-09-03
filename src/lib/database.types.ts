@@ -994,6 +994,104 @@ export type Database = {
         }
         Relationships: []
       }
+      review_notifications: {
+        Row: {
+          cancellation_request_id: string | null
+          created_at: string
+          decision_reason: string | null
+          event_id: string | null
+          event_revision_audit_log_id: number | null
+          event_revision_id: string | null
+          id: number
+          kind: Database["public"]["Enums"]["review_notification_kind"]
+          organization_application_id: string | null
+          organization_audit_log_id: number | null
+          read_at: string | null
+          recipient_user_id: string
+          subject: string
+        }
+        Insert: {
+          cancellation_request_id?: string | null
+          created_at?: string
+          decision_reason?: string | null
+          event_id?: string | null
+          event_revision_audit_log_id?: number | null
+          event_revision_id?: string | null
+          id?: never
+          kind: Database["public"]["Enums"]["review_notification_kind"]
+          organization_application_id?: string | null
+          organization_audit_log_id?: number | null
+          read_at?: string | null
+          recipient_user_id: string
+          subject: string
+        }
+        Update: {
+          cancellation_request_id?: string | null
+          created_at?: string
+          decision_reason?: string | null
+          event_id?: string | null
+          event_revision_audit_log_id?: number | null
+          event_revision_id?: string | null
+          id?: never
+          kind?: Database["public"]["Enums"]["review_notification_kind"]
+          organization_application_id?: string | null
+          organization_audit_log_id?: number | null
+          read_at?: string | null
+          recipient_user_id?: string
+          subject?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "review_notifications_cancellation_request_id_fkey"
+            columns: ["cancellation_request_id"]
+            isOneToOne: false
+            referencedRelation: "event_cancellation_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "review_notifications_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "review_notifications_event_revision_audit_log_id_fkey"
+            columns: ["event_revision_audit_log_id"]
+            isOneToOne: true
+            referencedRelation: "event_revision_audit_log"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "review_notifications_event_revision_id_fkey"
+            columns: ["event_revision_id"]
+            isOneToOne: false
+            referencedRelation: "event_revisions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "review_notifications_organization_application_id_fkey"
+            columns: ["organization_application_id"]
+            isOneToOne: false
+            referencedRelation: "organization_applications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "review_notifications_organization_audit_log_id_fkey"
+            columns: ["organization_audit_log_id"]
+            isOneToOne: true
+            referencedRelation: "organization_audit_log"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "review_notifications_recipient_user_id_fkey"
+            columns: ["recipient_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       shared_entity_moderation_audit: {
         Row: {
           action: Database["public"]["Enums"]["shared_entity_moderation_action"]
@@ -1470,6 +1568,13 @@ export type Database = {
         | "member_removed"
       organization_role: "owner" | "admin" | "editor"
       prefecture_code: "TOKYO" | "KANAGAWA"
+      review_notification_kind:
+        | "organization_application_approved"
+        | "organization_application_rejected"
+        | "event_revision_approved"
+        | "event_revision_changes_requested"
+        | "event_cancellation_approved"
+        | "event_cancellation_changes_requested"
       shared_entity_change_status: "pending" | "approved" | "rejected"
       shared_entity_moderation_action:
         | "candidate_corrected"
@@ -1669,6 +1774,14 @@ export const Constants = {
       ],
       organization_role: ["owner", "admin", "editor"],
       prefecture_code: ["TOKYO", "KANAGAWA"],
+      review_notification_kind: [
+        "organization_application_approved",
+        "organization_application_rejected",
+        "event_revision_approved",
+        "event_revision_changes_requested",
+        "event_cancellation_approved",
+        "event_cancellation_changes_requested",
+      ],
       shared_entity_change_status: ["pending", "approved", "rejected"],
       shared_entity_moderation_action: [
         "candidate_corrected",
