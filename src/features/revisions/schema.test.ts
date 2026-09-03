@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { parseTicketOffers, ticketOfferPrice } from "./ticket-offers";
+import { parseTicketOffers, ticketOfferPrice } from "./schema";
 
 function offerForm(values: Record<string, string>) {
   const formData = new FormData();
