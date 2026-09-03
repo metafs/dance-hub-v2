@@ -34,6 +34,7 @@ describe("parseTicketOffers", () => {
 
   it("rejects unlabeled sliding scales and values outside PostgreSQL bigint", () => {
     expect(parseTicketOffers(offerForm({ priceType: "sliding_scale", currency: "JPY", amountMinor: "1000" }))).toBeNull();
+    expect(parseTicketOffers(offerForm({ priceType: "fixed", currency: "JPY", amountMinor: "9223372036854775807" }))).toMatchObject([{ amount_minor: "9223372036854775807" }]);
     expect(parseTicketOffers(offerForm({ priceType: "fixed", currency: "JPY", amountMinor: "9223372036854775808" }))).toBeNull();
   });
 });

@@ -19,7 +19,7 @@ export async function approveApplication(formData: FormData) {
   const { supabase } = await requirePlatformAdmin();
   const { error } = await supabase.rpc("approve_organization_application", {
     application_id: applicationId,
-    decision_reason: reason || null,
+    decision_reason: reason || undefined,
   });
 
   if (error) redirect("/admin/applications?error=review-failed");

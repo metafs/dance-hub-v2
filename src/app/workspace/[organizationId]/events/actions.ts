@@ -4,12 +4,20 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { requireOrganizationCapability } from "@/lib/auth/authorization";
+import type { Database } from "@/lib/db/database.types";
 import { parseTicketOffers } from "@/lib/events/ticket-offers";
 
-const eventTypes = new Set([
+type EventType = Database["public"]["Enums"]["event_type"];
+type TicketKind = Database["public"]["Enums"]["event_access_link_kind"];
+
+const eventTypes = [
   "performance", "open_studio", "talk", "workshop", "audition", "open_call",
   "residency", "festival", "other",
-]);
+] as const satisfies readonly EventType[];
+
+function isEventType(value: string): value is EventType {
+  return eventTypes.some((eventType) => eventType === value);
+}
 
 function text(formData: FormData, name: string) {
   return String(formData.get(name) ?? "").trim();
@@ -62,6 +70,7 @@ function content(formData: FormData) {
   const ticketUrl = url(ticketUrlInput);
   const externalUrl = url(externalUrlInput);
   if ((ticketUrlInput && !ticketUrl) || (externalUrlInput && !externalUrl)) return null;
+  const ticketKind: TicketKind = text(formData, "ticketKind") === "registration" ? "registration" : "ticket";
 
   return {
     artistId: text(formData, "artistId") || null,
@@ -70,7 +79,7 @@ function content(formData: FormData) {
     startsAt,
     endsAt,
     allDay: formData.get("allDay") === "on",
-    ticketKind: text(formData, "ticketKind") === "registration" ? "registration" : "ticket",
+    ticketKind,
     ticketUrl,
     ticketLabel: text(formData, "ticketLabel") || null,
     ticketOffers,
@@ -137,10 +146,15 @@ async function replaceRevisionContent(
 
 function revisionFields(formData: FormData) {
   const title = text(formData, "title");
-  const eventType = text(formData, "eventType");
+  const eventTypeInput = text(formData, "eventType");
   const deadlineInput = text(formData, "applicationDeadline");
   const applicationDeadline = tokyoDateTime(deadlineInput);
-  if (!title || title.length > 200 || (eventType && !eventTypes.has(eventType)) || (deadlineInput && !applicationDeadline)) return null;
+  if (!title || title.length > 200 || (deadlineInput && !applicationDeadline)) return null;
+  let eventType: EventType | null = null;
+  if (eventTypeInput) {
+    if (!isEventType(eventTypeInput)) return null;
+    eventType = eventTypeInput;
+  }
   return {
     title,
     description: text(formData, "description") || null,
