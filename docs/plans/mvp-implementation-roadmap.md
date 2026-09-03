@@ -39,7 +39,7 @@ DANCE HUB の MVP は、東京都・神奈川県のダンス Event を一般ユ�
 
 **Goal:** Organizer と Platform Admin が安全に業務を開始できる。
 
-**Scope:** login / logout、session、Organization Application form、Admin review queue、Organization selector、Owner / Admin / Editor の server-side authorization。
+**Scope:** login / logout、session、Organization Application form、Admin review queue、Organization selector、Owner / Admin / Editor の server-side authorization、提出者本人だけが読める審査結果のアプリ内通知。
 
 **Done when:** E2E で「申請 → 承認 → 初期 Owner で login → Organization workspace 表示」が通り、未承認・他 Organization・Role 不足操作が拒否される。
 
@@ -59,7 +59,7 @@ DANCE HUB の MVP は、東京都・神奈川県のダンス Event を一般ユ�
 
 **Goal:** Organizer が公開要件を満たす Event Revision を作り、Platform Admin が審査できる。
 
-**Scope:** Draft editor、Schedule / Venue、Artist credit、Ticket Offer、Ticket / 申込 Link、外部 Link、main image 1 枚と alt text、Festival child、submit、changes requested、approve、公開後 Revision、cancellation review。
+**Scope:** Draft editor、Schedule / Venue、Artist credit、Ticket Offer、Ticket / 申込 Link、外部 Link、main image 1 枚と alt text、Festival child、submit、changes requested、approve、公開後 Revision、cancellation review、提出者への審査結果通知。
 
 **Done when:** E2E で「Draft → 提出 → 差戻し → 再提出 → 承認 → 公開後変更」と「中止申請 → 承認 → 中止表示」が通る。公開ページは審査中も直前の承認 Revision を表示する。
 
@@ -109,4 +109,4 @@ M2 と M3 は M1 完了後に並列実装できる。M5 の read-only query と�
 
 ## Deferred until after MVP
 
-地図 UI、複数画像、Artist Claim、他 Organization の Festival child、多言語、通知、Favorites、推薦、決済、CSV import、外部サイトの自動取得は MVP release gate に含めない。
+地図 UI、複数画像、Artist Claim、他 Organization の Festival child、多言語、Email・push・一般告知・marketing 通知、Favorites、推薦、決済、CSV import、外部サイトの自動取得は MVP release gate に含めない。

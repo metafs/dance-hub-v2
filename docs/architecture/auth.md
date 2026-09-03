@@ -36,7 +36,8 @@ Platform Admin reviews Organization Applications; approves, rejects, corrects, a
 - Owner / Admin / Editor may view and change their Organization's draft and changes-requested Revisions, and submit them.
 - Only Platform Admin may move a Revision to `approved` or `changes_requested`, and only approval can change the public revision pointer.
 - Candidate records are invisible to other Organizations and anonymous users until activated.
+- A review notification is visible only to its recipient. Authenticated users cannot create, delete, or change notification content; the recipient may change only `read_at`.
 
 ## Required policy tests
 
-Test anonymous, same-Organization, other-Organization, each Membership role, and Platform Admin for every mutation. Test that drafts, in-review revisions, candidates, application details, and unapproved media cannot leak through public relations, queries, metadata, or storage paths.
+Test anonymous, same-Organization, other-Organization, each Membership role, and Platform Admin for every mutation. Test that drafts, in-review revisions, candidates, application details, review notifications, and unapproved media cannot leak through public relations, queries, metadata, or storage paths.
