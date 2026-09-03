@@ -6,6 +6,8 @@
 
 Editors, Admins, and Owners may edit and submit an Event Revision. Only an Owner or Admin may request cancellation; only a Platform Admin may request changes or approve publication and cancellation. A cancellation leaves the published Revision public with its cancellation reason and prevents further Revision creation.
 
+The User who most recently submitted a Revision, or requested a cancellation, receives its approval or changes-requested result in the persistent Workspace notification inbox. Notification creation is part of the audited transition transaction.
+
 ## Requirements
 
 - REQ-EVENT-005 through REQ-EVENT-008
@@ -19,4 +21,5 @@ Editors, Admins, and Owners may edit and submit an Event Revision. Only an Owner
 - Submission and review use the trusted Revision functions.
 - Platform Admin can request changes or approve; a later approved Revision supersedes the published pointer atomically.
 - Owner and Admin can request cancellation and Platform Admin can approve it.
+- Revision and cancellation decisions create an immutable, recipient-only notification whose read state can be updated.
 - E2E covers the complete revision and cancellation journeys.

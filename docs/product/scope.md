@@ -24,6 +24,7 @@
 - 承認時の Organization・初期 Owner の原子的作成
 - Owner / Admin / Editor Membership と複数 Organization 所属
 - Platform Admin を Organization Role と分離した認可
+- Organization Application、Event Revision、中止申請の審査結果を提出者へ届けるアプリ内通知インボックス
 
 ### Moderated data creation
 
@@ -49,6 +50,7 @@
 ## 3. After Core MVP
 
 - 地図 UI、複数画像、Flyer PDF、Video URL、sold out、doors open、duration
+- Email・push・外部 provider による通知、一般告知、marketing 通知
 - 公開 Organization profile、Member invitation / management UI
 - Artist aliases、英語名、Artist Claim、Company / Collective membership
 - Festival への他 Organization Event の参加
@@ -61,6 +63,7 @@
 - 独自チケット決済・発券・Stripe 決済
 - EventScheduleごとのTicket Offer、Ticket OfferとTicket Linkの関連付け、Dynamic Pricingの計算・同期
 - SNS、DM、コメント、レビュー、評価
+- Email・push・外部 provider による通知配信
 - レコメンド algorithm、生成 AI による本文生成、外部サイトの自動スクレイピング
 - Magazine CMS、Native mobile apps、real-time collaborative editing
 - 有料プラン、広告、複雑な分析 dashboard
