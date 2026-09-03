@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { requireOrganizationCapability } from "@/lib/auth/authorization";
+import { formText, httpUrl } from "@/lib/forms/input";
 import type { Database } from "@/lib/db/database.types";
 
 type ArtistType = Database["public"]["Enums"]["artist_type"];
@@ -20,26 +21,12 @@ function isPrefecture(value: string): value is Prefecture {
   return prefectures.some((prefecture) => prefecture === value);
 }
 
-function text(formData: FormData, name: string) {
-  return String(formData.get(name) ?? "").trim();
-}
-
-function website(value: string) {
-  if (!value) return null;
-  try {
-    const url = new URL(value);
-    return url.protocol === "https:" || url.protocol === "http:" ? url.toString() : null;
-  } catch {
-    return null;
-  }
-}
-
 export async function createArtistCandidate(formData: FormData) {
-  const organizationId = text(formData, "organizationId");
-  const name = text(formData, "name");
-  const artistType = text(formData, "artistType");
-  const profile = text(formData, "profile") || null;
-  const websiteUrl = website(text(formData, "websiteUrl"));
+  const organizationId = formText(formData, "organizationId");
+  const name = formText(formData, "name");
+  const artistType = formText(formData, "artistType");
+  const profile = formText(formData, "profile") || null;
+  const websiteUrl = httpUrl(formText(formData, "websiteUrl"));
   if (!organizationId || !name || !isArtistType(artistType)) redirect("/workspace");
   const { supabase } = await requireOrganizationCapability(organizationId, "createCandidates");
   const { error } = await supabase.from("artist_candidates").insert({
@@ -52,16 +39,16 @@ export async function createArtistCandidate(formData: FormData) {
 }
 
 export async function createVenueCandidate(formData: FormData) {
-  const organizationId = text(formData, "organizationId");
-  const name = text(formData, "name");
-  const prefecture = text(formData, "prefecture");
-  const addressLine1 = text(formData, "addressLine1");
-  const websiteUrl = website(text(formData, "websiteUrl"));
+  const organizationId = formText(formData, "organizationId");
+  const name = formText(formData, "name");
+  const prefecture = formText(formData, "prefecture");
+  const addressLine1 = formText(formData, "addressLine1");
+  const websiteUrl = httpUrl(formText(formData, "websiteUrl"));
   if (!organizationId || !name || !isPrefecture(prefecture) || !addressLine1) redirect("/workspace");
   const { supabase } = await requireOrganizationCapability(organizationId, "createCandidates");
   const { error } = await supabase.from("venue_candidates").insert({
     creator_organization_id: organizationId, name, prefecture, address_line1: addressLine1,
-    address_line2: text(formData, "addressLine2") || null, website_url: websiteUrl,
+    address_line2: formText(formData, "addressLine2") || null, website_url: websiteUrl,
   });
   if (error) redirect(`/workspace/${organizationId}/entities?error=venue-create`);
   revalidatePath(`/workspace/${organizationId}/entities`);
@@ -69,46 +56,46 @@ export async function createVenueCandidate(formData: FormData) {
 }
 
 export async function requestArtistChange(formData: FormData) {
-  const organizationId = text(formData, "organizationId");
-  const artistId = text(formData, "artistId");
-  const name = text(formData, "name");
-  const artistType = text(formData, "artistType");
+  const organizationId = formText(formData, "organizationId");
+  const artistId = formText(formData, "artistId");
+  const name = formText(formData, "name");
+  const artistType = formText(formData, "artistType");
   if (!organizationId || !artistId || !name || !isArtistType(artistType)) redirect("/workspace");
   const { supabase, user } = await requireOrganizationCapability(organizationId, "createCandidates");
   const { error } = await supabase.from("artist_change_requests").insert({
     artist_id: artistId, creator_organization_id: organizationId, submitted_by: user.id,
     proposed_name: name, proposed_artist_type: artistType,
-    proposed_profile: text(formData, "profile") || null,
-    proposed_website_url: website(text(formData, "websiteUrl")),
+    proposed_profile: formText(formData, "profile") || null,
+    proposed_website_url: httpUrl(formText(formData, "websiteUrl")),
   });
   if (error) redirect(`/workspace/${organizationId}/entities?error=change-request`);
   redirect(`/workspace/${organizationId}/entities?created=change-request`);
 }
 
 export async function updateArtistCandidate(formData: FormData) {
-  const organizationId = text(formData, "organizationId");
-  const candidateId = text(formData, "candidateId");
-  const artistType = text(formData, "artistType");
+  const organizationId = formText(formData, "organizationId");
+  const candidateId = formText(formData, "candidateId");
+  const artistType = formText(formData, "artistType");
   if (!organizationId || !candidateId || !isArtistType(artistType)) redirect("/workspace");
   const { supabase } = await requireOrganizationCapability(organizationId, "createCandidates");
   const { error } = await supabase.from("artist_candidates").update({
-    name: text(formData, "name"), artist_type: artistType,
-    profile: text(formData, "profile") || null, website_url: website(text(formData, "websiteUrl")),
+    name: formText(formData, "name"), artist_type: artistType,
+    profile: formText(formData, "profile") || null, website_url: httpUrl(formText(formData, "websiteUrl")),
   }).eq("id", candidateId).eq("creator_organization_id", organizationId).eq("status", "pending");
   if (error) redirect(`/workspace/${organizationId}/entities?error=artist-update`);
   redirect(`/workspace/${organizationId}/entities?updated=1`);
 }
 
 export async function updateVenueCandidate(formData: FormData) {
-  const organizationId = text(formData, "organizationId");
-  const candidateId = text(formData, "candidateId");
-  const prefecture = text(formData, "prefecture");
+  const organizationId = formText(formData, "organizationId");
+  const candidateId = formText(formData, "candidateId");
+  const prefecture = formText(formData, "prefecture");
   if (!organizationId || !candidateId || !isPrefecture(prefecture)) redirect("/workspace");
   const { supabase } = await requireOrganizationCapability(organizationId, "createCandidates");
   const { error } = await supabase.from("venue_candidates").update({
-    name: text(formData, "name"), prefecture,
-    address_line1: text(formData, "addressLine1"), address_line2: text(formData, "addressLine2") || null,
-    website_url: website(text(formData, "websiteUrl")),
+    name: formText(formData, "name"), prefecture,
+    address_line1: formText(formData, "addressLine1"), address_line2: formText(formData, "addressLine2") || null,
+    website_url: httpUrl(formText(formData, "websiteUrl")),
   }).eq("id", candidateId).eq("creator_organization_id", organizationId).eq("status", "pending");
   if (error) redirect(`/workspace/${organizationId}/entities?error=venue-update`);
   redirect(`/workspace/${organizationId}/entities?updated=1`);

@@ -4,13 +4,14 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { requirePlatformAdmin } from "@/lib/auth/authorization";
+import { formText } from "@/lib/forms/input";
 
 export async function reviewCandidate(formData: FormData) {
-  const kind = String(formData.get("kind") ?? "");
-  const action = String(formData.get("action") ?? "");
-  const candidateId = String(formData.get("candidateId") ?? "");
-  const reason = String(formData.get("reason") ?? "").trim();
-  const survivorId = String(formData.get("survivorId") ?? "");
+  const kind = formText(formData, "kind");
+  const action = formText(formData, "action");
+  const candidateId = formText(formData, "candidateId");
+  const reason = formText(formData, "reason");
+  const survivorId = formText(formData, "survivorId");
   if (!candidateId || !reason || !["artist", "venue"].includes(kind)) redirect("/admin/entities?error=invalid-review");
   const { supabase } = await requirePlatformAdmin();
   const { error } = kind === "artist"

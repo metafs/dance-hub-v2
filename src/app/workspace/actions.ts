@@ -3,21 +3,12 @@
 import { redirect } from "next/navigation";
 
 import { requireUser } from "@/lib/auth/authorization";
-
-function normalizedWebsite(value: string) {
-  if (!value) return null;
-  try {
-    const url = new URL(value);
-    return url.protocol === "http:" || url.protocol === "https:" ? url.toString() : null;
-  } catch {
-    return null;
-  }
-}
+import { formText, httpUrl } from "@/lib/forms/input";
 
 export async function submitOrganizationApplication(formData: FormData) {
-  const name = String(formData.get("name") ?? "").trim();
-  const websiteInput = String(formData.get("websiteUrl") ?? "").trim();
-  const websiteUrl = normalizedWebsite(websiteInput);
+  const name = formText(formData, "name");
+  const websiteInput = formText(formData, "websiteUrl");
+  const websiteUrl = httpUrl(websiteInput);
 
   if (!name || name.length > 160) {
     redirect("/workspace/apply?error=invalid-name");
