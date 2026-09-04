@@ -34,7 +34,7 @@ Organization Members create and submit work. Platform Admin is a separate role t
 
 ## Application structure
 
-Application code follows [ADR-0013](docs/adr/0013-use-feature-modules-for-application-domains.md). `src/app` contains App Router composition and routing; implemented domain behavior lives in `src/features/<domain>/`. The initial feature modules are auth, discovery, organizations, events, revisions, shared-entities, media, and moderation. A feature uses only the schema, query, command, policy, and component layers that its existing behavior requires. `src/lib` remains shared infrastructure and cross-domain primitives, while `src/ui` is limited to domain-agnostic presentation.
+Application code follows [ADR-0013](docs/adr/0013-use-feature-modules-for-application-domains.md). `src/app` contains App Router composition and routing; implemented domain behavior lives in `src/features/<domain>/`. The initial feature modules are auth, discovery, organizations, events, revisions, shared-entities, media, and moderation. A feature uses only the schema, query, command, policy, and component layers that its existing behavior requires. `src/lib` remains shared infrastructure and cross-domain primitives, while `src/ui` is limited to domain-agnostic presentation. [Code structure](docs/architecture/code-structure.md) is the canonical import-direction and lint-enforcement contract.
 
 ## Source documents
 
@@ -42,5 +42,8 @@ Application code follows [ADR-0013](docs/adr/0013-use-feature-modules-for-applic
 - Product scope: `docs/product/scope.md`
 - Domain model: `docs/architecture/data-model.md`
 - Authorization: `docs/architecture/auth.md`
+- Code structure: `docs/architecture/code-structure.md`
+- Media: `docs/architecture/media.md`
+- Observability: `docs/architecture/observability.md`
 - ADR index: `docs/adr/README.md`
 - Implementation roadmap: `docs/plans/mvp-implementation-roadmap.md`

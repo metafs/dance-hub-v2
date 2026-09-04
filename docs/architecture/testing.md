@@ -20,9 +20,9 @@
 
 ## Standard validation contract
 
-Once tooling is installed:
-
-- `pnpm check`: lint, typecheck, and unit tests.
-- `pnpm verify`: `check`, build, and critical E2E.
+The executable command definitions and CI locations are canonical in
+[code structure](code-structure.md#validation-locations). They cover application
+lint/type/unit/build checks, local database and RLS tests, generated database-type
+freshness, and critical E2E coverage against local Supabase in CI.
 
 Every migration must be applicable to an empty local database with seed fixtures that cover Tokyo, Kanagawa, roles, revision states, candidates, apply Events, and Festival children.
