@@ -26,6 +26,7 @@ ADRs capture architectural decisions that should remain understandable to future
 | [0011](0011-separate-ticket-offers-from-ticket-links.md) | Separate structured Ticket Offers from external Ticket Links | Accepted |
 | [0012](0012-use-native-runtime-validation.md) | Use native TypeScript runtime validation for environment configuration | Accepted |
 | [0013](0013-use-feature-modules-for-application-domains.md) | Use feature modules for application domains | Accepted |
+| [0014](0014-enforce-feature-command-boundaries.md) | Enforce feature command dependency boundaries | Accepted |
 
 ## Template
 
