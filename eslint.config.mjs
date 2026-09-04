@@ -44,7 +44,7 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
   ]),
   {
-    files: ["src/**/*.{ts,tsx}"],
+    files: ["src/**/*.{js,jsx,ts,tsx}"],
     settings: {
       "import/resolver": {
         typescript: {
@@ -76,7 +76,7 @@ const eslintConfig = defineConfig([
     },
   },
   {
-    files: ["src/app/**/*.{ts,tsx}"],
+    files: ["src/app/**/*.{js,jsx,ts,tsx}"],
     rules: {
       "no-restricted-imports": ["error", {
         patterns: [
