@@ -1,8 +1,8 @@
 # DANCE HUB — Product Requirements
 
 **Status:** Draft
-**Version:** 0.3
-**Last Updated:** 2026-09-02
+**Version:** 0.4
+**Last Updated:** 2026-09-03
 
 ## 1. Product Definition
 
@@ -144,6 +144,12 @@ MVP の編集 UI は Event Revision ごとに main image を 1 枚だけ扱い�
 #### REQ-AUDIT-001 — Audit trail
 
 Organization Application、Candidate、Event Revision の提出、差戻し、承認、merge、中止について、actor、時刻、判断理由を監査可能にする。
+
+#### REQ-NOTIFICATION-001 — Review outcome inbox
+
+Organization Application の承認・却下、Event Revision の承認・差戻し、中止申請の承認・差戻しは、提出または申請した User の Workspace 内通知として永続化する。通知は審査の trusted transition と同じ transaction で監査記録を根拠に作成し、宛先本人だけが閲覧できること。本文と審査結果は変更・削除不可とし、本人は既読状態だけを変更できること。
+
+MVP の通知手段はアプリ内インボックスに限定する。Email、push、外部通知 provider、一般告知および marketing 通知は含めない。
 
 ## 5. Constraints
 

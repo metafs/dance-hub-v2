@@ -41,6 +41,11 @@ test("application approval creates the initial Owner workspace", async ({ page }
   await logout(page);
 
   await login(page, "applicant@example.com");
+  await expect(page.getByRole("link", { name: "通知 (1)" })).toBeVisible();
+  await page.getByRole("link", { name: "通知 (1)" }).click();
+  await expect(page.getByRole("heading", { name: "Organization申請が承認されました" })).toBeVisible();
+  await expect(page.getByText("E2E Dance Organization", { exact: true })).toBeVisible();
+  await page.getByRole("link", { name: "DANCE HUB" }).click();
   const organizationCard = page.getByRole("link").filter({ hasText: "E2E Dance Organization" });
   await expect(organizationCard).toContainText("owner");
   await organizationCard.click();

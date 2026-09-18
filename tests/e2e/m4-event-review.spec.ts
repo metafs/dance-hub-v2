@@ -64,6 +64,9 @@ test("Event revision is reviewed before public release, then cancellation remain
   await logout(page);
 
   await login(page, "owner@example.com");
+  await page.getByRole("link", { name: /通知/ }).click();
+  await expect(page.getByRole("heading", { name: "Event Revisionに変更依頼があります" })).toBeVisible();
+  await expect(page.getByText("Description needs an update", { exact: true })).toBeVisible();
   await page.goto(`/workspace/${fixtureOrganizationId}/events/${eventId}`);
   await expect(page.getByText("changes_requested")).toBeVisible();
   await page.getByLabel("説明").fill("Updated after Platform Admin feedback");
@@ -109,6 +112,8 @@ test("Event revision is reviewed before public release, then cancellation remain
   await expect(page.getByText(/3,500/)).toBeVisible();
 
   await login(page, "owner@example.com");
+  await page.getByRole("link", { name: /通知/ }).click();
+  await expect(page.getByRole("heading", { name: "Event Revisionが承認・公開されました" }).first()).toBeVisible();
   await page.goto(`/workspace/${fixtureOrganizationId}/events/${eventId}`);
   await page.getByLabel("中止理由").fill("Venue closure for M4 E2E");
   await page.getByRole("button", { name: "中止を申請" }).click();
@@ -121,6 +126,12 @@ test("Event revision is reviewed before public release, then cancellation remain
   await cancellation.getByLabel(/一般公開する中止理由/).fill("会場都合により中止となりました。");
   await cancellation.getByRole("button", { name: "中止を承認" }).click();
   await expect(page.getByText("イベントの中止を承認し、一般公開ページに反映しました。")).toBeVisible();
+  await logout(page);
+
+  await login(page, "owner@example.com");
+  await page.getByRole("link", { name: /通知/ }).click();
+  await expect(page.getByRole("heading", { name: "Eventの中止申請が承認されました" })).toBeVisible();
+  await expect(page.getByText("会場都合により中止となりました。", { exact: true })).toBeVisible();
   await logout(page);
 
   await page.goto(`/events/${eventId}`);
