@@ -4,7 +4,7 @@ import { requireOrganizationCapability } from "@/features/organizations/policy";
 import { getRevisionListData } from "@/features/revisions/queries";
 import type { TicketOfferDraft } from "@/features/revisions/schema";
 
-import { createEventDraft } from "@/features/revisions/commands";
+import { EventDraftForm } from "@/components/event-draft-form";
 
 import { TicketOfferEditor } from "./ticket-offer-editor";
 
@@ -25,7 +25,7 @@ export default async function EventListPage({ params, searchParams }: { params: 
     <section className="hero-card"><div><p className="eyebrow">Event workflow</p><h1>Event Draft</h1><p className="lede">{organization.name} のEventを下書きとして作成します。公開にはPlatform Adminの承認が必要です。</p></div></section>
     {query.error ? <p className="notice notice-error" role="alert">{errorMessages[query.error] ?? "保存できませんでした。"}</p> : null}
     <section className="section-block"><h2>作成済みのRevision</h2><div className="card-grid">{revisions?.map((revision) => <article className="entity-card" key={revision.id}><span className="status">{revision.status}</span><h3>{revision.title}</h3><Link className="text-link" href={`/workspace/${organizationId}/events/${revision.event_id}?revision=${revision.id}`}>編集する →</Link></article>)}</div></section>
-    <section className="section-block"><form action={createEventDraft} className="form-card form-stack"><input name="organizationId" type="hidden" value={organizationId}/><h2>新しいEventを作成</h2><EventFields artists={artists ?? []} venues={venues ?? []} festivalParents={(revisions ?? []).filter((revision) => revision.event_type === "festival").map((revision) => ({ id: revision.event_id, title: revision.title }))}/><button className="button button-primary">下書きを作成</button></form></section>
+    <section className="section-block"><EventDraftForm organizationId={organizationId} artists={artists ?? []} venues={venues ?? []} festivalParents={(revisions ?? []).filter((revision) => revision.event_type === "festival").map((revision) => ({ id: revision.event_id, title: revision.title }))}/></section>
   </main>;
 }
 

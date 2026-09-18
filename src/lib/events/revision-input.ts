@@ -2,8 +2,8 @@ import { z } from "zod";
 
 import type { Database } from "@/lib/db/database.types";
 import { formText, httpUrl, tokyoDateTime } from "../forms/input";
-import type { EventRevisionField, EventRevisionFieldErrors } from "./revision-action-state";
-import { parseTicketOffers, type TicketOfferInput } from "./ticket-offers";
+import type { EventRevisionField, EventRevisionFieldErrors, EventRevisionFormValues } from "./revision-action-state";
+import { parseTicketOffers, ticketPriceTypes, type TicketOfferDraft, type TicketOfferInput } from "./ticket-offers";
 
 type EventType = Database["public"]["Enums"]["event_type"];
 
@@ -104,6 +104,7 @@ function eventRevisionSchema({ forSubmission, requireIdentity }: { forSubmission
       issue("form", "Event Revisionを特定できません。ページを再読み込みしてください。");
     }
     if (startsAt && !value.venueId) issue("venueId", "開始日時を設定する場合は会場を選択してください。");
+    if (value.venueId && !startsAt) issue("startsAt", "会場を設定する場合は開始日時を入力してください。");
     if (endsAt && !startsAt) issue("startsAt", "終了日時を設定する場合は開始日時を入力してください。");
     if (startsAt && endsAt && new Date(endsAt) <= new Date(startsAt)) {
       issue("endsAt", "終了日時は開始日時より後にしてください。");
@@ -147,6 +148,56 @@ function fieldErrors(error: z.ZodError): EventRevisionFieldErrors {
     errors[field] = [...(errors[field] ?? []), issue.message];
   }
   return errors;
+}
+
+export function readEventRevisionFormValues(formData: FormData): EventRevisionFormValues {
+  const raw = (name: string) => String(formData.get(name) ?? "");
+  const ticketOffers: TicketOfferDraft[] = formData.getAll("ticketOfferKey").map((rawKey, index) => {
+    const submittedKey = String(rawKey);
+    const key = /^[a-zA-Z0-9_-]+$/.test(submittedKey) ? submittedKey : `submitted-${index}`;
+    const field = (name: string) => String(formData.get(`ticketOffer.${submittedKey}.${name}`) ?? "");
+    const submittedType = field("priceType");
+    const priceType = ticketPriceTypes.includes(submittedType as (typeof ticketPriceTypes)[number])
+      ? submittedType as TicketOfferDraft["priceType"]
+      : "fixed";
+    return {
+      key,
+      priceType,
+      label: field("label"),
+      currency: field("currency"),
+      amountMinor: field("amountMinor"),
+      minAmountMinor: field("minAmountMinor"),
+      maxAmountMinor: field("maxAmountMinor"),
+      notes: field("notes"),
+    };
+  });
+
+  return {
+    organizationId: raw("organizationId"),
+    eventId: raw("eventId"),
+    revisionId: raw("revisionId"),
+    title: raw("title"),
+    description: raw("description"),
+    eventType: raw("eventType"),
+    applicationDeadline: raw("applicationDeadline"),
+    proposedParentEventId: raw("proposedParentEventId"),
+    noRegistrationRequired: formData.get("noRegistrationRequired") === "on",
+    artistId: raw("artistId"),
+    artistRole: raw("artistRole"),
+    venueId: raw("venueId"),
+    startsAt: raw("startsAt"),
+    endsAt: raw("endsAt"),
+    allDay: formData.get("allDay") === "on",
+    ticketKind: raw("ticketKind") === "registration" ? "registration" : "ticket",
+    ticketUrl: raw("ticketUrl"),
+    ticketLabel: raw("ticketLabel"),
+    externalUrl: raw("externalUrl"),
+    externalLabel: raw("externalLabel"),
+    imageObjectKey: raw("imageObjectKey"),
+    imageContentType: raw("imageContentType"),
+    imageAlt: raw("imageAlt"),
+    ticketOffers,
+  };
 }
 
 export function parseEventRevisionInput(

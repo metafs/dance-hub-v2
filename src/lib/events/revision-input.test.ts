@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { parseEventRevisionInput } from "./revision-input";
+import { parseEventRevisionInput, readEventRevisionFormValues } from "./revision-input";
 
 function baseForm() {
   const formData = new FormData();
@@ -44,6 +44,40 @@ describe("parseEventRevisionInput", () => {
         endsAt: ["終了日時は開始日時より後にしてください。"],
         ticketUrl: ["httpまたはhttpsのURLを入力してください。"],
       },
+    });
+  });
+
+  it("requires a start time whenever a Venue is selected", () => {
+    const formData = baseForm();
+    formData.set("venueId", "venue-id");
+    expect(parseEventRevisionInput(formData, { forSubmission: false })).toMatchObject({
+      success: false,
+      errors: { startsAt: ["会場を設定する場合は開始日時を入力してください。"] },
+    });
+  });
+
+  it("keeps submitted field and ticket offer values available after validation errors", () => {
+    const formData = baseForm();
+    formData.set("description", "  entered description  ");
+    formData.set("startsAt", "2030-04-01T20:00");
+    formData.set("ticketOfferKey", "offer-1");
+    formData.set("ticketOffer.offer-1.priceType", "range");
+    formData.set("ticketOffer.offer-1.label", "  Advance  ");
+    formData.set("ticketOffer.offer-1.currency", "JPY");
+    formData.set("ticketOffer.offer-1.minAmountMinor", "broken");
+    formData.set("ticketOffer.offer-1.maxAmountMinor", "2500");
+
+    expect(readEventRevisionFormValues(formData)).toMatchObject({
+      description: "  entered description  ",
+      startsAt: "2030-04-01T20:00",
+      ticketOffers: [{
+        key: "offer-1",
+        priceType: "range",
+        label: "  Advance  ",
+        currency: "JPY",
+        minAmountMinor: "broken",
+        maxAmountMinor: "2500",
+      }],
     });
   });
 

@@ -11,56 +11,9 @@ export async function replaceEventRevisionContent(
   revisionId: string,
   values: EventRevisionInput["content"],
 ) {
-  const tables = ["event_artists", "event_schedules", "event_ticket_offers", "event_ticket_links", "event_links", "event_media"] as const;
-  for (const table of tables) {
-    const { error } = await supabase.from(table).delete().eq("event_revision_id", revisionId);
-    if (error) return error;
-  }
-
-  if (values.artistId) {
-    const { error } = await supabase.from("event_artists").insert({
-      event_revision_id: revisionId, artist_id: values.artistId, role: values.artistRole, display_order: 0,
-    });
-    if (error) return error;
-  }
-  if (values.venueId && values.startsAt) {
-    const { error } = await supabase.from("event_schedules").insert({
-      event_revision_id: revisionId, venue_id: values.venueId, starts_at: values.startsAt,
-      ends_at: values.endsAt, all_day: values.allDay,
-    });
-    if (error) return error;
-  }
-  if (values.ticketUrl) {
-    const { error } = await supabase.from("event_ticket_links").insert({
-      event_revision_id: revisionId, kind: values.ticketKind, label: values.ticketLabel,
-      url: values.ticketUrl, display_order: 0,
-    });
-    if (error) return error;
-  }
-  if (values.ticketOffers.length) {
-    const { error } = await supabase.from("event_ticket_offers").insert(
-      values.ticketOffers.map((offer) => ({
-        event_revision_id: revisionId,
-        ...offer,
-        amount_minor: offer.amount_minor == null ? null : String(offer.amount_minor),
-        min_amount_minor: offer.min_amount_minor == null ? null : String(offer.min_amount_minor),
-        max_amount_minor: offer.max_amount_minor == null ? null : String(offer.max_amount_minor),
-      })),
-    );
-    if (error) return error;
-  }
-  if (values.externalUrl) {
-    const { error } = await supabase.from("event_links").insert({
-      event_revision_id: revisionId, label: values.externalLabel, url: values.externalUrl, display_order: 0,
-    });
-    if (error) return error;
-  }
-  if (values.imageObjectKey && values.imageContentType && values.imageAlt) {
-    const { error } = await supabase.from("event_media").insert({
-      event_revision_id: revisionId, object_key: values.imageObjectKey,
-      content_type: values.imageContentType, alt_text: values.imageAlt, is_main: true, display_order: 0,
-    });
-    if (error) return error;
-  }
-  return null;
+  const { error } = await supabase.rpc("replace_event_revision_content", {
+    target_revision_id: revisionId,
+    revision_content: values,
+  });
+  return error;
 }
