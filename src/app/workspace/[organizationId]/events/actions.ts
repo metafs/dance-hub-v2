@@ -122,7 +122,13 @@ async function replaceRevisionContent(
   }
   if (values.ticketOffers.length) {
     const { error } = await supabase.from("event_ticket_offers").insert(
-      values.ticketOffers.map((offer) => ({ event_revision_id: revisionId, ...offer })),
+      values.ticketOffers.map((offer) => ({
+        event_revision_id: revisionId,
+        ...offer,
+        amount_minor: offer.amount_minor == null ? null : String(offer.amount_minor),
+        min_amount_minor: offer.min_amount_minor == null ? null : String(offer.min_amount_minor),
+        max_amount_minor: offer.max_amount_minor == null ? null : String(offer.max_amount_minor),
+      })),
     );
     if (error) return error;
   }

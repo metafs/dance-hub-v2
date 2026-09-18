@@ -15,9 +15,9 @@ export type TicketOfferInput = {
   price_type: TicketPriceType;
   label: string | null;
   currency: string | null;
-  amount_minor: number | null;
-  min_amount_minor: number | null;
-  max_amount_minor: number | null;
+  amount_minor: string | number | null;
+  min_amount_minor: string | number | null;
+  max_amount_minor: string | number | null;
   notes: string | null;
   display_order: number;
 };

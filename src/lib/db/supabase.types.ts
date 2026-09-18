@@ -1,4 +1,4 @@
-import type { Database as GeneratedDatabase } from "./database.types";
+import type { Database as GeneratedDatabase } from "../database.types";
 
 type SerializedBigint = string | null;
 type TicketOfferTable = GeneratedDatabase["public"]["Tables"]["event_ticket_offers"];
