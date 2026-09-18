@@ -8,8 +8,12 @@ DANCE HUB is a structured information platform for dance and performance events,
 - Product scope: `docs/product/scope.md`
 - Domain glossary: `docs/product/glossary.md`
 - Architecture overview: `ARCHITECTURE.md`
+- Code structure and import boundaries: `docs/architecture/code-structure.md`
+- Media architecture: `docs/architecture/media.md`
+- Observability: `docs/architecture/observability.md`
 - Accepted architecture decisions: `docs/adr/README.md`
 - MVP implementation roadmap: `docs/plans/mvp-implementation-roadmap.md`
+- Pull-request labels and evidence: `docs/ops/pull-request-labels.md`
 - AI development workflow: `docs/ai/workflow.md`
 
 ## Agent entry points
@@ -31,7 +35,7 @@ pnpm db:start
 pnpm dev
 ```
 
-`pnpm check` runs lint, type checking, and unit tests. `pnpm verify` additionally builds the production application. `pnpm db:reset` rebuilds the local database from committed migrations and seed data. `pnpm db:types` generates `src/lib/db/database.types.ts` from that schema, and `pnpm db:types:check` fails when the committed artifact is stale.
+`pnpm check` runs lint, type checking, and unit tests. `pnpm verify:app` adds the production build, `pnpm verify:database` resets and tests a running local Supabase instance before critical E2E, and `pnpm verify` runs both verification groups. `pnpm db:reset` rebuilds the local database from committed migrations and seed data.
 
 The first migration creates Organization Applications, Organizations, Memberships, Platform Admins, and canonical Tokyo / Kanagawa Venues. Organization approval must use `approve_organization_application`, which creates the Organization and initial Owner in the same transaction.
 

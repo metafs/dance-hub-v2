@@ -3,16 +3,20 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
-import { requirePlatformAdmin } from "@/lib/auth/authorization";
-import { formText } from "@/lib/forms/input";
+import { requirePlatformAdmin } from "@/features/moderation/policy";
 
 export async function reviewCandidate(formData: FormData) {
-  const kind = formText(formData, "kind");
-  const action = formText(formData, "action");
-  const candidateId = formText(formData, "candidateId");
-  const reason = formText(formData, "reason");
-  const survivorId = formText(formData, "survivorId");
-  if (!candidateId || !reason || !["artist", "venue"].includes(kind)) redirect("/admin/entities?error=invalid-review");
+  const kind = String(formData.get("kind") ?? "");
+  const action = String(formData.get("action") ?? "");
+  const candidateId = String(formData.get("candidateId") ?? "");
+  const reason = String(formData.get("reason") ?? "").trim();
+  const survivorId = String(formData.get("survivorId") ?? "");
+
+  if (!candidateId || !reason || !["artist", "venue"].includes(kind) || !["activate", "reject", "merge"].includes(action)) {
+    redirect("/admin/entities?error=invalid-review");
+  }
+  if (action === "merge" && !survivorId) redirect("/admin/entities?error=invalid-review");
+
   const { supabase } = await requirePlatformAdmin();
   const { error } = kind === "artist"
     ? action === "activate"
@@ -25,6 +29,7 @@ export async function reviewCandidate(formData: FormData) {
       : action === "reject"
         ? await supabase.rpc("reject_venue_candidate", { candidate_id: candidateId, reason })
         : await supabase.rpc("merge_venue_candidate", { candidate_id: candidateId, survivor_venue_id: survivorId, reason });
+
   if (error) redirect("/admin/entities?error=review-failed");
   revalidatePath("/admin/entities");
   redirect("/admin/entities?reviewed=1");
