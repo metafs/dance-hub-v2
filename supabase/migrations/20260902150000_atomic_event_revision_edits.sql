@@ -12,7 +12,7 @@ as $$
 declare
   offer jsonb;
 begin
-  if jsonb_typeof(revision_content) <> 'object' then
+  if revision_content is null or jsonb_typeof(revision_content) is distinct from 'object' then
     raise exception 'event revision content must be an object';
   end if;
 

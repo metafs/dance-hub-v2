@@ -22,7 +22,7 @@ begin
 end;
 $$;
 
-select plan(9);
+select plan(10);
 
 set local role authenticated;
 select set_config('request.jwt.claim.sub', '33333333-3333-4333-8333-333333333333', true);
@@ -42,6 +42,12 @@ select is(
   'atomic Event creation includes exactly one Revision'
 );
 
+select set_config(
+  'test.organization_event_count_before_failure',
+  (select count(*)::text from public.events where owner_organization_id = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'),
+  true
+);
+
 select throws_ok(
   $$select public.create_event_draft_with_content(
     'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
@@ -54,9 +60,15 @@ select throws_ok(
 );
 
 select is(
-  (select count(*)::integer from public.events event join public.event_revisions revision on revision.event_id = event.id where event.owner_organization_id = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa' and revision.title = 'Atomic create rollback'),
+  (select count(*)::integer from public.events where owner_organization_id = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'),
+  current_setting('test.organization_event_count_before_failure')::integer,
+  'failed aggregate creation leaves the organization Event count unchanged'
+);
+
+select is(
+  (select count(*)::integer from public.event_revisions where title = 'Atomic create rollback'),
   0,
-  'failed aggregate creation leaves no partial Event'
+  'failed aggregate creation leaves no partial Revision'
 );
 
 reset role;
