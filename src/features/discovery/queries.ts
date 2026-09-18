@@ -26,21 +26,33 @@ import {
  * makes an embedded join ambiguous; the number of round trips is fixed
  * regardless of how many Events match.
  */
+type PublicEventScope = {
+  revisionIds?: readonly string[];
+  eventIds?: readonly string[];
+  parentEventId?: string;
+};
+
 async function loadPublicEvents(
-  onlyRevisionIds?: readonly string[],
+  scope: PublicEventScope = {},
 ): Promise<DiscoveryEventSummary[]> {
-  if (onlyRevisionIds && onlyRevisionIds.length === 0) return [];
+  if (scope.revisionIds?.length === 0 || scope.eventIds?.length === 0) return [];
 
   const supabase = await createSupabaseServerClient();
 
-  const eventQuery = supabase
+  let eventQuery = supabase
     .from("events")
     .select("id, published_revision_id, cancelled_at, parent_event_id, owner_organization_id")
     .not("published_revision_id", "is", null);
 
-  const { data: events } = onlyRevisionIds
-    ? await eventQuery.in("published_revision_id", onlyRevisionIds)
-    : await eventQuery;
+  if (scope.revisionIds) {
+    eventQuery = eventQuery.in("published_revision_id", scope.revisionIds);
+  }
+  if (scope.eventIds) eventQuery = eventQuery.in("id", scope.eventIds);
+  if (scope.parentEventId) {
+    eventQuery = eventQuery.eq("parent_event_id", scope.parentEventId);
+  }
+
+  const { data: events } = await eventQuery;
 
   if (!events?.length) return [];
 
@@ -101,7 +113,22 @@ export async function listPublicEvents(filters: DiscoveryFilters = {}) {
  * the current approved one contributes nothing.
  */
 export async function listPublicEventsForRevisions(revisionIds: readonly string[]) {
-  return sortByDiscoveryOrder(await loadPublicEvents(revisionIds));
+  return sortByDiscoveryOrder(await loadPublicEvents({ revisionIds }));
+}
+
+/**
+ * The published child Events of a Festival, in date order. A Festival is one
+ * level deep and its children belong to the same Organization (ADR-0009), so
+ * this needs no recursion.
+ */
+export async function listFestivalChildEvents(parentEventId: string) {
+  return sortByDiscoveryOrder(await loadPublicEvents({ parentEventId }));
+}
+
+/** One Event's public summary, for linking a child Event back to its Festival. */
+export async function getPublicEventSummary(eventId: string) {
+  const [summary] = await loadPublicEvents({ eventIds: [eventId] });
+  return summary ?? null;
 }
 
 /** `apply` Events ordered by application deadline (REQ-DISCOVERY-003). */

@@ -63,7 +63,7 @@ export async function getPublicEventPageData(eventId: string) {
   const supabase = await createSupabaseServerClient();
   const { data: event } = await supabase
     .from("events")
-    .select("id, published_revision_id, cancelled_at, cancellation_reason")
+    .select("id, published_revision_id, cancelled_at, cancellation_reason, parent_event_id")
     .eq("id", eventId)
     .maybeSingle();
 
