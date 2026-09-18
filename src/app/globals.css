@@ -84,6 +84,9 @@ textarea { resize: vertical; }
 .notice { margin: 1rem 0; border-radius: .8rem; padding: .9rem 1rem; font-weight: 700; }
 .notice-error { border: 1px solid #e3b4aa; background: #fff2ef; color: #8e3025; }
 .notice-success { border: 1px solid #a9cfb8; background: #effbf3; color: var(--success); }
+.state-badge { display: inline-block; margin-left: .6rem; border-radius: 999px; padding: .15rem .6rem; font-size: .73rem; letter-spacing: .08em; }
+.state-badge[data-state="past"] { border: 1px solid var(--line); background: var(--paper); color: var(--muted); }
+.state-badge[data-state="cancelled"] { border: 1px solid #e3b4aa; background: #fff2ef; color: #8e3025; }
 
 .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 1rem; background: var(--surface); }
 table { width: 100%; border-collapse: collapse; }

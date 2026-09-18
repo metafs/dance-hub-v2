@@ -3,11 +3,16 @@ import { notFound } from "next/navigation";
 
 import { formatTokyoDateTime } from "@/lib/datetime";
 import {
+  eventTypeLabel,
   ticketOfferPrice,
   type TicketOfferInput,
   type TicketPriceType,
 } from "@/features/revisions/schema";
 import { getPublicEventPageData } from "@/features/events/queries";
+import {
+  eventPublicationState,
+  eventPublicationStateLabel,
+} from "@/features/events/publication-state";
 
 export default async function PublicEventPage({
   params,
@@ -29,6 +34,13 @@ export default async function PublicEventPage({
     ticketOffers,
   } = data;
 
+  const state = eventPublicationState({
+    eventType: revision.event_type,
+    cancelledAt: event.cancelled_at,
+    applicationDeadline: revision.application_deadline,
+    schedules: schedules ?? [],
+  });
+
   return (
     <main className="workspace-main narrow-main public-event">
       <Link className="back-link" href="/">← DANCE HUB</Link>
@@ -39,7 +51,14 @@ export default async function PublicEventPage({
       ) : null}
       <section className="hero-card">
         <div>
-          <p className="eyebrow">{revision.event_type}</p>
+          <p className="eyebrow">
+            {revision.event_type ? eventTypeLabel(revision.event_type) : null}
+            {state === "published" ? null : (
+              <span className="state-badge" data-state={state}>
+                {eventPublicationStateLabel(state)}
+              </span>
+            )}
+          </p>
           <h1>{revision.title}</h1>
           <p className="lede">{revision.description}</p>
         </div>
