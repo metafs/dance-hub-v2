@@ -6,7 +6,7 @@ export async function getPublicEventPageData(eventId: string) {
   const supabase = await createSupabaseServerClient();
   const { data: event } = await supabase
     .from("events")
-    .select("id, published_revision_id, cancelled_at, cancellation_reason, parent_event_id")
+    .select("id, published_revision_id, cancelled_at, cancellation_reason, parent_event_id, owner_organization_id")
     .eq("id", eventId)
     .maybeSingle();
 
@@ -65,8 +65,17 @@ export async function getPublicEventPageData(eventId: string) {
       .maybeSingle(),
   ]);
 
+  // The publishing-Organizations policy exposes the name of an Organization
+  // that owns a published Event; it is null when that policy does not admit it.
+  const { data: organization } = await supabase
+    .from("organizations")
+    .select("name")
+    .eq("id", event.owner_organization_id)
+    .maybeSingle();
+
   return {
     data: {
+      organization,
       accessLinks,
       credits,
       links,
