@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import type { Database } from "@/lib/db/database.types";
+import type { Database } from "@/lib/database.types";
 import { formText, httpUrl, tokyoDateTime } from "../forms/input";
 import type { EventRevisionField, EventRevisionFieldErrors, EventRevisionFormValues } from "./revision-action-state";
 import { parseTicketOffers, ticketPriceTypes, type TicketOfferDraft, type TicketOfferInput } from "./ticket-offers";

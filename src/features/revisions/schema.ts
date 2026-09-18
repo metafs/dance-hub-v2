@@ -1,4 +1,4 @@
-import type { Database } from "@/lib/db/database.types";
+import type { Database } from "@/lib/database.types";
 
 export const ticketPriceTypes = [
   "fixed",
