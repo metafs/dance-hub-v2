@@ -22,7 +22,7 @@ function generatedSchemaTypes(output) {
       return true;
     }
 
-    if (line === "      },\n" || line === "      }\n") skippingAdapterFunction = false;
+    if (/^      },?\r?\n?$/.test(line)) skippingAdapterFunction = false;
     return false;
   }).join("");
 }
