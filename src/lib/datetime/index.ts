@@ -33,3 +33,42 @@ export function tokyoDateTime(value: string) {
   const parsed = new Date(`${withSeconds}+09:00`);
   return Number.isNaN(parsed.getTime()) ? null : parsed.toISOString();
 }
+
+const tokyoDatePattern = /^\d{4}-\d{2}-\d{2}$/;
+const dayInMilliseconds = 24 * 60 * 60 * 1000;
+
+/**
+ * The Tokyo calendar day an instant falls on, as `YYYY-MM-DD`. Date-only and
+ * all-day Schedules use this boundary rather than the UTC day (REQ-EVENT-003).
+ */
+export function tokyoDateKey(value: string) {
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return null;
+
+  return new Intl.DateTimeFormat("sv-SE", {
+    timeZone: TOKYO_TIME_ZONE,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(parsed);
+}
+
+/** The instant a `YYYY-MM-DD` Tokyo calendar day starts. */
+export function tokyoDayStart(date: string) {
+  if (!tokyoDatePattern.test(date)) return null;
+
+  const parsed = new Date(`${date}T00:00:00+09:00`);
+  return Number.isNaN(parsed.getTime()) ? null : parsed.toISOString();
+}
+
+/**
+ * The instant the next Tokyo calendar day starts, for use as an exclusive upper
+ * bound in date-range filters. Japan observes no daylight saving time, so the
+ * day is always exactly 24 hours long.
+ */
+export function tokyoDayEndExclusive(date: string) {
+  const start = tokyoDayStart(date);
+  if (!start) return null;
+
+  return new Date(new Date(start).getTime() + dayInMilliseconds).toISOString();
+}

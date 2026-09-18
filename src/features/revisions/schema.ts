@@ -30,6 +30,54 @@ export function isEventType(value: string): value is EventType {
   return eventTypes.some((eventType) => eventType === value);
 }
 
+export const eventTypeGroups = [
+  "watch",
+  "participate",
+  "apply",
+  "container",
+  "other",
+] as const;
+
+export type EventTypeGroup = (typeof eventTypeGroups)[number];
+
+// REQ-EVENT-004 fixes the group and the display label for each Event Type.
+// ADR-0008 keeps both in the application layer so regrouping or relabelling
+// never requires a migration.
+const eventTypeTaxonomy = {
+  performance: { group: "watch", label: "公演" },
+  open_studio: { group: "watch", label: "オープンスタジオ" },
+  talk: { group: "watch", label: "トーク" },
+  workshop: { group: "participate", label: "ワークショップ" },
+  audition: { group: "apply", label: "オーディション" },
+  open_call: { group: "apply", label: "公募" },
+  residency: { group: "apply", label: "レジデンス" },
+  festival: { group: "container", label: "フェスティバル" },
+  other: { group: "other", label: "その他" },
+} as const satisfies Record<EventType, { group: EventTypeGroup; label: string }>;
+
+export function eventTypeGroup(eventType: EventType): EventTypeGroup {
+  return eventTypeTaxonomy[eventType].group;
+}
+
+export function eventTypeLabel(eventType: EventType): string {
+  return eventTypeTaxonomy[eventType].label;
+}
+
+/**
+ * `apply` group Events carry a required application deadline, may publish with
+ * zero Schedules, and become past once the deadline passes rather than once
+ * every Schedule ends (REQ-EVENT-003, REQ-EVENT-007, REQ-EVENT-008, ADR-0008).
+ */
+export function isApplyEventType(eventType: EventType): boolean {
+  return eventTypeGroup(eventType) === "apply";
+}
+
+export const eventTypeOptions = eventTypes.map((eventType) => ({
+  value: eventType,
+  label: eventTypeTaxonomy[eventType].label,
+  group: eventTypeTaxonomy[eventType].group,
+}));
+
 export type TicketOfferInput = {
   price_type: TicketPriceType;
   label: string | null;
