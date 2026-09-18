@@ -1,11 +1,22 @@
 import Link from "next/link";
 
-export default function Home() {
+import DiscoveryEventList from "./discovery-event-list";
+import { listPublicEvents } from "../queries";
+
+export default async function Home() {
+  const events = await listPublicEvents();
+  const upcoming = events.filter((event) => event.state === "published").slice(0, 6);
+
   return (
     <main className="landing-shell">
       <nav className="landing-nav" aria-label="メインナビゲーション">
         <span className="wordmark">DANCE HUB</span>
-        <Link className="button button-quiet" href="/login">Organizer login</Link>
+        <div className="button-row">
+          <Link className="button button-quiet" href="/events">Event</Link>
+          <Link className="button button-quiet" href="/calendar">Calendar</Link>
+          <Link className="button button-quiet" href="/open-calls">募集中</Link>
+          <Link className="button button-quiet" href="/login">Organizer login</Link>
+        </div>
       </nav>
       <section className="landing-hero">
         <p className="eyebrow">Dance information, held with care.</p>
@@ -15,19 +26,19 @@ export default function Home() {
           つなぎ、公開とアーカイブを支える情報基盤です。
         </p>
         <div className="button-row">
-          <Link className="button button-primary" href="/login">Organization業務を始める</Link>
-          <a className="button button-secondary" href="#about">MVPについて</a>
+          <Link className="button button-primary" href="/events">Eventを探す</Link>
+          <Link className="button button-secondary" href="/calendar">Calendarで見る</Link>
         </div>
       </section>
-      <section className="landing-about" id="about">
-        <p className="eyebrow">M2 / Identity &amp; Onboarding</p>
-        <div>
-          <h2>承認された主体だけが、確かな情報を育てる。</h2>
-          <p>
-            Organizerの申請からPlatform Adminの審査、初期Ownerの付与までを
-            ひとつの安全なworkflowとして提供します。
-          </p>
+      <section className="landing-discovery">
+        <div className="section-heading">
+          <h2>近日開催</h2>
+          <Link className="text-link" href="/events">すべてのEvent →</Link>
         </div>
+        <DiscoveryEventList
+          emptyMessage="公開中のEventはまだありません。"
+          events={upcoming}
+        />
       </section>
     </main>
   );
