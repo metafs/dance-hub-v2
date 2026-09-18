@@ -34,6 +34,7 @@ export default async function PublicEventPage({
     credits,
     links,
     media,
+    organization,
     revision,
     schedules,
     ticketOffers,
@@ -83,6 +84,9 @@ export default async function PublicEventPage({
             )}
           </p>
           <h1>{revision.title}</h1>
+          {organization?.name ? (
+            <p className="organizer-line">主催: {organization.name}</p>
+          ) : null}
           <p className="lede">{revision.description}</p>
         </div>
       </section>
