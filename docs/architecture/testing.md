@@ -20,9 +20,13 @@
 
 ## Standard validation contract
 
-The executable command definitions and CI locations are canonical in
-[code structure](code-structure.md#validation-locations). They cover application
-lint/type/unit/build checks, local database and RLS tests, generated database-type
-freshness, and critical E2E coverage against local Supabase in CI.
+Once tooling is installed:
+
+- `pnpm check`: lint, typecheck, and unit tests.
+- `pnpm verify:app`: `check` and the production build.
+- `pnpm verify:database`: reset and test the running local database, then run critical E2E.
+- `pnpm verify`: the complete `verify:app` and `verify:database` contract.
+
+Database verification assumes local Supabase is running and the application environment points to it. CI installs the browser and exports the local Supabase URL and publishable key before invoking `verify:database`.
 
 Every migration must be applicable to an empty local database with seed fixtures that cover Tokyo, Kanagawa, roles, revision states, candidates, apply Events, and Festival children.
