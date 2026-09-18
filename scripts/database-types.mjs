@@ -12,19 +12,27 @@ const adapterFunctionNames = new Set([
 
 function generatedSchemaTypes(output) {
   let skippingAdapterFunction = false;
-  return output.split(/(?<=\n)/).filter((line) => {
+  const schemaTypes = [];
+
+  for (const line of output.split(/\r?\n/)) {
     if (!skippingAdapterFunction) {
-      const match = line.match(/^      ([a-z_]+): \{$/);
+      const match = line.match(/^ {6}([a-z_]+): \{$/);
       if (match && adapterFunctionNames.has(match[1])) {
         skippingAdapterFunction = true;
-        return false;
+        continue;
       }
-      return true;
+      schemaTypes.push(line);
+      continue;
     }
 
-    if (/^      },?\r?\n?$/.test(line)) skippingAdapterFunction = false;
-    return false;
-  }).join("");
+    if (/^ {6}},?$/.test(line)) skippingAdapterFunction = false;
+  }
+
+  if (skippingAdapterFunction) {
+    throw new Error("Could not find the end of an adapter RPC type block.");
+  }
+
+  return schemaTypes.join("\n");
 }
 
 if (mode !== "--write" && mode !== "--check") {
