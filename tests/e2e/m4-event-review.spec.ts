@@ -25,6 +25,9 @@ test("Event revision is reviewed before public release, then cancellation remain
   await login(page, "owner@example.com");
   await page.goto(`/workspace/${fixtureOrganizationId}/events`);
   const draft = page.getByRole("heading", { name: "新しいEventを作成" }).locator("..");
+  await draft.getByRole("button", { name: "下書きを作成" }).click();
+  await expect(draft.getByText("Event名を入力してください。")).toBeVisible();
+  await expect(draft.getByLabel("Event名")).toHaveAttribute("aria-invalid", "true");
   await draft.getByLabel("Event名").fill(eventTitle);
   await draft.getByLabel("説明").fill("First reviewable M4 event");
   await draft.locator('select[name="eventType"]').selectOption("performance");
@@ -51,6 +54,11 @@ test("Event revision is reviewed before public release, then cancellation remain
   await draft.getByRole("button", { name: "下書きを作成" }).click();
   await expect(page).toHaveURL(/\/events\/[0-9a-f-]+/);
   const eventId = new URL(page.url()).pathname.split("/").at(-1)!;
+  await page.getByLabel("説明").fill("");
+  await page.getByRole("button", { name: "審査へ提出" }).click();
+  await expect(page.getByText("審査提出には説明が必要です。")).toBeVisible();
+  await expect(page.getByLabel("説明")).toHaveAttribute("aria-invalid", "true");
+  await page.getByLabel("説明").fill("First reviewable M4 event");
   await page.getByRole("button", { name: "審査へ提出" }).click();
   await expect(page.getByText("審査へ提出しました。")).toBeVisible();
   await logout(page);

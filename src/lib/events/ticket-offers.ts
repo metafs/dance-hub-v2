@@ -1,3 +1,5 @@
+import { formText } from "../forms/input";
+
 export const ticketPriceTypes = [
   "fixed",
   "free",
@@ -34,10 +36,6 @@ export type TicketOfferDraft = {
 };
 
 const priceTypeSet = new Set<string>(ticketPriceTypes);
-
-function formText(formData: FormData, name: string) {
-  return String(formData.get(name) ?? "").trim();
-}
 
 function minorUnit(value: string) {
   if (!/^\d+$/.test(value)) return null;

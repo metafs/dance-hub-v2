@@ -16,6 +16,7 @@ Every public Event and public change requires Platform Administrator approval. O
 - Schedules, Artist credits, Ticket Offers, Ticket Links, external links, media, and proposed Festival parent changes belong to the revision under review. Ticket Offers and Ticket Links remain independent as defined by ADR-0011.
 - Owner, Admin, and Editor may create drafts and submit reviews. Only Platform Administrators may request changes or approve. `created_by` is immutable Revision authorship and does not itself grant access after membership changes.
 - Approval atomically updates the public revision and applies approved structural changes such as Festival parent assignment.
+- Creating an Event draft and replacing a Revision's fields and related content (including optional submission) each run in one database transaction.
 - An approved cancellation decision sets `Event.cancelled_at` and a public cancellation reason without removing its published revision.
 
 ## Draft and review contract

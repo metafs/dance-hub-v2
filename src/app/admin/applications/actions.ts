@@ -4,11 +4,12 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { requirePlatformAdmin } from "@/lib/auth/authorization";
+import { formText } from "@/lib/forms/input";
 
 function reviewValues(formData: FormData) {
   return {
-    applicationId: String(formData.get("applicationId") ?? ""),
-    reason: String(formData.get("reason") ?? "").trim(),
+    applicationId: formText(formData, "applicationId"),
+    reason: formText(formData, "reason"),
   };
 }
 

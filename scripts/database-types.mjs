@@ -4,6 +4,36 @@ import { resolve } from "node:path";
 
 const mode = process.argv[2];
 const outputPath = resolve("src/lib/database.types.ts");
+const adapterFunctionNames = new Set([
+  "create_event_draft_with_content",
+  "replace_event_revision_content",
+  "save_event_revision_with_content",
+]);
+
+function generatedSchemaTypes(output) {
+  let skippingAdapterFunction = false;
+  const schemaTypes = [];
+
+  for (const line of output.split(/\r?\n/)) {
+    if (!skippingAdapterFunction) {
+      const match = line.match(/^ {6}([a-z_]+): \{$/);
+      if (match && adapterFunctionNames.has(match[1])) {
+        skippingAdapterFunction = true;
+        continue;
+      }
+      schemaTypes.push(line);
+      continue;
+    }
+
+    if (/^ {6}},?$/.test(line)) skippingAdapterFunction = false;
+  }
+
+  if (skippingAdapterFunction) {
+    throw new Error("Could not find the end of an adapter RPC type block.");
+  }
+
+  return schemaTypes.join("\n");
+}
 
 if (mode !== "--write" && mode !== "--check") {
   console.error("Usage: node scripts/database-types.mjs --write|--check");
@@ -21,8 +51,13 @@ if (generated.status !== 0) {
   process.exit(generated.status ?? 1);
 }
 
+// These aggregate RPCs use JSON payloads and are typed in supabase.types.ts,
+// alongside the bigint serialization adapter. Keep generated table/schema
+// types reproducible without duplicating those application-facing RPC types.
+const schemaTypes = generatedSchemaTypes(generated.stdout);
+
 if (mode === "--write") {
-  writeFileSync(outputPath, generated.stdout);
+  writeFileSync(outputPath, schemaTypes);
   console.log(`Generated ${outputPath}`);
   process.exit(0);
 }
@@ -36,7 +71,7 @@ try {
   process.exit(1);
 }
 
-if (committed !== generated.stdout) {
+if (committed !== schemaTypes) {
   console.error("Database types are stale. Run `pnpm db:types` and commit the result.");
   process.exit(1);
 }

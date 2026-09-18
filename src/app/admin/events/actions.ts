@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { requirePlatformAdmin } from "@/lib/auth/authorization";
+import { formText } from "@/lib/forms/input";
 
 type ReviewValues = {
   eventId: string;
@@ -13,9 +14,9 @@ type ReviewValues = {
 
 function reviewValues(formData: FormData): ReviewValues {
   return {
-    eventId: String(formData.get("eventId") ?? ""),
-    targetId: String(formData.get("targetId") ?? ""),
-    reason: String(formData.get("reason") ?? "").trim(),
+    eventId: formText(formData, "eventId"),
+    targetId: formText(formData, "targetId"),
+    reason: formText(formData, "reason"),
   };
 }
 
