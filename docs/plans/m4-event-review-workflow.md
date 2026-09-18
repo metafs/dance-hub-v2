@@ -23,3 +23,5 @@ The User who most recently submitted a Revision, or requested a cancellation, re
 - Owner and Admin can request cancellation and Platform Admin can approve it.
 - Revision and cancellation decisions create an immutable, recipient-only notification whose read state can be updated.
 - E2E covers the complete revision and cancellation journeys.
+
+The current main-image record and publication validation establish the Revision data contract. Actual upload, private storage, and approved public delivery are tracked as the independent MVP blocker in `docs/plans/media-delivery.md`.

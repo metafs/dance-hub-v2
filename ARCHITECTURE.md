@@ -2,7 +2,7 @@
 
 **Status:** Draft
 **Version:** 0.3
-**Last Updated:** 2026-09-02
+**Last Updated:** 2026-09-03
 
 ## Purpose
 
@@ -32,11 +32,18 @@ An Event is stable identity. Event Revision contains mutable content; only the E
 
 Organization Members create and submit work. Platform Admin is a separate role that approves Organization Applications, shared Artist / Venue Candidates, Event Revisions, and cancellations. Artist and Organization stay distinct; Artist / Venue are shared canonical records after moderation.
 
+## Application structure
+
+Application code follows [ADR-0013](docs/adr/0013-use-feature-modules-for-application-domains.md). `src/app` contains App Router composition and routing; implemented domain behavior lives in `src/features/<domain>/`. The initial feature modules are auth, discovery, organizations, events, revisions, shared-entities, media, and moderation. A feature uses only the schema, query, command, policy, and component layers that its existing behavior requires. `src/lib` remains shared infrastructure and cross-domain primitives, while `src/ui` is limited to domain-agnostic presentation. [Code structure](docs/architecture/code-structure.md) is the canonical import-direction and lint-enforcement contract.
+
 ## Source documents
 
 - Product requirements: `docs/product/requirements.md`
 - Product scope: `docs/product/scope.md`
 - Domain model: `docs/architecture/data-model.md`
 - Authorization: `docs/architecture/auth.md`
+- Code structure: `docs/architecture/code-structure.md`
+- Media: `docs/architecture/media.md`
+- Observability: `docs/architecture/observability.md`
 - ADR index: `docs/adr/README.md`
 - Implementation roadmap: `docs/plans/mvp-implementation-roadmap.md`
