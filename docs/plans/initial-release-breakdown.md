@@ -115,19 +115,22 @@ Wave 4
    新規 ADR は衝突しない番号から採番する。
 3. **テキスト検索の実装方式**。`ILIKE` と全文検索インデックスのどちらを採るかで DH-07 の
    migration 内容が変わる。DH-07 は選択肢を PR に明示する。
-4. **生成 DB 型の正本**。下記 DH-18 のとおり、生成されるファイルと import されるファイルが
-   一致しておらず、既に drift が発生している。release 前に正本を決める必要がある。
-5. **匿名ユーザーへ Organization をどこまで公開するか**。下記 DH-19 のとおり、現在の RLS は
-   anon に `organizations` を一切読ませないため、REQ-EVENT-002 の主催 Organization 表示と
-   REQ-DISCOVERY-003 の Organization 名検索が実装できない。
+4. ~~**生成 DB 型の正本**~~ — **決定済み**。`src/lib/database.types.ts` を正本とする。
+   DH-18 を参照。
+5. ~~**匿名ユーザーへ Organization をどこまで公開するか**~~ — **決定済み**。承認済み公開
+   Event を 1 件以上持つ Organization の名称のみを公開する。DH-19 を参照。
 
 ## Structural findings
 
-実装読み取りで見つかった構造上の差異。いずれも本 breakdown では変更しない。
+実装読み取りで見つかった構造上の差異。
 
-### DH-18 — 生成 DB 型が二重化し、実際に import される側が生成対象外（release blocker 候補）
+### DH-18 — 生成 DB 型の二重化（解決済み）
 
-`area:db` / `area:infra`。並列着手は可能だが、正本をどちらにするかの決定が先に要る。
+**Status: 解決済み。** `src/lib/database.types.ts` を正本とし、import 側の複製
+`src/lib/db/database.types.ts` を削除、`AGENTS.md` の area 表も正本へ合わせた。
+`src/lib/db/supabase.types.ts` は元から正本を参照していたため変更していない。
+
+以下は解決前の記録である。
 
 - `scripts/database-types.mjs` の `outputPath` は `src/lib/database.types.ts` であり、
   `pnpm db:types` / `pnpm db:types:check` はこのファイルだけを生成・検証する。
@@ -140,13 +143,23 @@ Wave 4
 - 結果として `pnpm db:types:check` が成功したまま、application の型が schema と
   一致しない状態を許してしまう。
 
-決定が必要な点：どちらを正本とするか、`src/lib/db/supabase.types.ts` の
-serialized bigint adapter を正本の上にどう重ねるか、`AGENTS.md` の area 表を
-どちらに合わせるか。
+（当時の決定事項：どちらを正本とするか、serialized bigint adapter の重ね方、
+`AGENTS.md` の area 表をどちらに合わせるか。）
 
-### DH-19 — 匿名ユーザーが `organizations` を読めず、公開要件を満たせない（M5 blocker）
+### DH-19 — 匿名ユーザーが `organizations` を読めない（解決済み）
 
-`area:db` / `area:auth`。DH-02 と DH-06 の一部がこれに依存する。
+**Status: 解決済み。** `20260919000000_public_organization_read.sql` が、承認済み公開
+Event を 1 件以上持つ Organization に限り `id` と `name` を anon へ公開する。
+`website_url` は anon に出さないため、`docs/product/scope.md` が After Core MVP に
+送っている公開 Organization profile には踏み込んでいない。negative RLS test は
+`supabase/tests/database/public_organization_read.test.sql`。
+
+**残る注意点：** column 権限は policy 単位ではなく role 単位である。`authenticated` は
+既存の table-wide select grant を保持しているため、Organization 非メンバーのログイン
+ユーザーは、公開実績のある Organization の全列を読める（anon は 2 列のみ）。厳密に
+2 列へ揃えるには view か `authenticated` 側の grant 縮小が要る。未決。
+
+以下は解決前の記録である。
 
 - `20260901090000_organizations_and_geography.sql` は
   `revoke all on public.organizations ... from public, anon;` を実行し、
@@ -158,11 +171,8 @@ serialized bigint adapter を正本の上にどう重ねるか、`AGENTS.md` の
 - `artists` と `venues` には `using (true)` の公開 policy と anon への grant があるため、
   この欠落は `organizations` に固有である。
 
-決定が必要な点：匿名に見せる列（名称のみか、`website_url` を含むか）、対象とする
-Organization の範囲（承認済み公開 Event を 1 件以上持つものに限るか、全件か）、および
-`docs/product/scope.md` が After Core MVP に送っている「公開 Organization profile」と
-どう線引きするか。実装時は `AGENTS.md` の evidence 規則に従い、
-`supabase/tests/database/` に negative RLS test を追加する。
+（当時の決定事項：匿名に見せる列、対象とする Organization の範囲、
+`docs/product/scope.md` の公開 Organization profile との線引き。）
 
 ### `src/ui` layer が存在しない
 
