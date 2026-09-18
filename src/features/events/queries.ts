@@ -2,6 +2,63 @@ import "server-only";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
+/**
+ * Title and description of an Event's approved Revision, for page metadata.
+ * Returns null when the Event has no approved Revision; RLS already limits
+ * anonymous reads to the current published Revision.
+ */
+export async function getPublicEventMetadata(eventId: string) {
+  const supabase = await createSupabaseServerClient();
+  const { data: event } = await supabase
+    .from("events")
+    .select("published_revision_id, cancelled_at")
+    .eq("id", eventId)
+    .maybeSingle();
+
+  if (!event?.published_revision_id) return null;
+
+  const { data: revision } = await supabase
+    .from("event_revisions")
+    .select("title, description")
+    .eq("id", event.published_revision_id)
+    .maybeSingle();
+
+  return revision ? { ...revision, cancelledAt: event.cancelled_at } : null;
+}
+
+/**
+ * Every Event a Visitor can open, for the sitemap. Past and cancelled Events
+ * stay listed because REQ-EVENT-007 keeps them public.
+ */
+export async function listPublicEventSitemapEntries() {
+  const supabase = await createSupabaseServerClient();
+  const { data: events } = await supabase
+    .from("events")
+    .select("id, published_revision_id")
+    .not("published_revision_id", "is", null);
+
+  if (!events?.length) return [];
+
+  const revisionIds = events
+    .map((event) => event.published_revision_id)
+    .filter((id): id is string => Boolean(id));
+  const { data: revisions } = await supabase
+    .from("event_revisions")
+    .select("id, reviewed_at")
+    .in("id", revisionIds);
+
+  const reviewedAt = new Map(
+    (revisions ?? []).map((revision) => [revision.id, revision.reviewed_at]),
+  );
+
+  return events.map((event) => ({
+    id: event.id,
+    lastModified: event.published_revision_id
+      ? reviewedAt.get(event.published_revision_id) ?? null
+      : null,
+  }));
+}
+
 export async function getPublicEventPageData(eventId: string) {
   const supabase = await createSupabaseServerClient();
   const { data: event } = await supabase

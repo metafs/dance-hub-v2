@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+
+import { siteUrl } from "@/lib/env";
+
 import "./globals.css";
 
 const geistSans = Geist({
@@ -12,9 +15,23 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const siteName = "DANCE HUB";
+const siteDescription = "ダンスEvent、Artist、Venue、Organizationの情報プラットフォーム";
+const origin = siteUrl();
+
 export const metadata: Metadata = {
-  title: "DANCE HUB",
-  description: "ダンスEvent、Artist、Venue、Organizationの情報プラットフォーム",
+  // metadataBase is omitted when NEXT_PUBLIC_SITE_URL is unset so that Open
+  // Graph URLs stay relative rather than pointing at a guessed host.
+  ...(origin ? { metadataBase: new URL(origin) } : {}),
+  title: { default: siteName, template: `%s | ${siteName}` },
+  description: siteDescription,
+  openGraph: {
+    type: "website",
+    locale: "ja_JP",
+    siteName,
+    title: siteName,
+    description: siteDescription,
+  },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
