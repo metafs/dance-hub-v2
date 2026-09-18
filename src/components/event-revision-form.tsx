@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 
-import { mutateEventDraft } from "@/app/workspace/[organizationId]/events/actions";
+import { mutateEventDraftWithState } from "@/features/revisions/commands";
 import { initialEventRevisionActionState } from "@/lib/events/revision-action-state";
 import type { TicketOfferDraft } from "@/lib/events/ticket-offers";
 
@@ -20,7 +20,7 @@ type Props = {
 };
 
 export function EventRevisionForm(props: Props) {
-  const [state, action, pending] = useActionState(mutateEventDraft, initialEventRevisionActionState);
+  const [state, action, pending] = useActionState(mutateEventDraftWithState, initialEventRevisionActionState);
 
   return <form action={action} className="form-card form-stack" noValidate>
     <input name="organizationId" type="hidden" value={props.organizationId}/>
