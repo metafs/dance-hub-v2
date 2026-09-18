@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
-import { requireUser } from "@/lib/auth/authorization";
+import { requireUser } from "@/features/auth/policy";
 
 export async function markReviewNotificationRead(formData: FormData) {
   const notificationId = Number(formData.get("notificationId"));

@@ -1,4 +1,4 @@
-# ADR-0014: Enforce feature command dependency boundaries
+# ADR-0015: Enforce feature command dependency boundaries
 
 **Status:** Accepted
 **Accepted:** 2026-09-04

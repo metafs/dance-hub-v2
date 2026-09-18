@@ -4,7 +4,7 @@ import {
   markAllReviewNotificationsRead,
   markReviewNotificationRead,
 } from "@/app/workspace/notifications/actions";
-import { requireUser } from "@/lib/auth/authorization";
+import { requireUser } from "@/features/auth/policy";
 import { reviewNotificationHref, reviewNotificationLabel } from "@/lib/review-notifications";
 
 const tokyoDateTime = new Intl.DateTimeFormat("ja-JP", {
