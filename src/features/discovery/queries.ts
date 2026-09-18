@@ -26,13 +26,21 @@ import {
  * makes an embedded join ambiguous; the number of round trips is fixed
  * regardless of how many Events match.
  */
-async function loadPublicEvents(): Promise<DiscoveryEventSummary[]> {
+async function loadPublicEvents(
+  onlyRevisionIds?: readonly string[],
+): Promise<DiscoveryEventSummary[]> {
+  if (onlyRevisionIds && onlyRevisionIds.length === 0) return [];
+
   const supabase = await createSupabaseServerClient();
 
-  const { data: events } = await supabase
+  const eventQuery = supabase
     .from("events")
     .select("id, published_revision_id, cancelled_at, parent_event_id, owner_organization_id")
     .not("published_revision_id", "is", null);
+
+  const { data: events } = onlyRevisionIds
+    ? await eventQuery.in("published_revision_id", onlyRevisionIds)
+    : await eventQuery;
 
   if (!events?.length) return [];
 
@@ -85,6 +93,15 @@ export async function listPublicEvents(filters: DiscoveryFilters = {}) {
   return sortByDiscoveryOrder(
     events.filter((event) => matchesFilters(event, filters)),
   );
+}
+
+/**
+ * The Events published from the given Revisions, for the Artist and Venue
+ * detail pages. RLS still decides what is readable, so a Revision that is not
+ * the current approved one contributes nothing.
+ */
+export async function listPublicEventsForRevisions(revisionIds: readonly string[]) {
+  return sortByDiscoveryOrder(await loadPublicEvents(revisionIds));
 }
 
 /** `apply` Events ordered by application deadline (REQ-DISCOVERY-003). */

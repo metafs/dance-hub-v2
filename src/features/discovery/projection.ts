@@ -11,6 +11,16 @@ import {
 
 export type Prefecture = "TOKYO" | "KANAGAWA";
 
+/** REQ-DISCOVERY-002 names the two MVP Prefectures 東京都 and 神奈川県. */
+const prefectureLabels: Record<Prefecture, string> = {
+  TOKYO: "東京都",
+  KANAGAWA: "神奈川県",
+};
+
+export function prefectureLabel(prefecture: Prefecture) {
+  return prefectureLabels[prefecture];
+}
+
 export type DiscoveryFilters = {
   /** Inclusive Tokyo calendar day, `YYYY-MM-DD`. */
   from?: string | null;
@@ -61,6 +71,7 @@ export type DiscoveryScheduleView = {
 
 export type DiscoveryEventSummary = {
   id: string;
+  publishedRevisionId: string;
   title: string;
   description: string | null;
   eventType: EventType | null;
@@ -147,6 +158,7 @@ export function projectEvents(input: {
 
     summaries.push({
       id: event.id,
+      publishedRevisionId: revisionId,
       title: revision.title,
       description: revision.description,
       eventType: revision.event_type,

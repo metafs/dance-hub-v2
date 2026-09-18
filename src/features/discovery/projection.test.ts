@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   calendarDays,
+  prefectureLabel,
   matchesFilters,
   openApplications,
   projectEvents,
@@ -68,6 +69,7 @@ describe("projectEvents", () => {
     });
 
     expect(summaries.map((summary) => summary.id)).toEqual(["a"]);
+    expect(summaries[0].publishedRevisionId).toBe("a-rev");
   });
 
   it("drops an Event whose Revision row was not returned", () => {
@@ -172,6 +174,13 @@ describe("projectEvents", () => {
       ["finished", "past"],
       ["upcoming", "published"],
     ]);
+  });
+});
+
+describe("prefectureLabel", () => {
+  it("names the two MVP Prefectures as REQ-DISCOVERY-002 does", () => {
+    expect(prefectureLabel("TOKYO")).toBe("東京都");
+    expect(prefectureLabel("KANAGAWA")).toBe("神奈川県");
   });
 });
 
