@@ -1,7 +1,7 @@
 # DANCE HUB — MVP Implementation Roadmap
 
 **Status:** Active
-**Last Updated:** 2026-09-02
+**Last Updated:** 2026-09-03
 
 ## MVP outcome
 
@@ -9,22 +9,23 @@ DANCE HUB の MVP は、東京都・神奈川県のダンス Event を一般ユ�
 
 ## Current foundation
 
-- Next.js、TypeScript、Supabase local、Cloudflare adapter、CI、`pnpm check`、`pnpm verify` が導入済み。
-- Organization Application、Organization Membership、Platform Admin、東京・神奈川 Venue の初期 migration が導入済み。
-- Artist / Venue Candidate の初期 migration が導入済み。
-- Event Revision domain は PR #7 で進行中。
-
-既存 migration は最初の構造を置いた段階であり、状態遷移関数、Owner invariant、公開用 policy、negative RLS test、seed の完成を UI 実装より先に行う。
+- M1 の migration、trusted transition、RLS、deterministic seed、database test が導入済み。
+- M2 の認証・Organization onboarding、M3 の共有 Entity moderation、M4 の Event Revision review journey が完了済み。
+- Ticket Offer は Revision-owned content として追加済み。
+- M5 Public discovery と M6 Release candidate は未着手。
+- Event media はRevision metadataと公開必須検証まで実装済みだが、R2 upload/deliveryは `docs/plans/media-delivery.md` の独立したMVP blockerである。
 
 ## Milestones
 
 ### M1 — Domain integrity gate
 
+**Status:** Complete — detailed plan: `docs/plans/m1-domain-integrity.md`
+
 **Goal:** 後続 UI が依存できる database contract を完成させる。
 
 **Scope:**
 
-- **M1.1 Schema:** PR #7 で Event、Event Revision、Schedule、Venue FK、revision status の migration を空 DB に適用可能にしてmergeする。続いて Artist credit、Ticket / 申込、Link、Media、Festival relation と監査記録を追加する。
+- **M1.1 Schema:** Event、Event Revision、Schedule、Venue FK、revision status、Artist credit、Ticket / 申込、Link、Media、Festival relation、Ticket Offer、監査記録をmigration chainから再構築可能にする。
 - **M1.2 Trusted transitions:** Organization Application の approve / reject と初期 Owner 作成、最後の Owner を失わない制約、Candidate の activate / reject / merge、canonical change request、Revision の submit / request changes / approve / cancel を trusted database function と server use case で実装する。RLS は table への直接的な越権操作を拒否する。
 - **M1.3 Verification:** Tokyo / Kanagawa、各 Role、各 workflow state、`apply`、Festival を含む deterministic seed と positive / negative RLS integration test を CI に追加する。
 
@@ -34,6 +35,8 @@ DANCE HUB の MVP は、東京都・神奈川県のダンス Event を一般ユ�
 
 ### M2 — Identity and Organization onboarding
 
+**Status:** Complete — detailed plan: `docs/plans/m2-identity-organization-onboarding.md`
+
 **Goal:** Organizer と Platform Admin が安全に業務を開始できる。
 
 **Scope:** login / logout、session、Organization Application form、Admin review queue、Organization selector、Owner / Admin / Editor の server-side authorization。
@@ -41,6 +44,8 @@ DANCE HUB の MVP は、東京都・神奈川県のダンス Event を一般ユ�
 **Done when:** E2E で「申請 → 承認 → 初期 Owner で login → Organization workspace 表示」が通り、未承認・他 Organization・Role 不足操作が拒否される。
 
 ### M3 — Moderated Artist and Venue data
+
+**Status:** Complete — detailed plan: `docs/plans/m3-moderated-entities.md`
 
 **Goal:** Organizer が Event 編集に必要な Artist / Venue を重複や越権なしで用意できる。
 
@@ -50,6 +55,8 @@ DANCE HUB の MVP は、東京都・神奈川県のダンス Event を一般ユ�
 
 ### M4 — Event draft and review workflow
 
+**Status:** Complete — detailed plan: `docs/plans/m4-event-review-workflow.md`
+
 **Goal:** Organizer が公開要件を満たす Event Revision を作り、Platform Admin が審査できる。
 
 **Scope:** Draft editor、Schedule / Venue、Artist credit、Ticket Offer、Ticket / 申込 Link、外部 Link、main image 1 枚と alt text、Festival child、submit、changes requested、approve、公開後 Revision、cancellation review。
@@ -58,6 +65,8 @@ DANCE HUB の MVP は、東京都・神奈川県のダンス Event を一般ユ�
 
 ### M5 — Public discovery
 
+**Status:** Planned — detailed plan: `docs/plans/m5-public-discovery.md`
+
 **Goal:** Visitor が MVP の主要経路から Event を発見できる。
 
 **Scope:** Event 一覧・詳細、Artist / Venue 詳細、Calendar、日付・東京/神奈川・Event Type filter、テキスト検索、Open Call 締切順、Festival 親子、過去・Cancelled 表示。
@@ -65,6 +74,8 @@ DANCE HUB の MVP は、東京都・神奈川県のダンス Event を一般ユ�
 **Done when:** 匿名 E2E が主要探索経路を通り、Schedule 0 件の `apply`、複数 Venue、Festival、過去・中止の境界 test が成功する。
 
 ### M6 — Release candidate
+
+**Status:** Planned — detailed plan: `docs/plans/m6-release-candidate.md`
 
 **Goal:** 公開運用できる品質と復旧手順を揃える。
 

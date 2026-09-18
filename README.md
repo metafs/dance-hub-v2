@@ -8,8 +8,12 @@ DANCE HUB is a structured information platform for dance and performance events,
 - Product scope: `docs/product/scope.md`
 - Domain glossary: `docs/product/glossary.md`
 - Architecture overview: `ARCHITECTURE.md`
+- Code structure and import boundaries: `docs/architecture/code-structure.md`
+- Media architecture: `docs/architecture/media.md`
+- Observability: `docs/architecture/observability.md`
 - Accepted architecture decisions: `docs/adr/README.md`
 - MVP implementation roadmap: `docs/plans/mvp-implementation-roadmap.md`
+- Pull-request labels and evidence: `docs/ops/pull-request-labels.md`
 - AI development workflow: `docs/ai/workflow.md`
 
 ## Agent entry points
@@ -18,6 +22,8 @@ DANCE HUB is a structured information platform for dance and performance events,
 - Claude Code additions: `CLAUDE.md`
 
 ## Status
+
+M1 through M4 are complete: database integrity, Organization onboarding, moderated Artist/Venue data, and Event Revision review are implemented. M5 public discovery and M6 release-candidate work are planned. R2 main-image upload and delivery is an explicit cross-cutting MVP blocker tracked in `docs/plans/media-delivery.md`.
 
 ## Development
 

@@ -20,3 +20,5 @@ Editors, Admins, and Owners may edit and submit an Event Revision. Only an Owner
 - Platform Admin can request changes or approve; a later approved Revision supersedes the published pointer atomically.
 - Owner and Admin can request cancellation and Platform Admin can approve it.
 - E2E covers the complete revision and cancellation journeys.
+
+The current main-image record and publication validation establish the Revision data contract. Actual upload, private storage, and approved public delivery are tracked as the independent MVP blocker in `docs/plans/media-delivery.md`.

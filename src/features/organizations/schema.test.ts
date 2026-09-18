@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { hasOrganizationCapability } from "./roles";
+import { hasOrganizationCapability } from "./schema";
 
 describe("Organization role matrix", () => {
   it("limits member management to owners", () => {
