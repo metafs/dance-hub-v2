@@ -1,0 +1,343 @@
+import { describe, expect, it } from "vitest";
+
+import {
+  calendarDays,
+  matchesFilters,
+  openApplications,
+  projectEvents,
+  sortByDiscoveryOrder,
+  type EventRow,
+  type RevisionRow,
+  type ScheduleRow,
+  type VenueRow,
+} from "./projection";
+
+const now = new Date("2026-04-10T03:00:00.000Z"); // 2026-04-10 12:00 in Tokyo
+
+const venues: VenueRow[] = [
+  { id: "venue-tokyo", name: "Tokyo Venue", prefecture: "TOKYO" },
+  { id: "venue-kanagawa", name: "Kanagawa Venue", prefecture: "KANAGAWA" },
+];
+
+function event(id: string, overrides: Partial<EventRow> = {}): EventRow {
+  return {
+    id,
+    published_revision_id: `${id}-rev`,
+    cancelled_at: null,
+    parent_event_id: null,
+    owner_organization_id: "org-1",
+    ...overrides,
+  };
+}
+
+function revision(id: string, overrides: Partial<RevisionRow> = {}): RevisionRow {
+  return {
+    id: `${id}-rev`,
+    title: id,
+    description: null,
+    event_type: "performance",
+    application_deadline: null,
+    ...overrides,
+  };
+}
+
+function schedule(
+  eventId: string,
+  starts_at: string,
+  venue_id = "venue-tokyo",
+  overrides: Partial<ScheduleRow> = {},
+): ScheduleRow {
+  return {
+    event_revision_id: `${eventId}-rev`,
+    starts_at,
+    ends_at: null,
+    all_day: false,
+    venue_id,
+    ...overrides,
+  };
+}
+
+describe("projectEvents", () => {
+  it("projects only Events that have an approved Revision", () => {
+    const summaries = projectEvents({
+      events: [event("a"), event("b", { published_revision_id: null })],
+      revisions: [revision("a")],
+      schedules: [],
+      venues,
+      now,
+    });
+
+    expect(summaries.map((summary) => summary.id)).toEqual(["a"]);
+  });
+
+  it("drops an Event whose Revision row was not returned", () => {
+    const summaries = projectEvents({
+      events: [event("a")],
+      revisions: [],
+      schedules: [],
+      venues,
+      now,
+    });
+
+    expect(summaries).toEqual([]);
+  });
+
+  it("attaches Venue name and Prefecture to each Schedule, in date order", () => {
+    const [summary] = projectEvents({
+      events: [event("a")],
+      revisions: [revision("a")],
+      schedules: [
+        schedule("a", "2026-05-02T10:00:00.000Z", "venue-kanagawa"),
+        schedule("a", "2026-05-01T10:00:00.000Z", "venue-tokyo"),
+      ],
+      venues,
+      now,
+    });
+
+    expect(summary.schedules.map((item) => [item.startsAt, item.prefecture])).toEqual([
+      ["2026-05-01T10:00:00.000Z", "TOKYO"],
+      ["2026-05-02T10:00:00.000Z", "KANAGAWA"],
+    ]);
+  });
+
+  it("labels the Event Type and resolves the Organization name", () => {
+    const [summary] = projectEvents({
+      events: [event("a")],
+      revisions: [revision("a", { event_type: "open_call" })],
+      schedules: [],
+      venues,
+      organizations: [{ id: "org-1", name: "Fixture Dance Organization" }],
+      now,
+    });
+
+    expect(summary.typeLabel).toBe("公募");
+    expect(summary.organizationName).toBe("Fixture Dance Organization");
+  });
+
+  it("leaves the Organization name null when it was not readable", () => {
+    const [summary] = projectEvents({
+      events: [event("a")],
+      revisions: [revision("a")],
+      schedules: [],
+      venues,
+      now,
+    });
+
+    expect(summary.organizationName).toBeNull();
+  });
+
+  it("derives Festival dates from its published child Events", () => {
+    const summaries = projectEvents({
+      events: [
+        event("fest"),
+        event("child", { parent_event_id: "fest" }),
+        event("draft-child", { parent_event_id: "fest", published_revision_id: null }),
+      ],
+      revisions: [
+        revision("fest", { event_type: "festival" }),
+        revision("child"),
+      ],
+      schedules: [
+        schedule("child", "2026-05-03T10:00:00.000Z"),
+        schedule("draft-child", "2026-05-09T10:00:00.000Z"),
+      ],
+      venues,
+      now,
+    });
+    const festival = summaries.find((summary) => summary.id === "fest");
+
+    expect(festival?.schedules.map((item) => item.startsAt))
+      .toEqual(["2026-05-03T10:00:00.000Z"]);
+  });
+
+  it("marks a cancelled Event cancelled and a finished Event past", () => {
+    const summaries = projectEvents({
+      events: [
+        event("cancelled", { cancelled_at: "2026-04-01T00:00:00.000Z" }),
+        event("finished"),
+        event("upcoming"),
+      ],
+      revisions: [revision("cancelled"), revision("finished"), revision("upcoming")],
+      schedules: [
+        schedule("cancelled", "2026-05-01T10:00:00.000Z"),
+        schedule("finished", "2026-04-01T10:00:00.000Z"),
+        schedule("upcoming", "2026-05-01T10:00:00.000Z"),
+      ],
+      venues,
+      now,
+    });
+
+    expect(summaries.map((summary) => [summary.id, summary.state])).toEqual([
+      ["cancelled", "cancelled"],
+      ["finished", "past"],
+      ["upcoming", "published"],
+    ]);
+  });
+});
+
+describe("matchesFilters", () => {
+  const summaries = projectEvents({
+    events: [event("tokyo"), event("both"), event("apply")],
+    revisions: [
+      revision("tokyo"),
+      revision("both", { event_type: "workshop" }),
+      revision("apply", {
+        event_type: "open_call",
+        application_deadline: "2026-05-20T00:00:00.000Z",
+      }),
+    ],
+    schedules: [
+      schedule("tokyo", "2026-05-01T10:00:00.000Z", "venue-tokyo"),
+      schedule("both", "2026-05-02T10:00:00.000Z", "venue-tokyo"),
+      schedule("both", "2026-06-02T10:00:00.000Z", "venue-kanagawa"),
+    ],
+    venues,
+    now,
+  });
+  const find = (id: string) =>
+    summaries.find((summary) => summary.id === id) as (typeof summaries)[number];
+
+  it("keeps every Event when no filter is set", () => {
+    expect(summaries.every((summary) => matchesFilters(summary, {}))).toBe(true);
+  });
+
+  it("matches an Event with Schedules in both Prefectures under either filter", () => {
+    expect(matchesFilters(find("both"), { prefecture: "TOKYO" })).toBe(true);
+    expect(matchesFilters(find("both"), { prefecture: "KANAGAWA" })).toBe(true);
+    expect(matchesFilters(find("tokyo"), { prefecture: "KANAGAWA" })).toBe(false);
+  });
+
+  it("excludes a Schedule-free apply Event from region and date results", () => {
+    expect(matchesFilters(find("apply"), { prefecture: "TOKYO" })).toBe(false);
+    expect(matchesFilters(find("apply"), { from: "2026-05-01" })).toBe(false);
+    expect(matchesFilters(find("apply"), { eventType: "open_call" })).toBe(true);
+  });
+
+  it("filters on Tokyo calendar days inclusively at both ends", () => {
+    expect(matchesFilters(find("tokyo"), { from: "2026-05-01", to: "2026-05-01" })).toBe(true);
+    expect(matchesFilters(find("tokyo"), { from: "2026-05-02" })).toBe(false);
+    expect(matchesFilters(find("tokyo"), { to: "2026-04-30" })).toBe(false);
+  });
+
+  it("uses the Tokyo day, not the UTC day, at the boundary", () => {
+    // 2026-05-01T15:30Z is 2026-05-02 00:30 in Tokyo.
+    const [lateNight] = projectEvents({
+      events: [event("late")],
+      revisions: [revision("late")],
+      schedules: [schedule("late", "2026-05-01T15:30:00.000Z")],
+      venues,
+      now,
+    });
+
+    expect(matchesFilters(lateNight, { from: "2026-05-02", to: "2026-05-02" })).toBe(true);
+    expect(matchesFilters(lateNight, { from: "2026-05-01", to: "2026-05-01" })).toBe(false);
+  });
+
+  it("requires the same Schedule to satisfy both region and date", () => {
+    // The Kanagawa Schedule is in June, so May + Kanagawa matches nothing.
+    expect(matchesFilters(find("both"), {
+      prefecture: "KANAGAWA",
+      from: "2026-05-01",
+      to: "2026-05-31",
+    })).toBe(false);
+  });
+
+  it("filters by Event Type", () => {
+    expect(matchesFilters(find("both"), { eventType: "workshop" })).toBe(true);
+    expect(matchesFilters(find("both"), { eventType: "performance" })).toBe(false);
+  });
+});
+
+describe("sortByDiscoveryOrder", () => {
+  it("puts upcoming dates first, then undated, then finished most recent first", () => {
+    const summaries = projectEvents({
+      events: [event("finished"), event("undated"), event("soon"), event("later")],
+      revisions: [
+        revision("finished"),
+        revision("undated", { event_type: "open_call" }),
+        revision("soon"),
+        revision("later"),
+      ],
+      schedules: [
+        schedule("finished", "2026-04-01T10:00:00.000Z"),
+        schedule("soon", "2026-04-20T10:00:00.000Z"),
+        schedule("later", "2026-06-20T10:00:00.000Z"),
+      ],
+      venues,
+      now,
+    });
+
+    expect(sortByDiscoveryOrder(summaries).map((summary) => summary.id))
+      .toEqual(["soon", "later", "undated", "finished"]);
+  });
+});
+
+describe("openApplications", () => {
+  it("lists only open apply Events, soonest deadline first", () => {
+    const summaries = projectEvents({
+      events: [event("late"), event("soon"), event("closed"), event("show")],
+      revisions: [
+        revision("late", {
+          event_type: "residency",
+          application_deadline: "2026-06-01T00:00:00.000Z",
+        }),
+        revision("soon", {
+          event_type: "audition",
+          application_deadline: "2026-05-01T00:00:00.000Z",
+        }),
+        revision("closed", {
+          event_type: "open_call",
+          application_deadline: "2026-04-01T00:00:00.000Z",
+        }),
+        revision("show"),
+      ],
+      schedules: [],
+      venues,
+      now,
+    });
+
+    expect(openApplications(summaries).map((summary) => summary.id))
+      .toEqual(["soon", "late"]);
+  });
+});
+
+describe("calendarDays", () => {
+  it("places an Event on every Tokyo day it runs and omits Events with no Schedule", () => {
+    const summaries = projectEvents({
+      events: [event("twice"), event("undated")],
+      revisions: [
+        revision("twice"),
+        revision("undated", {
+          event_type: "open_call",
+          application_deadline: "2026-05-05T00:00:00.000Z",
+        }),
+      ],
+      schedules: [
+        schedule("twice", "2026-05-01T10:00:00.000Z"),
+        schedule("twice", "2026-05-03T10:00:00.000Z"),
+      ],
+      venues,
+      now,
+    });
+
+    expect(calendarDays(summaries)).toEqual([
+      { day: "2026-05-01", events: [summaries[0]] },
+      { day: "2026-05-03", events: [summaries[0]] },
+    ]);
+  });
+
+  it("never places an application deadline on the calendar", () => {
+    const summaries = projectEvents({
+      events: [event("apply")],
+      revisions: [revision("apply", {
+        event_type: "open_call",
+        application_deadline: "2026-05-05T00:00:00.000Z",
+      })],
+      schedules: [],
+      venues,
+      now,
+    });
+
+    expect(calendarDays(summaries)).toEqual([]);
+  });
+});
