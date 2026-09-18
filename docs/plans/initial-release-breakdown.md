@@ -28,10 +28,13 @@ product requirement を定義しない。
 | Media delivery | **未着手（MVP blocker）** | 公開ページは `image-placeholder` を描画し、実体の配信経路がない |
 | M6 Release candidate | 未着手 | metadata / OG / sitemap / robots、accessibility 検証、staging、runbook が存在しない |
 
-公開側 RLS は整備済みで、`events`、`event_revisions`、`event_schedules`、`event_artists`、
-`event_ticket_offers`、`event_ticket_links`、`event_links`、`event_media`、`artists`、`venues`
-に anon 読み取り policy がある。したがって discovery のクエリは、全文検索インデックスを除き
+公開側 RLS はおおむね整備済みで、`events`、`event_revisions`、`event_schedules`、
+`event_artists`、`event_ticket_offers`、`event_ticket_links`、`event_links`、`event_media`、
+`artists`、`venues` に anon 読み取り policy がある。したがって discovery のクエリの大半は
 新規 migration なしで実装できる。
+
+例外が 2 つある。`organizations` には anon 読み取りがなく（DH-19）、テキスト検索用の
+インデックスも存在しない（DH-07）。いずれも migration を要する。
 
 ## Work items
 
@@ -46,7 +49,7 @@ product requirement を定義しない。
 | DH-03 | Calendar 表示。Schedule 開催日のみ対象、Festival は子 Event を表示（REQ-DISCOVERY-001） | `frontend` | DH-01 | DH-01 後 |
 | DH-04 | `apply` Event の応募締切順一覧（REQ-DISCOVERY-003、REQ-EVENT-003 の Schedule 0 件許容） | `frontend` | DH-01 | DH-01 後 |
 | DH-05 | Artist / Venue 公開詳細と関連承認済み Event（REQ-ARTIST-001, REQ-VENUE-001） | `frontend` `backend` | — | 可 |
-| DH-06 | Event 詳細の公開要件充足：Event Type 日本語ラベル、主催 Organization、Festival 親子、過去 / Cancelled 状態表示（REQ-EVENT-001, REQ-EVENT-002, REQ-EVENT-007） | `frontend` | DH-01 | DH-01 後 |
+| DH-06 | Event 詳細の公開要件充足：Event Type 日本語ラベル、主催 Organization、Festival 親子、過去 / Cancelled 状態表示（REQ-EVENT-001, REQ-EVENT-002, REQ-EVENT-007）。主催 Organization 表示は DH-19 に依存 | `frontend` | DH-01, DH-19 | DH-01 後 |
 | DH-07 | Event / Artist / Venue / Organization 名の検索インデックス migration と negative RLS test（REQ-DISCOVERY-003） | `db` | — | 可 |
 | DH-08 | 匿名 critical journey E2E：Schedule 0 件 `apply`、複数 Venue、Festival、過去、中止の境界 | `frontend` | DH-02..DH-06 | 不可 |
 
@@ -114,6 +117,9 @@ Wave 4
    migration 内容が変わる。DH-07 は選択肢を PR に明示する。
 4. **生成 DB 型の正本**。下記 DH-18 のとおり、生成されるファイルと import されるファイルが
    一致しておらず、既に drift が発生している。release 前に正本を決める必要がある。
+5. **匿名ユーザーへ Organization をどこまで公開するか**。下記 DH-19 のとおり、現在の RLS は
+   anon に `organizations` を一切読ませないため、REQ-EVENT-002 の主催 Organization 表示と
+   REQ-DISCOVERY-003 の Organization 名検索が実装できない。
 
 ## Structural findings
 
@@ -137,6 +143,26 @@ Wave 4
 決定が必要な点：どちらを正本とするか、`src/lib/db/supabase.types.ts` の
 serialized bigint adapter を正本の上にどう重ねるか、`AGENTS.md` の area 表を
 どちらに合わせるか。
+
+### DH-19 — 匿名ユーザーが `organizations` を読めず、公開要件を満たせない（M5 blocker）
+
+`area:db` / `area:auth`。DH-02 と DH-06 の一部がこれに依存する。
+
+- `20260901090000_organizations_and_geography.sql` は
+  `revoke all on public.organizations ... from public, anon;` を実行し、
+  `grant select` は `authenticated` にのみ与えている。policy も
+  `to authenticated` で member / Platform Admin に限定されている。
+- したがって匿名ユーザーは `organizations` を 1 行も読めない。
+- しかし REQ-EVENT-002 は公開 Event 詳細に主催 Organization を含められることを求め、
+  REQ-DISCOVERY-003 は Organization 名での検索を求めている。どちらも現状では実装できない。
+- `artists` と `venues` には `using (true)` の公開 policy と anon への grant があるため、
+  この欠落は `organizations` に固有である。
+
+決定が必要な点：匿名に見せる列（名称のみか、`website_url` を含むか）、対象とする
+Organization の範囲（承認済み公開 Event を 1 件以上持つものに限るか、全件か）、および
+`docs/product/scope.md` が After Core MVP に送っている「公開 Organization profile」と
+どう線引きするか。実装時は `AGENTS.md` の evidence 規則に従い、
+`supabase/tests/database/` に negative RLS test を追加する。
 
 ### `src/ui` layer が存在しない
 
