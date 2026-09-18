@@ -7,6 +7,7 @@ export type EnvironmentSource = Readonly<Record<string, string | undefined>>;
 
 const supabaseUrlName = "NEXT_PUBLIC_SUPABASE_URL";
 const supabasePublishableKeyName = "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY";
+const siteUrlName = "NEXT_PUBLIC_SITE_URL";
 
 function requiredValue(source: EnvironmentSource, name: string) {
   const value = source[name]?.trim();
@@ -32,4 +33,25 @@ export function validateEnvironment(source: EnvironmentSource = process.env): En
     supabasePublishableKey: requiredValue(source, supabasePublishableKeyName),
     supabaseUrl: validHttpUrl(source, supabaseUrlName),
   };
+}
+
+/**
+ * The public origin this deployment is served from, used for canonical URLs,
+ * Open Graph URLs, and the sitemap. It is optional rather than part of the
+ * required contract above so that builds and CI, which have no public origin,
+ * keep working; crawler-facing surfaces degrade instead of guessing a host.
+ *
+ * Returns the origin without a trailing slash, or null when unset or invalid.
+ */
+export function siteUrl(source: EnvironmentSource = process.env): string | null {
+  const value = source[siteUrlName]?.trim();
+  if (!value) return null;
+
+  try {
+    const url = new URL(value);
+    if (url.protocol !== "http:" && url.protocol !== "https:") return null;
+    return url.origin;
+  } catch {
+    return null;
+  }
 }
