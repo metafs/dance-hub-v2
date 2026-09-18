@@ -28,6 +28,7 @@ ADRs capture architectural decisions that should remain understandable to future
 | [0012](0012-use-native-runtime-validation.md) | Use native TypeScript runtime validation for environment configuration | Accepted |
 | [0013](0013-use-feature-modules-for-application-domains.md) | Use feature modules for application domains | Accepted |
 | [0014](0014-persist-review-outcomes-in-app.md) | Persist review outcomes in a first-party inbox | Accepted |
+| [0015](0015-enforce-feature-command-boundaries.md) | Enforce feature command dependency boundaries | Accepted |
 
 ## Template
 

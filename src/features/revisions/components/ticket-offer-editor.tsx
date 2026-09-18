@@ -25,7 +25,7 @@ function value(value: string | number | null | undefined) {
   return value == null ? "" : String(value);
 }
 
-export function TicketOfferEditor({ initialOffers = [] }: { initialOffers?: TicketOfferDraft[] }) {
+export function TicketOfferEditor({ initialOffers = [], describedBy }: { initialOffers?: TicketOfferDraft[]; describedBy?: string }) {
   const nextKey = useRef(initialOffers.length);
   const [offers, setOffers] = useState<TicketOfferDraft[]>(initialOffers);
   const isHydrated = useSyncExternalStore(subscribeToHydration, () => true, () => false);
@@ -40,7 +40,7 @@ export function TicketOfferEditor({ initialOffers = [] }: { initialOffers?: Tick
   }
 
   return (
-    <fieldset className="ticket-offer-editor">
+    <fieldset aria-describedby={describedBy} className="ticket-offer-editor">
       <legend>Ticket Offer（料金）</legend>
       <p className="field-help">Ticket Linkとは独立しています。金額は最小通貨単位で入力します（JPY 3,000円 = 3000、EUR 12.50 = 1250）。</p>
       {offers.map((offer, index) => {

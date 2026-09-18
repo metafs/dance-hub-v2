@@ -1,4 +1,4 @@
-import type { Database } from "@/lib/db/database.types";
+import type { Database } from "@/lib/database.types";
 
 export type ReviewNotificationKind = Database["public"]["Enums"]["review_notification_kind"];
 

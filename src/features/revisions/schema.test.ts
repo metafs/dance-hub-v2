@@ -10,7 +10,7 @@ function offerForm(values: Record<string, string>) {
 }
 
 describe("parseTicketOffers", () => {
-  it("parses fixed prices as integer minor units and normalizes currency", () => {
+  it("parses fixed prices as bigint-safe minor-unit strings and normalizes currency", () => {
     const offers = parseTicketOffers(offerForm({ priceType: "fixed", label: "一般前売", currency: "jpy", amountMinor: "3000" }));
     expect(offers).toEqual([{ price_type: "fixed", label: "一般前売", currency: "JPY", amount_minor: "3000", min_amount_minor: null, max_amount_minor: null, notes: null, display_order: 0 }]);
   });
@@ -32,7 +32,7 @@ describe("parseTicketOffers", () => {
     expect(parseTicketOffers(offerForm({ priceType: "free", currency: "JPY", amountMinor: "0" }))).toBeNull();
   });
 
-  it("rejects unlabeled sliding scales and values outside PostgreSQL bigint", () => {
+  it("rejects unlabeled sliding scales and values beyond the PostgreSQL bigint range", () => {
     expect(parseTicketOffers(offerForm({ priceType: "sliding_scale", currency: "JPY", amountMinor: "1000" }))).toBeNull();
     expect(parseTicketOffers(offerForm({ priceType: "fixed", currency: "JPY", amountMinor: "9223372036854775807" }))).toMatchObject([{ amount_minor: "9223372036854775807" }]);
     expect(parseTicketOffers(offerForm({ priceType: "fixed", currency: "JPY", amountMinor: "9223372036854775808" }))).toBeNull();
