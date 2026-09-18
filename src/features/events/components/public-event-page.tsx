@@ -13,6 +13,11 @@ import {
   eventPublicationState,
   eventPublicationStateLabel,
 } from "@/features/events/publication-state";
+import {
+  getPublicEventSummary,
+  listFestivalChildEvents,
+} from "@/features/discovery/queries";
+import { prefectureLabel } from "@/features/discovery/projection";
 
 export default async function PublicEventPage({
   params,
@@ -34,11 +39,29 @@ export default async function PublicEventPage({
     ticketOffers,
   } = data;
 
+  // A Festival carries no Schedules of its own; its dates and its past
+  // determination come from its published child Events (ADR-0009).
+  const children = revision.event_type === "festival"
+    ? await listFestivalChildEvents(eventId)
+    : [];
+  const parent = event.parent_event_id
+    ? await getPublicEventSummary(event.parent_event_id)
+    : null;
+
+  const childSchedules = children.flatMap((child) =>
+    child.schedules.map((schedule) => ({
+      starts_at: schedule.startsAt,
+      ends_at: schedule.endsAt,
+      all_day: schedule.allDay,
+    })));
+
   const state = eventPublicationState({
     eventType: revision.event_type,
     cancelledAt: event.cancelled_at,
     applicationDeadline: revision.application_deadline,
-    schedules: schedules ?? [],
+    schedules: revision.event_type === "festival"
+      ? childSchedules
+      : schedules ?? [],
   });
 
   return (
@@ -69,6 +92,50 @@ export default async function PublicEventPage({
             <span>MAIN IMAGE</span>
             <strong>{media.alt_text}</strong>
           </div>
+        </section>
+      ) : null}
+      {parent ? (
+        <section className="section-block">
+          <h2>フェスティバル</h2>
+          <p>
+            このEventは
+            <Link className="text-link" href={`/events/${parent.id}`}>
+              {parent.title}
+            </Link>
+            のプログラムです。
+          </p>
+        </section>
+      ) : null}
+      {children.length ? (
+        <section className="section-block">
+          <h2>プログラム</h2>
+          <ul className="public-event-list">
+            {children.map((child) => {
+              const first = child.schedules[0];
+              return (
+                <li key={child.id}>
+                  <Link className="text-link" href={`/events/${child.id}`}>
+                    {child.title}
+                  </Link>
+                  <p className="event-list-meta">
+                    {child.typeLabel ? <span>{child.typeLabel}</span> : null}
+                    {first ? (
+                      <span>
+                        {formatTokyoDateTime(first.startsAt)}（東京時間）
+                        {" / "}
+                        {first.venueName}（{prefectureLabel(first.prefecture)}）
+                      </span>
+                    ) : null}
+                    {child.state === "published" ? null : (
+                      <span className="state-badge" data-state={child.state}>
+                        {eventPublicationStateLabel(child.state)}
+                      </span>
+                    )}
+                  </p>
+                </li>
+              );
+            })}
+          </ul>
         </section>
       ) : null}
       <section className="section-block">
