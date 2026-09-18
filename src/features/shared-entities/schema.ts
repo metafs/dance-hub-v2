@@ -1,4 +1,4 @@
-import type { Database } from "@/lib/db/database.types";
+import type { Database } from "@/lib/database.types";
 
 export type ArtistType = Database["public"]["Enums"]["artist_type"];
 export type Prefecture = Database["public"]["Enums"]["prefecture_code"];
