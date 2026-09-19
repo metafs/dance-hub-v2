@@ -30,6 +30,8 @@ ADRs capture architectural decisions that should remain understandable to future
 | [0014](0014-persist-review-outcomes-in-app.md) | Persist review outcomes in a first-party inbox | Accepted |
 | [0015](0015-enforce-feature-command-boundaries.md) | Enforce feature command dependency boundaries | Accepted |
 | [0016](0016-event-main-image-delivery.md) | Event main-image upload and delivery on R2 | Proposed |
+| [0017](0017-no-quality-judgment-in-listing-review.md) | 掲載審査で作品の質を判断しない | Accepted |
+| [0018](0018-publication-states-and-withdrawal.md) | 公開状態と取り下げ | Accepted |
 
 ## Template
 

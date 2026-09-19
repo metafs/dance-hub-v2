@@ -10,6 +10,7 @@ Before making changes, read the documentation relevant to the task:
 
 - Product requirements: `docs/product/requirements.md`
 - Product scope: `docs/product/scope.md`
+- Listing and moderation criteria: `docs/product/listing-policy.md`
 - Domain language: `docs/product/glossary.md`
 - Architecture: `ARCHITECTURE.md`
 - Code structure and import boundaries: `docs/architecture/code-structure.md`
