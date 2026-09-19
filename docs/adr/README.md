@@ -29,7 +29,7 @@ ADRs capture architectural decisions that should remain understandable to future
 | [0013](0013-use-feature-modules-for-application-domains.md) | Use feature modules for application domains | Accepted |
 | [0014](0014-persist-review-outcomes-in-app.md) | Persist review outcomes in a first-party inbox | Accepted |
 | [0015](0015-enforce-feature-command-boundaries.md) | Enforce feature command dependency boundaries | Accepted |
-| [0016](0016-event-main-image-delivery.md) | Event main-image upload and delivery on R2 | Proposed |
+| [0016](0016-event-main-image-delivery.md) | Event main-image upload and delivery on R2 | Accepted |
 
 ## Template
 

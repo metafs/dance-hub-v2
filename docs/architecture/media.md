@@ -24,10 +24,28 @@ type, size, object key, ownership, and delivery scope, and prohibit public expos
 unapproved media or its storage URLs. Server-side authorization and RLS remain required
 alongside UI behavior.
 
-## Implementation status and TBDs
+## Decided contract
 
-The current application source has validation for main-image metadata but does not
-implement an R2 upload API, object-key convention, signed upload flow, delivery URL
-policy, image transformation policy, or media lifecycle cleanup. These are TBDs, not
-implicit product behavior. Any implementation must preserve revision visibility and the
+[ADR-0016](../adr/0016-event-main-image-delivery.md) resolves the upload and delivery
+design. In summary:
+
+- A private R2 bucket per environment, bound as `MEDIA`.
+- Upload bytes pass through the Server Action that already authorizes the Revision
+  edit. The object key is server-derived as `events/{event_id}/{random}.{ext}` and a
+  client-supplied key is never accepted.
+- `/events/{eventId}/image` streams only the main image of the Event's current approved
+  Revision, so nothing is served directly from R2 and approval stays a single database
+  transition.
+- `image/jpeg`, `image/png`, `image/webp`, 10 MB, with a leading-byte signature check
+  against the declared type.
+- Replacement writes a new object and keeps the old one. The MVP deletes nothing,
+  because Revision drafts copy object keys and an object may be referenced by more than
+  one Revision.
+
+## Implementation status
+
+The application source has validation for main-image metadata and does not yet
+implement the contract above: there is no R2 binding, no upload path, and the public
+Event page renders a placeholder. Implementation is tracked as DH-10 and DH-11 in
+`../plans/initial-release-breakdown.md` and must preserve revision visibility and the
 security rules above.
