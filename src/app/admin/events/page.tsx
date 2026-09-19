@@ -83,6 +83,10 @@ export default async function EventReviewQueue({
           <span className="queue-count">{(revisions?.length ?? 0) + (cancellations?.length ?? 0)}件</span>
         </section>
 
+        <p className="field-help">
+          掲載の取り下げ要請（掲載基準F）は <Link className="text-link" href="/admin/withdrawals">取り下げ</Link> から処理します。
+        </p>
+
         {params.error && errorMessages[params.error] ? <p className="notice notice-error" role="alert">{errorMessages[params.error]}</p> : null}
         {params.reviewed && reviewedMessages[params.reviewed] ? <p className="notice notice-success">{reviewedMessages[params.reviewed]}</p> : null}
 

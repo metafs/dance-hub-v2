@@ -2,7 +2,7 @@
 
 **Status:** Draft
 **Last Updated:** 2026-09-19
-**リハーサル:** 一部のみ（審査導線は `tests/e2e/m4-event-review.spec.ts` で被覆。取り下げは未実施）
+**リハーサル:** 一部のみ（審査導線は `tests/e2e/m4-event-review.spec.ts`、取り下げは `supabase/tests/database/event_withdrawal.test.sql` で被覆。本番環境では未実施）
 
 判断基準は `docs/product/listing-policy.md` にある。本 runbook は**操作**だけを扱う。
 掲載可否そのものを迷ったら listing-policy を読むこと。ADR-0017 のとおり、審査で作品の
@@ -31,6 +31,7 @@ values ('<auth.users の id>');
 | `/admin/applications` | Organization 申請 | `approve_organization_application` | `reject_organization_application` |
 | `/admin/entities` | Artist / Venue 候補と変更要求 | `activate_*_candidate`, `approve_*_change_request` | `reject_*`, `merge_*_candidate` |
 | `/admin/events` | Event Revision と中止申請 | `approve_event_revision`, `approve_event_cancellation` | `request_event_revision_changes`, `request_event_cancellation_changes` |
+| `/admin/withdrawals` | 掲載の取り下げ要請 | `restore_event`（復帰） | `withdraw_event`（取り下げ） |
 
 理由は省略できない。`require_moderation_reason` が空文字と空白のみを拒否する。理由は
 主催者への通知に載る（ADR-0014）。
@@ -59,28 +60,16 @@ Revision を承認すると `approve_event_revision` が一つのトランザク
 
 listing-policy F の五つの事由に該当する場合、掲載を取り下げる。
 
-### 実装が無い
-
-ADR-0018 は `withdrawn` 状態を決定したが、**スキーマにも UI にも実装されていない。**
-ADR 本文が「migration は本 ADR とは別に行う」としたまま、その migration がまだ無い。
-
-したがって現状の取り下げは **直接 SQL による手作業である。** 以下は実装が入るまでの
-暫定手順であり、実装を不要にするものではない。
-
 ### 手順
 
-```sql
--- 公開ポインタを外す。1 文で公開面から消える。
-update public.events
-  set published_revision_id = null
-  where id = '<event-id>';
-```
+`/admin/withdrawals` で行う。取り下げ要請は公開ページの URL とともに届くので、その末尾
+の Event ID と理由を入力する。理由は内部記録であり、公開されない。
 
-この 1 文で十分な理由: anon の RLS はすべて
-`is_current_published_event_revision(published_revision_id)` を経由する。ポインタが
-null になると、Event 本体・Revision・Schedule・出演者・チケット・リンク・メディアの
+取り下げると、Event 本体・Revision・Schedule・出演者・チケット・リンク・メディアの
 すべてが同時に不可視になる。一覧・検索・直 URL・sitemap のいずれからも到達しない。
-Revision 行は残るので、承認履歴と集計母数は失われない（ADR-0018 の要求）。
+anon の RLS がすべて `is_current_published_event_revision` を経由しており、その関数が
+`withdrawn_at is null` を要求するためである。Revision 行は残るので、承認履歴と集計母数は
+失われない（ADR-0018 の要求）。
 
 実行後に確認する:
 
@@ -90,16 +79,21 @@ Revision 行は残るので、承認履歴と集計母数は失われない（AD
   （`max-age=3600`）。権利申し立てなど即時停止が必要な場合は
   [media-recovery.md](media-recovery.md) のキャッシュパージを併用する
 
-### この手順の危険
+取り下げ中の Event は Revision を審査に出せない。`assert_event_not_withdrawn` が status
+遷移を拒否するため、あとから承認して公開に戻ってしまうことはない。
 
-1. **次の承認で静かに元に戻る。** `approve_event_revision` は無条件に
-   `published_revision_id` を設定する。主催者が新しい Revision を出し、別の管理者が
-   承認すると、取り下げは解除される。取り下げた Event は記録し、審査時に照合すること。
-   これは運用では埋めきれない。実装が必要な理由そのものである。
-2. **監査ログに書けない。** `event_review_action` enum に取り下げに当たる値が無く、
-   `actor_id` は NOT NULL である。正直な監査行を書く手段が無い。対応記録はリポジトリ外に
-   残し、実装時に遡って補うこと。
-3. **主催者には通知されない。** 通知は審査関数からしか発火しない。手動で連絡する。
+### 誤って取り下げたとき
+
+同じ画面の「取り下げ済み」一覧から復帰できる。復帰も理由が必須で、取り下げと復帰の
+両方が `event_revision_audit_log` に `event_withdrawn` / `event_restored` として残る。
+
+### 残っている制約
+
+- **主催者には通知されない。** 通知は審査関数からしか発火しない。手動で連絡する。
+- **Festival の親子は連動しない。** 公開中 Festival の唯一の子を取り下げると、親は
+  プログラムが空のまま公開され続ける。掲載基準 F-1 が理由を問わず応じると定めている
+  以上、Festival の制約で取り下げを拒否することはできない。親も取り下げるべきかは
+  ADR-0018 が答えていない。運用では、子を取り下げるときに親の状態を確認すること。
 
 ### 出演者本人からの削除要請
 
@@ -112,14 +106,11 @@ Event 全体を取り下げない。当該箇所のみを消す（ADR-0018、lis
 [media-recovery.md](media-recovery.md) の「オブジェクトが失われた場合」末尾の手順で
 メイン画像のポインタを外す。
 
-直接操作は審査履歴に残らない。上記 2 と同じ制約が当てはまる。
+直接操作は審査履歴に残らない。Event 全体の取り下げと違い、部分削除には専用の操作も監査
+アクションも無い。実施した場合は対応記録を別途残すこと。
 
 ## 未解決
 
-- **`withdrawn` が未実装。** ADR-0018 と listing-policy F が約束した運用を、実装が
-  果たしていない。取り下げは手作業であり、次の承認で解除されうる。リリース前に実装する
-  べき最上位の欠落である。
-- 取り下げを表す監査アクションが無い。
 - 管理者のブートストラップに UI が無く、手順が未検証である。
-- 取り下げ済み Event の一覧を得る手段が無い（`published_revision_id is null` は下書き
-  しか持たない Event と区別がつかない）。
+- 取り下げ時に主催者へ自動通知されない。
+- Festival の親子が連動しない（上記）。

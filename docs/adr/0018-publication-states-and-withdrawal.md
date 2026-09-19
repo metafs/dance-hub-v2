@@ -66,7 +66,7 @@ Event の公開状態を三つに定義する。
 ## Consequences
 
 - `docs/plans/mvp-implementation-roadmap.md` の MVP outcome から「過去・中止 Event を削除しない」を撤回する。本 PR で同文を改訂する。
-- スキーマ変更が必要。Event の公開状態に `withdrawn` を追加し、遷移日時と処理理由を保持する。migration は本 ADR とは別に行う。
+- スキーマ変更が必要。Event の公開状態に `withdrawn` を追加し、遷移日時と処理理由を保持する。migration は本 ADR とは別に行う。**実装済み**: `supabase/migrations/20260919020000_event_withdrawal.sql` が `events.withdrawn_at` / `withdrawal_reason` / `withdrawn_by` と `withdraw_event` / `restore_event` を追加し、`is_current_published_event_revision` から除外する。
 - 一覧・検索・sitemap・構造化データのすべてから `withdrawn` を除外する必要がある。除外漏れは約束違反に直結するため、authorization と同様に negative test の対象とする。
 - 統計の集計は `withdrawn` を含むか含まないかを明示的に決める必要がある。現時点の想定は、シーン規模の統計には含め、個別 Event として表示する箇所には含めない。
 - 代理入力の前提が成立する。主催者が望めば消せるという条件のもとで、公開情報の転記を行える。
