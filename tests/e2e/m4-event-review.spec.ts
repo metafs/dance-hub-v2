@@ -69,7 +69,11 @@ test("Event revision is reviewed before public release, then cancellation remain
   await page.getByRole("button", { name: "下書きを保存" }).click();
   await expect(page.getByText("代替テキストを保存するには画像ファイルを選択してください。")).toBeVisible();
 
-  await page.getByLabel("代替テキスト").fill("M4 E2E Eventのメイン画像");
+  // A strict resolution here is the guard: the rejection names 代替テキスト, and
+  // rendering it inside the 画像ファイル label would put it in that control's
+  // accessible name and match two elements. The typed alt text survives the
+  // round trip; only the file input, which a browser cannot repopulate, does not.
+  await expect(page.getByLabel("代替テキスト")).toHaveValue("M4 E2E Eventのメイン画像");
   await page.getByLabel("画像ファイル").setInputFiles({
     name: "cover.png",
     mimeType: "image/png",

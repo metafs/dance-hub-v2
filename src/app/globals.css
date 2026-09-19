@@ -55,6 +55,10 @@ button, select { cursor: pointer; }
 .auth-panel h1, .form-card h1 { margin: 0; font-size: clamp(2.3rem, 6vw, 4rem); letter-spacing: -.06em; }
 .form-stack { display: grid; gap: 1.1rem; margin-top: 2rem; }
 label { display: grid; gap: .45rem; color: #38423a; font-size: .9rem; font-weight: 750; }
+/* Holds a control and its error message. The message is a sibling of the label,
+   not a child, so it stays out of the control's accessible name. */
+.field { display: grid; gap: .45rem; }
+.field-error { color: var(--danger); font-size: .85rem; font-weight: 600; line-height: 1.6; }
 input, select, textarea { width: 100%; border: 1px solid #bfc4b9; border-radius: .75rem; padding: .8rem .9rem; background: white; color: var(--ink); }
 input:focus, select:focus, textarea:focus { border-color: var(--ink); outline: 3px solid rgb(216 255 79 / 55%); outline-offset: 1px; }
 textarea { resize: vertical; }
