@@ -736,6 +736,9 @@ export type Database = {
           owner_organization_id: string
           parent_event_id: string | null
           published_revision_id: string | null
+          withdrawn_at: string | null
+          withdrawal_reason: string | null
+          withdrawn_by: string | null
         }
         Insert: {
           cancellation_reason?: string | null
@@ -745,6 +748,9 @@ export type Database = {
           owner_organization_id: string
           parent_event_id?: string | null
           published_revision_id?: string | null
+          withdrawn_at?: string | null
+          withdrawal_reason?: string | null
+          withdrawn_by?: string | null
         }
         Update: {
           cancellation_reason?: string | null
@@ -754,6 +760,9 @@ export type Database = {
           owner_organization_id?: string
           parent_event_id?: string | null
           published_revision_id?: string | null
+          withdrawn_at?: string | null
+          withdrawal_reason?: string | null
+          withdrawn_by?: string | null
         }
         Relationships: [
           {
@@ -782,6 +791,13 @@ export type Database = {
             columns: ["published_revision_id"]
             isOneToOne: false
             referencedRelation: "event_revisions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "events_withdrawn_by_fkey"
+            columns: ["withdrawn_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -1507,6 +1523,10 @@ export type Database = {
         Args: { requested_reason: string; target_request_id: string }
         Returns: undefined
       }
+      restore_event: {
+        Args: { restoration_reason: string; target_event_id: string }
+        Returns: undefined
+      }
       set_organization_member_role: {
         Args: {
           target_organization_id: string
@@ -1517,6 +1537,10 @@ export type Database = {
       }
       submit_event_revision: {
         Args: { target_revision_id: string }
+        Returns: undefined
+      }
+      withdraw_event: {
+        Args: { target_event_id: string; withdrawal_reason: string }
         Returns: undefined
       }
     }
@@ -1535,6 +1559,8 @@ export type Database = {
         | "cancellation_resubmitted"
         | "cancellation_changes_requested"
         | "cancellation_approved"
+        | "event_withdrawn"
+        | "event_restored"
       event_revision_status:
         | "draft"
         | "in_review"
@@ -1736,6 +1762,8 @@ export const Constants = {
         "cancellation_resubmitted",
         "cancellation_changes_requested",
         "cancellation_approved",
+        "event_withdrawn",
+        "event_restored",
       ],
       event_revision_status: [
         "draft",
