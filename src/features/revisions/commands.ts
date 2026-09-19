@@ -9,6 +9,7 @@ import { requireOrganizationCapability } from "@/features/organizations/policy";
 import {
   mainImageObjectKey,
   mainImageRejectionMessages,
+  validateMainImagePairing,
   validateMainImageUpload,
 } from "@/features/media/schema";
 import { putMainImage } from "@/features/media/storage";
@@ -21,7 +22,7 @@ type OrganizationSupabase = Awaited<
 
 type MainImageResolution =
   | { ok: true; imageObjectKey: string | null; imageContentType: string | null }
-  | { ok: false; message: string };
+  | { ok: false; field: "image" | "imageAlt"; message: string };
 
 /**
  * Decides which object this Revision's main image points at.
@@ -34,24 +35,31 @@ type MainImageResolution =
  *
  * The object a replacement supersedes is left in place: Revision drafts copy
  * object keys, so another Revision may still reference it.
+ *
+ * The alt text is checked against the resolved object before anything is
+ * written, so a save that cannot produce a complete `event_media` row does not
+ * leave an object behind in R2 that nothing will ever reference.
  */
 async function resolveMainImage(
   supabase: OrganizationSupabase,
   formData: FormData,
-  { eventId, forSubmission }: { eventId: string; forSubmission: boolean },
+  { eventId, altText, forSubmission }: { eventId: string; altText: string | null; forSubmission: boolean },
 ): Promise<MainImageResolution> {
   const revisionId = text(formData, "revisionId");
   const upload = formData.get("image");
   const file = upload instanceof File && upload.size > 0 ? upload : null;
 
   if (file) {
+    const pairing = validateMainImagePairing({ hasObject: true, altText });
+    if (!pairing.ok) return pairing;
+
     const bytes = new Uint8Array(await file.arrayBuffer());
     const validation = validateMainImageUpload({
       declaredContentType: file.type,
       bytes,
     });
     if (!validation.ok) {
-      return { ok: false, message: mainImageRejectionMessages[validation.reason] };
+      return { ok: false, field: "image", message: mainImageRejectionMessages[validation.reason] };
     }
 
     const objectKey = mainImageObjectKey(
@@ -60,13 +68,13 @@ async function resolveMainImage(
       validation.extension,
     );
     if (!objectKey) {
-      return { ok: false, message: "画像の保存先を決定できませんでした。" };
+      return { ok: false, field: "image", message: "画像の保存先を決定できませんでした。" };
     }
 
     try {
       await putMainImage(objectKey, bytes, validation.contentType);
     } catch {
-      return { ok: false, message: "画像を保存できませんでした。もう一度お試しください。" };
+      return { ok: false, field: "image", message: "画像を保存できませんでした。もう一度お試しください。" };
     }
 
     return { ok: true, imageObjectKey: objectKey, imageContentType: validation.contentType };
@@ -80,8 +88,11 @@ async function resolveMainImage(
     .maybeSingle();
 
   if (!existing && forSubmission) {
-    return { ok: false, message: "審査提出にはメイン画像が必要です。" };
+    return { ok: false, field: "image", message: "審査提出にはメイン画像が必要です。" };
   }
+
+  const pairing = validateMainImagePairing({ hasObject: Boolean(existing?.object_key), altText });
+  if (!pairing.ok) return pairing;
 
   return {
     ok: true,
@@ -121,8 +132,15 @@ export async function createEventDraftWithState(
 
   const { fields, content } = parsed.data;
   // The object key is namespaced by Event id, which does not exist until this
-  // call returns, so a main image is added from the Event's own edit page.
-  const revisionContent = { ...content, imageObjectKey: null, imageContentType: null };
+  // call returns, so a main image is added from the Event's own edit page. The
+  // alt text goes with it: an event_media row needs an object key as well, so
+  // alt text alone would ask the database for a row it cannot hold.
+  const revisionContent = {
+    ...content,
+    imageObjectKey: null,
+    imageContentType: null,
+    imageAlt: null,
+  };
   const { data: eventId, error } = await supabase.rpc("create_event_draft_with_content", {
     target_organization_id: organizationId,
     revision_fields: fields,
@@ -149,8 +167,8 @@ export async function mutateEventDraftWithState(
   if (!parsed.success) return actionError(formData, submit ? "審査提出に必要な項目を確認してください。" : "入力内容を確認してください。", parsed.errors);
 
   const { fields, content } = parsed.data;
-  const image = await resolveMainImage(supabase, formData, { eventId, forSubmission: submit });
-  if (!image.ok) return actionError(formData, "メイン画像を確認してください。", { image: [image.message] });
+  const image = await resolveMainImage(supabase, formData, { eventId, altText: content.imageAlt, forSubmission: submit });
+  if (!image.ok) return actionError(formData, "メイン画像を確認してください。", { [image.field]: [image.message] });
 
   const revisionContent = {
     ...content,

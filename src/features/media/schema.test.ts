@@ -4,6 +4,7 @@ import {
   detectImageContentType,
   mainImageObjectKey,
   maxMainImageBytes,
+  validateMainImagePairing,
   validateMainImageUpload,
 } from "./schema";
 
@@ -139,5 +140,32 @@ describe("mainImageObjectKey", () => {
   it("refuses an extension that is not one of ours", () => {
     expect(mainImageObjectKey(eventId, "0123abcd-4567", "svg")).toBeNull();
     expect(mainImageObjectKey(eventId, "0123abcd-4567", "")).toBeNull();
+  });
+});
+
+describe("validateMainImagePairing", () => {
+  it("accepts an object key together with its alt text", () => {
+    expect(validateMainImagePairing({ hasObject: true, altText: "公演のメイン画像" }))
+      .toEqual({ ok: true });
+  });
+
+  it("accepts a Revision with no main image at all", () => {
+    expect(validateMainImagePairing({ hasObject: false, altText: null })).toEqual({ ok: true });
+  });
+
+  it("refuses an object with no alt text, because event_media requires both", () => {
+    const result = validateMainImagePairing({ hasObject: true, altText: null });
+    expect(result.ok).toBe(false);
+    expect(result).toMatchObject({ field: "imageAlt" });
+  });
+
+  it("refuses alt text with no object, because alt text alone is not a row", () => {
+    const result = validateMainImagePairing({ hasObject: false, altText: "画像の説明" });
+    expect(result.ok).toBe(false);
+    expect(result).toMatchObject({ field: "image" });
+  });
+
+  it("treats an empty alt text as absent", () => {
+    expect(validateMainImagePairing({ hasObject: false, altText: "" })).toEqual({ ok: true });
   });
 });

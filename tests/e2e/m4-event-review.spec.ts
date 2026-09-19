@@ -55,13 +55,21 @@ test("Event revision is reviewed before public release, then cancellation remain
   const under25 = offers.locator(".ticket-offer-row").nth(1);
   await under25.getByLabel("ラベル").fill("U25");
   await under25.getByLabel("金額（最小通貨単位）").fill("2000");
-  await draft.getByLabel("代替テキスト").fill("M4 E2E Eventのメイン画像");
+  // The object key is namespaced by Event id, which does not exist until the
+  // draft has been created, so the create form offers no image inputs at all.
+  await expect(draft.getByLabel("画像ファイル")).toHaveCount(0);
+  await expect(draft.getByLabel("代替テキスト")).toHaveCount(0);
   await draft.getByRole("button", { name: "下書きを作成" }).click();
   await expect(page).toHaveURL(/\/events\/[0-9a-f-]+/);
   const eventId = new URL(page.url()).pathname.split("/").at(-1)!;
 
-  // The object key is namespaced by Event id, which exists only once the draft
-  // has been created, so the main image is uploaded from the edit page.
+  // Alt text is half of an event_media row, so saving it without a file is
+  // refused rather than written as a row the database cannot hold.
+  await page.getByLabel("代替テキスト").fill("M4 E2E Eventのメイン画像");
+  await page.getByRole("button", { name: "下書きを保存" }).click();
+  await expect(page.getByText("代替テキストを保存するには画像ファイルを選択してください。")).toBeVisible();
+
+  await page.getByLabel("代替テキスト").fill("M4 E2E Eventのメイン画像");
   await page.getByLabel("画像ファイル").setInputFiles({
     name: "cover.png",
     mimeType: "image/png",
