@@ -6,8 +6,89 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { requireOrganizationCapability } from "@/features/organizations/policy";
+import {
+  mainImageObjectKey,
+  mainImageRejectionMessages,
+  validateMainImageUpload,
+} from "@/features/media/schema";
+import { putMainImage } from "@/features/media/storage";
 import type { EventRevisionActionState } from "@/lib/events/revision-action-state";
 import { parseEventRevisionInput, readEventRevisionFormValues } from "@/lib/events/revision-input";
+
+type OrganizationSupabase = Awaited<
+  ReturnType<typeof requireOrganizationCapability>
+>["supabase"];
+
+type MainImageResolution =
+  | { ok: true; imageObjectKey: string | null; imageContentType: string | null }
+  | { ok: false; message: string };
+
+/**
+ * Decides which object this Revision's main image points at.
+ *
+ * A newly chosen file is validated and written to R2 under a server-derived key
+ * before any metadata is saved, so metadata never points at an object that does
+ * not exist (ADR-0016). With no new file, the Revision keeps the object it
+ * already references — read from the database rather than from a hidden form
+ * field, because a client-supplied object key is never accepted.
+ *
+ * The object a replacement supersedes is left in place: Revision drafts copy
+ * object keys, so another Revision may still reference it.
+ */
+async function resolveMainImage(
+  supabase: OrganizationSupabase,
+  formData: FormData,
+  { eventId, forSubmission }: { eventId: string; forSubmission: boolean },
+): Promise<MainImageResolution> {
+  const revisionId = text(formData, "revisionId");
+  const upload = formData.get("image");
+  const file = upload instanceof File && upload.size > 0 ? upload : null;
+
+  if (file) {
+    const bytes = new Uint8Array(await file.arrayBuffer());
+    const validation = validateMainImageUpload({
+      declaredContentType: file.type,
+      bytes,
+    });
+    if (!validation.ok) {
+      return { ok: false, message: mainImageRejectionMessages[validation.reason] };
+    }
+
+    const objectKey = mainImageObjectKey(
+      eventId,
+      crypto.randomUUID(),
+      validation.extension,
+    );
+    if (!objectKey) {
+      return { ok: false, message: "画像の保存先を決定できませんでした。" };
+    }
+
+    try {
+      await putMainImage(objectKey, bytes, validation.contentType);
+    } catch {
+      return { ok: false, message: "画像を保存できませんでした。もう一度お試しください。" };
+    }
+
+    return { ok: true, imageObjectKey: objectKey, imageContentType: validation.contentType };
+  }
+
+  const { data: existing } = await supabase
+    .from("event_media")
+    .select("object_key, content_type")
+    .eq("event_revision_id", revisionId)
+    .eq("is_main", true)
+    .maybeSingle();
+
+  if (!existing && forSubmission) {
+    return { ok: false, message: "審査提出にはメイン画像が必要です。" };
+  }
+
+  return {
+    ok: true,
+    imageObjectKey: existing?.object_key ?? null,
+    imageContentType: existing?.content_type ?? null,
+  };
+}
 
 function text(formData: FormData, name: string) {
   return String(formData.get(name) ?? "").trim();
@@ -38,7 +119,10 @@ export async function createEventDraftWithState(
   const parsed = parseEventRevisionInput(formData, { forSubmission: false, requireIdentity: false });
   if (!parsed.success) return actionError(formData, "入力内容を確認してください。", parsed.errors);
 
-  const { fields, content: revisionContent } = parsed.data;
+  const { fields, content } = parsed.data;
+  // The object key is namespaced by Event id, which does not exist until this
+  // call returns, so a main image is added from the Event's own edit page.
+  const revisionContent = { ...content, imageObjectKey: null, imageContentType: null };
   const { data: eventId, error } = await supabase.rpc("create_event_draft_with_content", {
     target_organization_id: organizationId,
     revision_fields: fields,
@@ -64,7 +148,15 @@ export async function mutateEventDraftWithState(
   const parsed = parseEventRevisionInput(formData, { forSubmission: submit });
   if (!parsed.success) return actionError(formData, submit ? "審査提出に必要な項目を確認してください。" : "入力内容を確認してください。", parsed.errors);
 
-  const { fields, content: revisionContent } = parsed.data;
+  const { fields, content } = parsed.data;
+  const image = await resolveMainImage(supabase, formData, { eventId, forSubmission: submit });
+  if (!image.ok) return actionError(formData, "メイン画像を確認してください。", { image: [image.message] });
+
+  const revisionContent = {
+    ...content,
+    imageObjectKey: image.imageObjectKey,
+    imageContentType: image.imageContentType,
+  };
   const { error: revisionError } = await supabase.rpc("save_event_revision_with_content", {
     target_event_id: eventId,
     target_revision_id: revisionId,

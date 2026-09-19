@@ -19,6 +19,15 @@
 			"service": "dance-hub-v2-scaffold"
 		}
 	],
+	"r2_buckets": [
+		{
+			// Private bucket holding Event main images. Nothing is served from it
+			// directly; /events/{eventId}/image is the only read path (ADR-0016).
+			"binding": "MEDIA",
+			"bucket_name": "dance-hub-media",
+			"preview_bucket_name": "dance-hub-media-preview"
+		}
+	],
 	"images": {
 		// Enable image optimization
 		// see https://opennext.js.org/cloudflare/howtos/image

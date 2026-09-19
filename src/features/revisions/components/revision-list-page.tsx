@@ -47,7 +47,7 @@ export function EventFields({ artists, venues, festivalParents, ticketOffers = [
     <label><input name="noRegistrationRequired" type="checkbox" defaultChecked={defaults?.noRegistrationRequired === true}/> チケット・登録は不要</label>
     <label>外部リンクURL<input name="externalUrl" type="url" defaultValue={value("externalUrl")} placeholder="https://…"/></label>
     <label>外部リンク表示名<input name="externalLabel" defaultValue={value("externalLabel") || "公式サイト"} maxLength={120}/></label>
-    <fieldset><legend>メイン画像メタデータ（下書きでは任意、提出時は必須）</legend><label>object key<input name="imageObjectKey" defaultValue={value("imageObjectKey")} maxLength={1024} placeholder="events/example/cover.jpg"/></label><label>content type<input name="imageContentType" defaultValue={value("imageContentType")} placeholder="image/jpeg"/></label><label>代替テキスト<input name="imageAlt" defaultValue={value("imageAlt")} maxLength={500}/></label></fieldset>
+    <fieldset><legend>メイン画像</legend><p className="field-help">画像は下書きを作成したあと、Eventの編集画面からアップロードします。</p><label>代替テキスト<input name="imageAlt" defaultValue={value("imageAlt")} maxLength={500}/></label></fieldset>
     <label>応募締切（東京都、audition / open_call / residencyで必須）<input name="applicationDeadline" type="datetime-local" defaultValue={value("applicationDeadline")}/></label>
   </>;
 }

@@ -6,6 +6,13 @@ const fixtureArtistId = "cccccccc-cccc-4ccc-8ccc-cccccccccccc";
 const fixtureVenueId = "dddddddd-dddd-4ddd-8ddd-dddddddddddd";
 const eventTitle = "M4 E2E Event";
 
+// A 1x1 PNG. The upload path checks the leading bytes against the declared
+// content type, so the fixture has to be a real image rather than a stub.
+const pngFixture = Buffer.from(
+  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==",
+  "base64",
+);
+
 async function login(page: Page, email: string) {
   await page.goto("/login");
   await page.getByLabel("メールアドレス").fill(email);
@@ -48,12 +55,21 @@ test("Event revision is reviewed before public release, then cancellation remain
   const under25 = offers.locator(".ticket-offer-row").nth(1);
   await under25.getByLabel("ラベル").fill("U25");
   await under25.getByLabel("金額（最小通貨単位）").fill("2000");
-  await draft.getByLabel("object key").fill("events/m4-e2e/cover.jpg");
-  await draft.getByLabel("content type").fill("image/jpeg");
   await draft.getByLabel("代替テキスト").fill("M4 E2E Eventのメイン画像");
   await draft.getByRole("button", { name: "下書きを作成" }).click();
   await expect(page).toHaveURL(/\/events\/[0-9a-f-]+/);
   const eventId = new URL(page.url()).pathname.split("/").at(-1)!;
+
+  // The object key is namespaced by Event id, which exists only once the draft
+  // has been created, so the main image is uploaded from the edit page.
+  await page.getByLabel("画像ファイル").setInputFiles({
+    name: "cover.png",
+    mimeType: "image/png",
+    buffer: pngFixture,
+  });
+  await page.getByRole("button", { name: "下書きを保存" }).click();
+  await expect(page.getByText("下書きを保存しました。")).toBeVisible();
+
   await page.getByLabel("説明").fill("");
   await page.getByRole("button", { name: "審査へ提出" }).click();
   await expect(page.getByText("審査提出には説明が必要です。")).toBeVisible();

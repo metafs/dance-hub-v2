@@ -4,7 +4,7 @@ export type EventRevisionField =
   | "title" | "description" | "eventType" | "applicationDeadline"
   | "artistId" | "artistRole" | "venueId" | "startsAt" | "endsAt" | "ticketOffers"
   | "ticketUrl" | "ticketLabel" | "externalUrl" | "externalLabel"
-  | "imageObjectKey" | "imageContentType" | "imageAlt" | "form";
+  | "image" | "imageAlt" | "form";
 
 export type EventRevisionFieldErrors = Partial<Record<EventRevisionField, string[]>>;
 
@@ -29,8 +29,6 @@ export type EventRevisionFormValues = {
   ticketLabel: string;
   externalUrl: string;
   externalLabel: string;
-  imageObjectKey: string;
-  imageContentType: string;
   imageAlt: string;
   ticketOffers: TicketOfferDraft[];
 };
@@ -57,8 +55,6 @@ export function eventRevisionFieldDefaults(values: EventRevisionFormValues) {
     ticketLabel: values.ticketLabel,
     externalUrl: values.externalUrl,
     externalLabel: values.externalLabel,
-    imageObjectKey: values.imageObjectKey,
-    imageContentType: values.imageContentType,
     imageAlt: values.imageAlt,
   } satisfies Record<string, string | boolean | null | undefined>;
 }

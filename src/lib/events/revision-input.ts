@@ -39,8 +39,6 @@ export type EventRevisionInput = {
     ticketOffers: TicketOfferInput[];
     externalUrl: string | null;
     externalLabel: string;
-    imageObjectKey: string | null;
-    imageContentType: string | null;
     imageAlt: string | null;
   };
 };
@@ -56,7 +54,7 @@ function isEventType(value: string): value is EventType {
 const eventRevisionFields = new Set<EventRevisionField>([
   "title", "description", "eventType", "applicationDeadline", "artistId", "artistRole",
   "venueId", "startsAt", "endsAt", "ticketOffers", "ticketUrl", "ticketLabel",
-  "externalUrl", "externalLabel", "imageObjectKey", "imageContentType", "imageAlt", "form",
+  "externalUrl", "externalLabel", "image", "imageAlt", "form",
 ]);
 
 function optionalTokyoDateTime(message: string) {
@@ -92,8 +90,6 @@ function eventRevisionSchema({ forSubmission, requireIdentity }: { forSubmission
     ticketOffers: z.array(z.custom<TicketOfferInput>()).nullable(),
     externalUrl: optionalHttpUrl(),
     externalLabel: z.string().max(120, "外部リンク表示名は120文字以内で入力してください。"),
-    imageObjectKey: z.string().max(1024, "画像のobject keyは1024文字以内で入力してください。"),
-    imageContentType: z.string().max(255, "画像のcontent typeは255文字以内で入力してください。"),
     imageAlt: z.string().max(500, "画像の代替テキストは500文字以内で入力してください。"),
   }).superRefine((value, context) => {
     const issue = (path: EventRevisionField, message: string) => context.addIssue({ code: "custom", path: [path], message });
@@ -111,14 +107,6 @@ function eventRevisionSchema({ forSubmission, requireIdentity }: { forSubmission
     }
     if (value.ticketOffers === null) issue("ticketOffers", "料金の種別、通貨、金額を確認してください。");
 
-    const mediaValues = [value.imageObjectKey, value.imageContentType, value.imageAlt];
-    if (mediaValues.some(Boolean) && !value.imageObjectKey) issue("imageObjectKey", "画像のobject keyを入力してください。");
-    if (mediaValues.some(Boolean) && !value.imageContentType) issue("imageContentType", "画像のcontent typeを入力してください。");
-    if (mediaValues.some(Boolean) && !value.imageAlt) issue("imageAlt", "画像の代替テキストを入力してください。");
-    if (value.imageContentType && !value.imageContentType.toLowerCase().startsWith("image/")) {
-      issue("imageContentType", "画像のcontent typeを入力してください。");
-    }
-
     if (!forSubmission) return;
     if (!value.description) issue("description", "審査提出には説明が必要です。");
     if (!value.eventType) issue("eventType", "審査提出には種別が必要です。");
@@ -126,8 +114,6 @@ function eventRevisionSchema({ forSubmission, requireIdentity }: { forSubmission
     if (!value.noRegistrationRequired && !httpUrl(value.ticketUrl) && !value.ticketOffers?.length) {
       issue("ticketOffers", "料金、Ticket Link、またはチケット・登録不要のいずれかを設定してください。");
     }
-    if (!value.imageObjectKey) issue("imageObjectKey", "審査提出にはメイン画像が必要です。");
-    if (!value.imageContentType) issue("imageContentType", "審査提出には画像のcontent typeが必要です。");
     if (!value.imageAlt) issue("imageAlt", "審査提出には画像の代替テキストが必要です。");
     if (value.eventType && applyEventTypes.has(value.eventType)) {
       if (!tokyoDateTime(value.applicationDeadline)) issue("applicationDeadline", "この種別の審査提出には応募締切が必要です。");
@@ -193,8 +179,6 @@ export function readEventRevisionFormValues(formData: FormData): EventRevisionFo
     ticketLabel: raw("ticketLabel"),
     externalUrl: raw("externalUrl"),
     externalLabel: raw("externalLabel"),
-    imageObjectKey: raw("imageObjectKey"),
-    imageContentType: raw("imageContentType"),
     imageAlt: raw("imageAlt"),
     ticketOffers,
   };
@@ -226,8 +210,6 @@ export function parseEventRevisionInput(
     ticketOffers: parseTicketOffers(formData),
     externalUrl: formText(formData, "externalUrl"),
     externalLabel: formText(formData, "externalLabel") || "公式サイト",
-    imageObjectKey: formText(formData, "imageObjectKey"),
-    imageContentType: formText(formData, "imageContentType"),
     imageAlt: formText(formData, "imageAlt"),
   });
   if (!result.success) return { success: false, errors: fieldErrors(result.error) };
@@ -260,8 +242,6 @@ export function parseEventRevisionInput(
         ticketOffers: value.ticketOffers!,
         externalUrl: httpUrl(value.externalUrl),
         externalLabel: value.externalLabel,
-        imageObjectKey: value.imageObjectKey || null,
-        imageContentType: value.imageContentType || null,
         imageAlt: value.imageAlt || null,
       },
     },
