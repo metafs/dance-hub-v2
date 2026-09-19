@@ -92,10 +92,14 @@ export default async function PublicEventPage({
       </section>
       {media ? (
         <section className="section-block" aria-label="メイン画像">
-          <div className="image-placeholder" role="img" aria-label={media.alt_text}>
-            <span>MAIN IMAGE</span>
-            <strong>{media.alt_text}</strong>
-          </div>
+          {/* eslint-disable-next-line @next/next/no-img-element -- the image is
+              streamed by a route that resolves the approved Revision, and its
+              dimensions are deliberately not measured (ADR-0016). */}
+          <img
+            alt={media.alt_text}
+            className="event-main-image"
+            src={`/events/${eventId}/image`}
+          />
         </section>
       ) : null}
       {parent ? (

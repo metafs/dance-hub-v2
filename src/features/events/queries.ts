@@ -59,6 +59,34 @@ export async function listPublicEventSitemapEntries() {
   }));
 }
 
+/**
+ * The stored object behind an Event's public main image, or null when the Event
+ * has no approved Revision or that Revision has no main image. RLS already
+ * limits event_media to the current published Revision, so an unapproved image
+ * cannot be resolved here even by object key (ADR-0016).
+ */
+export async function getPublishedMainImage(eventId: string) {
+  const supabase = await createSupabaseServerClient();
+  const { data: event } = await supabase
+    .from("events")
+    .select("published_revision_id")
+    .eq("id", eventId)
+    .maybeSingle();
+
+  if (!event?.published_revision_id) return null;
+
+  const { data: media } = await supabase
+    .from("event_media")
+    .select("object_key, content_type")
+    .eq("event_revision_id", event.published_revision_id)
+    .eq("is_main", true)
+    .maybeSingle();
+
+  return media
+    ? { objectKey: media.object_key, contentType: media.content_type }
+    : null;
+}
+
 export async function getPublicEventPageData(eventId: string) {
   const supabase = await createSupabaseServerClient();
   const { data: event } = await supabase

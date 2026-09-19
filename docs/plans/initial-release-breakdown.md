@@ -61,8 +61,8 @@ product requirement を定義しない。
 | ID | 内容 | area | 依存 | 並列 |
 | --- | --- | --- | --- | --- |
 | DH-09 | media delivery の architecture gates を ADR 化 | `docs` | — | **完了**（ADR-0016 Accepted） |
-| DH-10 | R2 binding と upload 経路の実装、object key 生成、型 / サイズ検証、Organization 所有検証 | `backend` `infra` | ADR-0016 | 着手可能 |
-| DH-11 | 承認済み Revision の main image のみ公開配信し、draft / in-review を非公開に保つ | `backend` `frontend` | DH-10 | 不可 |
+| DH-10 | R2 binding と upload 経路の実装、object key 生成、型 / サイズ検証、Organization 所有検証 | `backend` `infra` | ADR-0016 | **完了** |
+| DH-11 | 承認済み Revision の main image のみ公開配信し、draft / in-review を非公開に保つ | `backend` `frontend` | DH-10 | **完了**（staging 検証は DH-14） |
 
 ### M6 — Release candidate
 
