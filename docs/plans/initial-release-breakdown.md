@@ -60,8 +60,8 @@ product requirement を定義しない。
 
 | ID | 内容 | area | 依存 | 並列 |
 | --- | --- | --- | --- | --- |
-| DH-09 | media delivery の architecture gates を ADR 化（Proposed、選択肢と open question のみ） | `docs` | — | 可 |
-| DH-10 | R2 binding と upload 経路の実装、object key 生成、型 / サイズ検証、Organization 所有検証 | `backend` `infra` | DH-09 の decision | 不可 |
+| DH-09 | media delivery の architecture gates を ADR 化 | `docs` | — | **完了**（ADR-0016 Accepted） |
+| DH-10 | R2 binding と upload 経路の実装、object key 生成、型 / サイズ検証、Organization 所有検証 | `backend` `infra` | ADR-0016 | 着手可能 |
 | DH-11 | 承認済み Revision の main image のみ公開配信し、draft / in-review を非公開に保つ | `backend` `frontend` | DH-10 | 不可 |
 
 ### M6 — Release candidate
@@ -107,8 +107,8 @@ Wave 4
 
 エージェントが一般論で埋めてはならない項目として記録する。
 
-1. **media delivery の architecture gates 5 点**（`docs/plans/media-delivery.md`）。DH-09 で
-   選択肢を提示するが、決定は別手続きとする。
+1. ~~**media delivery の architecture gates 5 点**~~ — **決定済み**。ADR-0016 が Accepted
+   となり、5 点すべてを記録した。DH-10 / DH-11 は着手可能。
 2. **ADR 番号 0012 の重複**。`0012-use-authored-global-css.md` と
    `0012-use-native-runtime-validation.md` が同番号で並存し、`docs/adr/README.md` も
    同じ状態を記録している。改番するか現状を許容するかの決定が必要で、本書では変更しない。
