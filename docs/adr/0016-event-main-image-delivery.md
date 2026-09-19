@@ -139,6 +139,12 @@ forbidding public exposure of unapproved media or its storage URLs.
   It is deliberately not `immutable`: the URL is stable across replacements, and an
   Event that has to be taken down for a rights complaint must stop being served within
   a bounded time. A denied or missing response is `Cache-Control: no-store`.
+- **Pairing:** an `event_media` row is an object *and* the text describing it, because
+  the table requires both `object_key` and `alt_text`. Object key, content type, and
+  alt text are therefore written together or not at all, and a save carrying only one
+  half is rejected with a field error rather than passed to the database. This
+  restates the rule `parseMainImage` held before this ADR; it is recorded here because
+  moving key derivation to the server moved the rule's home with it.
 - **Replacement:** uploading a new main image writes a new object and repoints the
   draft's `event_media` row. The previous object is left in place.
 - **Deletion:** the MVP deletes nothing from R2. Because Revision drafts copy object
@@ -174,6 +180,9 @@ forbidding public exposure of unapproved media or its storage URLs.
   `content type` text inputs disappear and a file input takes their place. The E2E
   coverage in `tests/e2e/m4-event-review.spec.ts` that fills those fields changes with
   them.
+- Draft creation carries no main image. The object key is namespaced by Event id,
+  which does not exist until that call returns, so the create form offers neither the
+  file nor its alt text and both are set from the Event's edit page afterwards.
 - REQ-EVENT-008 becomes satisfiable for the first time: an Organizer can supply a real
   main image, so the review gate stops depending on a field with no supply path.
 - `docs/plans/m5-public-discovery.md` can close its main-image acceptance criterion:

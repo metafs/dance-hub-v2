@@ -29,7 +29,7 @@ export function EventRevisionForm(props: Props) {
     <input name="eventId" type="hidden" value={props.eventId}/>
     <input name="revisionId" type="hidden" value={props.revisionId}/>
     {state.status === "error" ? <div className="notice notice-error" role="alert"><p>{state.message}</p>{state.fieldErrors.form?.map((message) => <p key={message}>{message}</p>)}</div> : null}
-    <EventFields key={state.values ? JSON.stringify(state.values) : "initial"} artists={props.artists} venues={props.venues} festivalParents={props.festivalParents} ticketOffers={state.values?.ticketOffers ?? props.ticketOffers} hasMainImage={props.hasMainImage} defaults={defaults} errors={state.fieldErrors}/>
+    <EventFields key={state.values ? JSON.stringify(state.values) : "initial"} artists={props.artists} venues={props.venues} festivalParents={props.festivalParents} ticketOffers={state.values?.ticketOffers ?? props.ticketOffers} canUploadMainImage hasMainImage={props.hasMainImage} defaults={defaults} errors={state.fieldErrors}/>
     <div className="button-row">
       <button className="button button-secondary" disabled={pending} name="intent" value="save">下書きを保存</button>
       <button className="button button-primary" disabled={pending} name="intent" value="submit">審査へ提出</button>

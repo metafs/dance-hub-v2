@@ -55,12 +55,25 @@ test("Event revision is reviewed before public release, then cancellation remain
   const under25 = offers.locator(".ticket-offer-row").nth(1);
   await under25.getByLabel("ラベル").fill("U25");
   await under25.getByLabel("金額（最小通貨単位）").fill("2000");
+  // The object key is namespaced by Event id, which does not exist until the
+  // draft has been created, so the create form offers no image inputs at all.
+  await expect(draft.getByLabel("画像ファイル")).toHaveCount(0);
+  await expect(draft.getByLabel("代替テキスト")).toHaveCount(0);
   await draft.getByRole("button", { name: "下書きを作成" }).click();
   await expect(page).toHaveURL(/\/events\/[0-9a-f-]+/);
   const eventId = new URL(page.url()).pathname.split("/").at(-1)!;
 
-  // The object key is namespaced by Event id, which exists only once the draft
-  // has been created, so the main image is uploaded from the edit page.
+  // Alt text is half of an event_media row, so saving it without a file is
+  // refused rather than written as a row the database cannot hold.
+  await page.getByLabel("代替テキスト").fill("M4 E2E Eventのメイン画像");
+  await page.getByRole("button", { name: "下書きを保存" }).click();
+  await expect(page.getByText("代替テキストを保存するには画像ファイルを選択してください。")).toBeVisible();
+
+  // A strict resolution here is the guard: the rejection names 代替テキスト, and
+  // rendering it inside the 画像ファイル label would put it in that control's
+  // accessible name and match two elements. The typed alt text survives the
+  // round trip; only the file input, which a browser cannot repopulate, does not.
+  await expect(page.getByLabel("代替テキスト")).toHaveValue("M4 E2E Eventのメイン画像");
   await page.getByLabel("画像ファイル").setInputFiles({
     name: "cover.png",
     mimeType: "image/png",
@@ -68,7 +81,11 @@ test("Event revision is reviewed before public release, then cancellation remain
   });
   await page.getByLabel("代替テキスト").fill("M4 E2E Eventのメイン画像");
   await page.getByRole("button", { name: "下書きを保存" }).click();
-  await expect(page.getByText("下書きを保存しました。")).toBeVisible();
+  // Waiting on the success notice would prove nothing: the edit page shows the
+  // same 下書きを保存しました。 for ?created=1, which is still in the URL from
+  // draft creation, so it is already on screen. Wait for the redirect instead,
+  // or the steps below race the save that is still in flight.
+  await expect(page).toHaveURL(/[?&]saved=1/);
 
   // Nothing of a draft is served: the delivery route resolves the Event's
   // approved Revision, and there is not one yet.

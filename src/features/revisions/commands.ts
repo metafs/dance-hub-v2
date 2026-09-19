@@ -10,6 +10,7 @@ import {
   isAcceptedImageContentType,
   mainImageObjectKey,
   mainImageRejectionMessages,
+  validateMainImagePairing,
   validateMainImageUpload,
 } from "@/features/media/schema";
 import { putMainImage } from "@/features/media/storage";
@@ -22,7 +23,7 @@ type OrganizationSupabase = Awaited<
 
 type MainImageResolution =
   | { ok: true; eventId: string; imageObjectKey: string | null; imageContentType: string | null }
-  | { ok: false; message: string };
+  | { ok: false; field: "image" | "imageAlt"; message: string };
 
 /**
  * Decides which object this Revision's main image points at.
@@ -35,11 +36,15 @@ type MainImageResolution =
  *
  * The object a replacement supersedes is left in place: Revision drafts copy
  * object keys, so another Revision may still reference it.
+ *
+ * The alt text is checked against the resolved object before anything is
+ * written, so a save that cannot produce a complete `event_media` row does not
+ * leave an object behind in R2 that nothing will ever reference.
  */
 async function resolveMainImage(
   supabase: OrganizationSupabase,
   formData: FormData,
-  { organizationId, eventId, forSubmission }: { organizationId: string; eventId: string; forSubmission: boolean },
+  { organizationId, eventId, altText, forSubmission }: { organizationId: string; eventId: string; altText: string | null; forSubmission: boolean },
 ): Promise<MainImageResolution> {
   const revisionId = text(formData, "revisionId");
   const { data: revision, error: revisionError } = await supabase
@@ -50,7 +55,7 @@ async function resolveMainImage(
     .in("status", ["draft", "changes_requested"])
     .maybeSingle();
   if (revisionError || !revision) {
-    return { ok: false, message: "編集対象のEvent Revisionを確認できませんでした。" };
+    return { ok: false, field: "image", message: "編集対象のEvent Revisionを確認できませんでした。" };
   }
 
   const { data: event, error: eventError } = await supabase
@@ -60,7 +65,7 @@ async function resolveMainImage(
     .eq("owner_organization_id", organizationId)
     .maybeSingle();
   if (eventError || !event) {
-    return { ok: false, message: "編集対象のEventを確認できませんでした。" };
+    return { ok: false, field: "image", message: "編集対象のEventを確認できませんでした。" };
   }
 
   const authorizedEventId = event.id;
@@ -68,13 +73,16 @@ async function resolveMainImage(
   const file = upload instanceof File && upload.size > 0 ? upload : null;
 
   if (file) {
+    const pairing = validateMainImagePairing({ hasObject: true, altText });
+    if (!pairing.ok) return pairing;
+
     const bytes = new Uint8Array(await file.arrayBuffer());
     const validation = validateMainImageUpload({
       declaredContentType: file.type,
       bytes,
     });
     if (!validation.ok) {
-      return { ok: false, message: mainImageRejectionMessages[validation.reason] };
+      return { ok: false, field: "image", message: mainImageRejectionMessages[validation.reason] };
     }
 
     const objectKey = mainImageObjectKey(
@@ -83,13 +91,13 @@ async function resolveMainImage(
       validation.extension,
     );
     if (!objectKey) {
-      return { ok: false, message: "画像の保存先を決定できませんでした。" };
+      return { ok: false, field: "image", message: "画像の保存先を決定できませんでした。" };
     }
 
     try {
       await putMainImage(objectKey, bytes, validation.contentType);
     } catch {
-      return { ok: false, message: "画像を保存できませんでした。もう一度お試しください。" };
+      return { ok: false, field: "image", message: "画像を保存できませんでした。もう一度お試しください。" };
     }
 
     return {
@@ -107,15 +115,18 @@ async function resolveMainImage(
     .eq("is_main", true)
     .maybeSingle();
   if (existingError) {
-    return { ok: false, message: "既存のメイン画像を確認できませんでした。" };
+    return { ok: false, field: "image", message: "既存のメイン画像を確認できませんでした。" };
   }
 
   if (!existing && forSubmission) {
-    return { ok: false, message: "審査提出にはメイン画像が必要です。" };
+    return { ok: false, field: "image", message: "審査提出にはメイン画像が必要です。" };
   }
   if (existing && !isAcceptedImageContentType(existing.content_type)) {
-    return { ok: false, message: "既存のメイン画像の形式を確認できませんでした。" };
+    return { ok: false, field: "image", message: "既存のメイン画像の形式を確認できませんでした。" };
   }
+
+  const pairing = validateMainImagePairing({ hasObject: Boolean(existing?.object_key), altText });
+  if (!pairing.ok) return pairing;
 
   return {
     ok: true,
@@ -156,7 +167,9 @@ export async function createEventDraftWithState(
 
   const { fields, content } = parsed.data;
   // The object key is namespaced by Event id, which does not exist until this
-  // call returns, so a main image is added from the Event's own edit page.
+  // call returns, so a main image is added from the Event's own edit page. The
+  // alt text goes with it: an event_media row needs an object key as well, so
+  // alt text alone would ask the database for a row it cannot hold.
   const revisionContent = {
     ...content,
     imageObjectKey: null,
@@ -192,9 +205,10 @@ export async function mutateEventDraftWithState(
   const image = await resolveMainImage(supabase, formData, {
     organizationId,
     eventId,
+    altText: content.imageAlt,
     forSubmission: submit,
   });
-  if (!image.ok) return actionError(formData, "メイン画像を確認してください。", { image: [image.message] });
+  if (!image.ok) return actionError(formData, "メイン画像を確認してください。", { [image.field]: [image.message] });
 
   const revisionContent = {
     ...content,

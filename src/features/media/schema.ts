@@ -125,3 +125,33 @@ export const mainImageRejectionMessages: Record<MainImageRejection, string> = {
   unsupported_type: "画像はJPEG、PNG、WebPのいずれかにしてください。",
   signature_mismatch: "画像ファイルが壊れているか、形式が一致していません。",
 };
+
+export type MainImagePairingError = { field: "image" | "imageAlt"; message: string };
+
+export type MainImagePairing = { ok: true } | ({ ok: false } & MainImagePairingError);
+
+/**
+ * An `event_media` row is an object *and* the text describing it: the table
+ * requires both `object_key` and `alt_text`, so neither half is a row on its
+ * own. Callers therefore send all three image values together or none of them,
+ * and this reports which half is missing.
+ *
+ * It takes `hasObject` rather than the key itself so a caller can ask the
+ * question before writing the object, and so a save that would be rejected
+ * anyway does not leave an unreferenced object behind.
+ */
+export function validateMainImagePairing({
+  hasObject,
+  altText,
+}: {
+  hasObject: boolean;
+  altText: string | null;
+}): MainImagePairing {
+  if (hasObject && !altText) {
+    return { ok: false, field: "imageAlt", message: "画像には代替テキストが必要です。" };
+  }
+  if (!hasObject && altText) {
+    return { ok: false, field: "image", message: "代替テキストを保存するには画像ファイルを選択してください。" };
+  }
+  return { ok: true };
+}
