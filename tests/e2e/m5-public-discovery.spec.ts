@@ -76,7 +76,7 @@ test("a Visitor sees Festival structure, archive, and cancellation", async ({ pa
   // …and the child names the Festival it belongs to.
   await childLink.click();
   await expect(page.getByRole("heading", { name: festivalChild })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "フェスティバル" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "フェスティバル", exact: true, level: 2 })).toBeVisible();
   await expect(page.getByRole("link", { name: festival })).toBeVisible();
 
   // REQ-EVENT-007: a cancelled Event stays public and states why.

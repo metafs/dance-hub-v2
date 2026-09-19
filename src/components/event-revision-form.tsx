@@ -24,7 +24,7 @@ export function EventRevisionForm(props: Props) {
   const [state, action, pending] = useActionState(mutateEventDraftWithState, initialEventRevisionActionState);
   const defaults = state.values ? eventRevisionFieldDefaults(state.values) : props.defaults;
 
-  return <form action={action} className="form-card form-stack" encType="multipart/form-data" noValidate>
+  return <form action={action} className="form-card form-stack" noValidate>
     <input name="organizationId" type="hidden" value={props.organizationId}/>
     <input name="eventId" type="hidden" value={props.eventId}/>
     <input name="revisionId" type="hidden" value={props.revisionId}/>
