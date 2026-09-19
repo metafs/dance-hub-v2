@@ -1,4 +1,8 @@
 -- M6 requires a check that non-approved Event content never reaches a Visitor.
+--
+-- Every count below is scoped to this test's own Revisions: the seed carries
+-- published Event fixtures for the anonymous discovery journey, so a global
+-- count would measure those too.
 -- The existing database tests cover privileges and the review transitions; this
 -- one covers row visibility, by building an Event whose draft and in-review
 -- content sits beside its approved content and asserting an anonymous reader
@@ -174,7 +178,11 @@ select is_empty(
 );
 
 select is(
-  (select count(*)::integer from public.event_schedules),
+  (select count(*)::integer from public.event_schedules where event_revision_id in (
+      '11111111-bbbb-4bbb-8bbb-000000000001',
+      '11111111-bbbb-4bbb-8bbb-000000000002',
+      '11111111-bbbb-4bbb-8bbb-000000000003'
+    )),
   1,
   'only Schedules of the approved Revision are readable'
 );
@@ -186,33 +194,57 @@ select is(
 );
 
 select is(
-  (select count(*)::integer from public.event_media),
+  (select count(*)::integer from public.event_media where event_revision_id in (
+      '11111111-bbbb-4bbb-8bbb-000000000001',
+      '11111111-bbbb-4bbb-8bbb-000000000002',
+      '11111111-bbbb-4bbb-8bbb-000000000003'
+    )),
   1,
   'only media of the approved Revision are readable'
 );
 select is(
-  (select object_key from public.event_media),
+  (select object_key from public.event_media where event_revision_id in (
+      '11111111-bbbb-4bbb-8bbb-000000000001',
+      '11111111-bbbb-4bbb-8bbb-000000000002',
+      '11111111-bbbb-4bbb-8bbb-000000000003'
+    )),
   'approved/main.jpg',
   'an unapproved storage key is never disclosed'
 );
 
 select is(
-  (select count(*)::integer from public.event_artists),
+  (select count(*)::integer from public.event_artists where event_revision_id in (
+      '11111111-bbbb-4bbb-8bbb-000000000001',
+      '11111111-bbbb-4bbb-8bbb-000000000002',
+      '11111111-bbbb-4bbb-8bbb-000000000003'
+    )),
   1,
   'only credits of the approved Revision are readable'
 );
 select is(
-  (select count(*)::integer from public.event_ticket_offers),
+  (select count(*)::integer from public.event_ticket_offers where event_revision_id in (
+      '11111111-bbbb-4bbb-8bbb-000000000001',
+      '11111111-bbbb-4bbb-8bbb-000000000002',
+      '11111111-bbbb-4bbb-8bbb-000000000003'
+    )),
   1,
   'only Ticket Offers of the approved Revision are readable'
 );
 select is(
-  (select count(*)::integer from public.event_ticket_links),
+  (select count(*)::integer from public.event_ticket_links where event_revision_id in (
+      '11111111-bbbb-4bbb-8bbb-000000000001',
+      '11111111-bbbb-4bbb-8bbb-000000000002',
+      '11111111-bbbb-4bbb-8bbb-000000000003'
+    )),
   1,
   'only Ticket Links of the approved Revision are readable'
 );
 select is(
-  (select count(*)::integer from public.event_links),
+  (select count(*)::integer from public.event_links where event_revision_id in (
+      '11111111-bbbb-4bbb-8bbb-000000000001',
+      '11111111-bbbb-4bbb-8bbb-000000000002',
+      '11111111-bbbb-4bbb-8bbb-000000000003'
+    )),
   1,
   'only external links of the approved Revision are readable'
 );
