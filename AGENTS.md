@@ -17,6 +17,7 @@ Before making changes, read the documentation relevant to the task:
 - Architecture decisions: `docs/adr/`
 - Security: `docs/architecture/security.md`
 - Pull-request label and evidence operations: `docs/ops/pull-request-labels.md`
+- Deployment, rollback, recovery, and moderation procedures: `docs/ops/runbooks/`
 - AI workflow: `docs/ai/workflow.md`
 - Paperthin design patterns for AI work: `docs/ai/paperthin.md`
 
