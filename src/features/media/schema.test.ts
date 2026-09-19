@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   detectImageContentType,
+  isAcceptedImageContentType,
   mainImageObjectKey,
   maxMainImageBytes,
   validateMainImageUpload,
@@ -111,6 +112,16 @@ describe("validateMainImageUpload", () => {
       declaredContentType: "image/png",
       bytes: jpeg(),
     })).toEqual({ ok: false, reason: "signature_mismatch" });
+  });
+});
+
+describe("isAcceptedImageContentType", () => {
+  it("accepts only the stored content types we serve", () => {
+    expect(isAcceptedImageContentType("image/jpeg")).toBe(true);
+    expect(isAcceptedImageContentType("image/png")).toBe(true);
+    expect(isAcceptedImageContentType("image/webp")).toBe(true);
+    expect(isAcceptedImageContentType("image/svg+xml")).toBe(false);
+    expect(isAcceptedImageContentType("IMAGE/JPEG")).toBe(false);
   });
 });
 

@@ -53,10 +53,10 @@ product requirement を定義しない。
 | DH-07 | Event / Artist / Venue / Organization 名の検索インデックス migration と negative RLS test（REQ-DISCOVERY-003） | `db` | — | 可 |
 | DH-08 | 匿名 critical journey E2E：Schedule 0 件 `apply`、複数 Venue、Festival、過去、中止の境界 | `frontend` | DH-02..DH-06 | 不可 |
 
-### Media delivery（MVP blocker）
+### Media delivery（architecture gates resolved）
 
-`docs/plans/media-delivery.md` の architecture gates は未決であり、決定前に storage コードを
-マージしない。
+`docs/plans/media-delivery.md` の architecture gates は
+[ADR-0016](../adr/0016-event-main-image-delivery.md) で決定済みであり、DH-10 と DH-11 の実装は完了している。実際の R2 bucket と edge cache header の staging 検証は DH-14 で行う。
 
 | ID | 内容 | area | 依存 | 並列 |
 | --- | --- | --- | --- | --- |

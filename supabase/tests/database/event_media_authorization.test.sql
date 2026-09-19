@@ -28,7 +28,7 @@ begin
 end;
 $$;
 
-select plan(8);
+select plan(9);
 
 -- A draft Revision of an Event owned by the seed Organization 'aaaa…', whose
 -- Owner is 33333333 and whose Editor is 44444444. 11111111 belongs to no
@@ -66,6 +66,22 @@ select lives_ok(
       true
     )$$,
   'an Organization member can attach media to a draft Revision'
+);
+
+select throws_ok(
+  $$insert into public.event_media
+      (event_revision_id, object_key, content_type, alt_text, is_main, display_order)
+    values (
+      '22222222-bbbb-4bbb-8bbb-000000000001',
+      'events/22222222-aaaa-4aaa-8aaa-000000000001/vector.svg',
+      'image/svg+xml',
+      'Unsupported main image',
+      false,
+      1
+    )$$,
+  '23514',
+  null,
+  'the media type allowlist rejects SVG'
 );
 
 -- A user outside the owning Organization is refused by the insert policy.

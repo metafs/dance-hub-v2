@@ -2,6 +2,7 @@ import "server-only";
 
 import { getPublishedMainImage } from "@/features/events/queries";
 
+import { isAcceptedImageContentType } from "./schema";
 import { getMainImage } from "./storage";
 
 /**
@@ -18,7 +19,7 @@ function notFound() {
 
 export async function eventMainImageResponse(eventId: string) {
   const media = await getPublishedMainImage(eventId);
-  if (!media) return notFound();
+  if (!media || !isAcceptedImageContentType(media.contentType)) return notFound();
 
   const object = await getMainImage(media.objectKey);
   if (!object) return notFound();

@@ -68,7 +68,7 @@ function normalizeContentType(value: string) {
   return value.split(";")[0]?.trim().toLowerCase() ?? "";
 }
 
-function isAcceptedContentType(value: string): value is AcceptedImageContentType {
+export function isAcceptedImageContentType(value: string): value is AcceptedImageContentType {
   return acceptedImageContentTypes.some((accepted) => accepted === value);
 }
 
@@ -87,7 +87,7 @@ export function validateMainImageUpload(upload: {
   if (bytes.length > maxMainImageBytes) return { ok: false, reason: "too_large" };
 
   const declared = normalizeContentType(upload.declaredContentType);
-  if (!isAcceptedContentType(declared)) {
+  if (!isAcceptedImageContentType(declared)) {
     return { ok: false, reason: "unsupported_type" };
   }
 
