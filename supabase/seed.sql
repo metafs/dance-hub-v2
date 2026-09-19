@@ -97,26 +97,15 @@ insert into public.artists (id, name, artist_type)
 values ('cccc0002-cccc-4ccc-8ccc-cccccccccccc', 'Fixture Dance Collective', 'collective')
 on conflict (id) do nothing;
 
--- The order below is forced by the schema, not by taste.
---
--- `assert_event_revision_content_editable` rejects any write to Schedules,
--- credits, or Ticket Offers unless the owning Revision is a draft and its Event
--- is not cancelled. So every Revision starts as a draft, the content goes in,
--- and only then does the status move to `approved`.
---
--- `validate_festival_parent_has_type_source` then forces the Festival pointer to
--- come last: it fires when a Revision's status changes and demands that an Event
--- with children still has a festival Revision to derive its type from. Attaching
--- the child before approving the parent trips it, because at that moment the
--- parent has no approved festival Revision and no draft one either.
-insert into public.events (id, owner_organization_id)
+insert into public.events (id, owner_organization_id, cancelled_at, cancellation_reason)
 values
-  ('e0000001-0000-4000-8000-000000000001', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'),
-  ('e0000002-0000-4000-8000-000000000002', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'),
-  ('e0000003-0000-4000-8000-000000000003', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'),
-  ('e0000004-0000-4000-8000-000000000004', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'),
-  ('e0000005-0000-4000-8000-000000000005', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'),
-  ('e0000006-0000-4000-8000-000000000006', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa')
+  ('e0000001-0000-4000-8000-000000000001', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', null, null),
+  ('e0000002-0000-4000-8000-000000000002', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', null, null),
+  ('e0000003-0000-4000-8000-000000000003', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', null, null),
+  ('e0000004-0000-4000-8000-000000000004', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', null, null),
+  ('e0000005-0000-4000-8000-000000000005', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', null, null),
+  ('e0000006-0000-4000-8000-000000000006', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+   '2030-01-10T00:00:00Z', '会場の都合により中止します。')
 on conflict (id) do nothing;
 
 insert into public.event_revisions (
@@ -125,22 +114,22 @@ insert into public.event_revisions (
 )
 values
   ('e0000001-0000-4000-8000-0000000000a1', 'e0000001-0000-4000-8000-000000000001',
-   '33333333-3333-4333-8333-333333333333', 'draft',
+   '33333333-3333-4333-8333-333333333333', 'approved',
    'フィクスチャ 複数会場公演', '東京と神奈川の2会場で上演します。', 'performance', null, false),
   ('e0000002-0000-4000-8000-0000000000a2', 'e0000002-0000-4000-8000-000000000002',
-   '33333333-3333-4333-8333-333333333333', 'draft',
+   '33333333-3333-4333-8333-333333333333', 'approved',
    'フィクスチャ 公募', '開催日未定の公募です。', 'open_call', '2030-06-30T14:59:00Z', true),
   ('e0000003-0000-4000-8000-0000000000a3', 'e0000003-0000-4000-8000-000000000003',
-   '33333333-3333-4333-8333-333333333333', 'draft',
+   '33333333-3333-4333-8333-333333333333', 'approved',
    'フィクスチャ フェスティバル', '子Eventから会期を導出します。', 'festival', null, true),
   ('e0000004-0000-4000-8000-0000000000a4', 'e0000004-0000-4000-8000-000000000004',
-   '33333333-3333-4333-8333-333333333333', 'draft',
+   '33333333-3333-4333-8333-333333333333', 'approved',
    'フィクスチャ フェスティバル参加公演', 'フェスティバルのプログラムです。', 'performance', null, true),
   ('e0000005-0000-4000-8000-0000000000a5', 'e0000005-0000-4000-8000-000000000005',
-   '33333333-3333-4333-8333-333333333333', 'draft',
+   '33333333-3333-4333-8333-333333333333', 'approved',
    'フィクスチャ 過去公演', '終了したEventもアーカイブとして公開し続けます。', 'performance', null, true),
   ('e0000006-0000-4000-8000-0000000000a6', 'e0000006-0000-4000-8000-000000000006',
-   '33333333-3333-4333-8333-333333333333', 'draft',
+   '33333333-3333-4333-8333-333333333333', 'approved',
    'フィクスチャ 中止公演', '中止したEventも公開し続けます。', 'performance', null, true)
 on conflict (id) do nothing;
 
@@ -170,20 +159,11 @@ insert into public.event_ticket_offers (event_revision_id, price_type, label, cu
 values ('e0000001-0000-4000-8000-0000000000a1', 'fixed', '一般', 'JPY', 3500)
 on conflict do nothing;
 
--- The content is in place, so the Revisions can be approved. `reviewed_at` is
--- what the sitemap reports as each Event's last modification.
-update public.event_revisions
-  set status = 'approved',
-      reviewed_by = '22222222-2222-4222-8222-222222222222',
-      reviewed_at = timestamptz '2026-01-15 03:00:00+00'
-  where id in (
-    'e0000001-0000-4000-8000-0000000000a1',
-    'e0000002-0000-4000-8000-0000000000a2',
-    'e0000003-0000-4000-8000-0000000000a3',
-    'e0000004-0000-4000-8000-0000000000a4',
-    'e0000005-0000-4000-8000-0000000000a5',
-    'e0000006-0000-4000-8000-0000000000a6'
-  );
+-- ADR-0009: a Festival is a one-level parent whose child belongs to the same
+-- Organization. The parent pointer is set after both Events exist.
+update public.events
+  set parent_event_id = 'e0000003-0000-4000-8000-000000000003'
+  where id = 'e0000004-0000-4000-8000-000000000004';
 
 update public.events e
   set published_revision_id = r.id
@@ -197,18 +177,3 @@ update public.events e
       'e0000005-0000-4000-8000-000000000005',
       'e0000006-0000-4000-8000-000000000006'
     );
-
--- ADR-0009: a Festival is a one-level parent whose child belongs to the same
--- Organization. `validate_published_festival_after_child_change` checks this
--- link from the parent's side, so the child must already be published with a
--- Schedule by the time the pointer is set.
-update public.events
-  set parent_event_id = 'e0000003-0000-4000-8000-000000000003'
-  where id = 'e0000004-0000-4000-8000-000000000004';
-
--- REQ-EVENT-007: a cancelled Event stays public and states why. Cancelling also
--- freezes the Revision's content, so it happens once everything else is in.
-update public.events
-  set cancelled_at = timestamptz '2030-01-10 00:00:00+00',
-      cancellation_reason = '会場の都合により中止します。'
-  where id = 'e0000006-0000-4000-8000-000000000006';
