@@ -28,6 +28,13 @@ export type DiscoveryFilters = {
   to?: string | null;
   prefecture?: Prefecture | null;
   eventType?: EventType | null;
+  /** Free text matched over the fields REQ-DISCOVERY-003 names (ADR-0020). */
+  text?: string | null;
+};
+
+export type ArtistCreditRow = {
+  event_revision_id: string;
+  artist_id: string;
 };
 
 export type EventRow = {
@@ -81,6 +88,8 @@ export type DiscoveryEventSummary = {
   applicationDeadline: string | null;
   parentEventId: string | null;
   schedules: DiscoveryScheduleView[];
+  /** Credited Artist names, carried for search (REQ-DISCOVERY-003). */
+  artistNames: string[];
 };
 
 /**
@@ -95,6 +104,8 @@ export function projectEvents(input: {
   schedules: readonly ScheduleRow[];
   venues: readonly VenueRow[];
   organizations?: readonly { id: string; name: string }[];
+  artistCredits?: readonly ArtistCreditRow[];
+  artists?: readonly { id: string; name: string }[];
   now?: Date;
 }): DiscoveryEventSummary[] {
   const revisionById = new Map(input.revisions.map((row) => [row.id, row]));
@@ -102,6 +113,18 @@ export function projectEvents(input: {
   const organizationById = new Map(
     (input.organizations ?? []).map((row) => [row.id, row.name]),
   );
+
+  const artistNameById = new Map(
+    (input.artists ?? []).map((row) => [row.id, row.name]),
+  );
+  const artistNamesByRevision = new Map<string, string[]>();
+  for (const credit of input.artistCredits ?? []) {
+    const name = artistNameById.get(credit.artist_id);
+    if (!name) continue;
+    const names = artistNamesByRevision.get(credit.event_revision_id) ?? [];
+    names.push(name);
+    artistNamesByRevision.set(credit.event_revision_id, names);
+  }
 
   const schedulesByRevision = new Map<string, DiscoveryScheduleView[]>();
   for (const schedule of input.schedules) {
@@ -177,6 +200,7 @@ export function projectEvents(input: {
       applicationDeadline: revision.application_deadline,
       parentEventId: event.parent_event_id,
       schedules,
+      artistNames: artistNamesByRevision.get(revisionId) ?? [],
     });
   }
 
@@ -189,11 +213,46 @@ export function projectEvents(input: {
  * Schedule's Venue, so an Event with Schedules in both Prefectures matches each
  * Prefecture filter once, and a Schedule-free `apply` Event matches no region.
  */
+/**
+ * NFKC folds full-width Latin and half-width kana onto their ordinary forms, so
+ * 「Ｙａｍａｄａ」 and "Yamada" are one term; lowercasing then removes the Latin
+ * case distinction. Japanese has no case, so this is a no-op for it (ADR-0020).
+ */
+function normalizeForSearch(value: string) {
+  return value.normalize("NFKC").toLowerCase();
+}
+
+/**
+ * Terms are separated by whitespace of either width and combined with AND. A
+ * term may match a different field from its neighbour, so 「山田 渋谷」 finds an
+ * Event crediting 山田 at a Venue in 渋谷 (REQ-DISCOVERY-003, ADR-0020).
+ */
+export function matchesText(
+  event: DiscoveryEventSummary,
+  text: string,
+): boolean {
+  const terms = normalizeForSearch(text).split(/\s+/).filter(Boolean);
+  if (terms.length === 0) return true;
+
+  const haystack = [
+    event.title,
+    event.description,
+    event.organizationName,
+    ...event.artistNames,
+    ...event.schedules.map((schedule) => schedule.venueName),
+  ]
+    .filter((value): value is string => Boolean(value))
+    .map(normalizeForSearch);
+
+  return terms.every((term) => haystack.some((value) => value.includes(term)));
+}
+
 export function matchesFilters(
   event: DiscoveryEventSummary,
   filters: DiscoveryFilters,
 ): boolean {
   if (filters.eventType && event.eventType !== filters.eventType) return false;
+  if (filters.text && !matchesText(event, filters.text)) return false;
 
   const needsSchedule = Boolean(filters.from || filters.to || filters.prefecture);
   if (!needsSchedule) return true;

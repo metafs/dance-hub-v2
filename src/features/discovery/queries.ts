@@ -8,6 +8,7 @@ import {
   openApplications,
   projectEvents,
   sortByDiscoveryOrder,
+  type ArtistCreditRow,
   type DiscoveryEventSummary,
   type DiscoveryFilters,
   type EventRow,
@@ -60,7 +61,9 @@ async function loadPublicEvents(
     .map((event) => event.published_revision_id)
     .filter((id): id is string => Boolean(id));
 
-  const [{ data: revisions }, { data: schedules }] = await Promise.all([
+  // Artist credits come along because REQ-DISCOVERY-003 searches Artist names
+  // and ADR-0020 matches over this projection rather than in SQL.
+  const [{ data: revisions }, { data: schedules }, { data: artistCredits }] = await Promise.all([
     supabase
       .from("event_revisions")
       .select("id, title, description, event_type, application_deadline")
@@ -70,19 +73,29 @@ async function loadPublicEvents(
       .select("event_revision_id, starts_at, ends_at, all_day, venue_id")
       .in("event_revision_id", revisionIds)
       .order("starts_at"),
+    supabase
+      .from("event_artists")
+      .select("event_revision_id, artist_id")
+      .in("event_revision_id", revisionIds),
   ]);
 
   const venueIds = [...new Set((schedules ?? []).map((schedule) => schedule.venue_id))];
   const organizationIds = [
     ...new Set(events.map((event) => event.owner_organization_id)),
   ];
+  const artistIds = [
+    ...new Set((artistCredits ?? []).map((credit) => credit.artist_id)),
+  ];
 
-  const [{ data: venues }, { data: organizations }] = await Promise.all([
+  const [{ data: venues }, { data: organizations }, { data: artists }] = await Promise.all([
     venueIds.length
       ? supabase.from("venues").select("id, name, prefecture").in("id", venueIds)
       : Promise.resolve({ data: [] as VenueRow[] }),
     organizationIds.length
       ? supabase.from("organizations").select("id, name").in("id", organizationIds)
+      : Promise.resolve({ data: [] as { id: string; name: string }[] }),
+    artistIds.length
+      ? supabase.from("artists").select("id, name").in("id", artistIds)
       : Promise.resolve({ data: [] as { id: string; name: string }[] }),
   ]);
 
@@ -92,6 +105,8 @@ async function loadPublicEvents(
     schedules: (schedules ?? []) as ScheduleRow[],
     venues: (venues ?? []) as VenueRow[],
     organizations: organizations ?? [],
+    artistCredits: (artistCredits ?? []) as ArtistCreditRow[],
+    artists: artists ?? [],
   });
 }
 

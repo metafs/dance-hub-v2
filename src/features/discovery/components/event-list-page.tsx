@@ -28,6 +28,21 @@ export default async function EventListPage({
         client-side JavaScript, which is what makes a filtered view shareable.
       */}
       <form action="/events" className="discovery-filters" method="get">
+        <label className="discovery-search">
+          キーワード
+          {/*
+            One box over Event 名, Artist 名, Venue 名 and Organization 名
+            (REQ-DISCOVERY-003). Matching happens on the loaded projection, so
+            there is nothing to configure per field here (ADR-0020).
+          */}
+          <input
+            defaultValue={filters.text ?? ""}
+            maxLength={200}
+            name="q"
+            placeholder="Event名、出演者、会場、主催"
+            type="search"
+          />
+        </label>
         <label>
           開始日
           <input defaultValue={filters.from ?? ""} name="from" type="date" />

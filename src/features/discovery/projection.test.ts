@@ -4,6 +4,7 @@ import {
   calendarDays,
   prefectureLabel,
   matchesFilters,
+  matchesText,
   openApplications,
   projectEvents,
   sortByDiscoveryOrder,
@@ -348,5 +349,67 @@ describe("calendarDays", () => {
     });
 
     expect(calendarDays(summaries)).toEqual([]);
+  });
+});
+
+describe("matchesText", () => {
+  const summaries = projectEvents({
+    events: [event("yamada"), event("other")],
+    revisions: [
+      revision("yamada", {
+        title: "ソロ公演 Yamada",
+        description: "コンテンポラリーダンスの新作",
+      }),
+      revision("other", { title: "別の公演", description: null }),
+    ],
+    schedules: [
+      schedule("yamada", "2026-05-01T10:00:00.000Z", "venue-tokyo"),
+      schedule("other", "2026-05-01T10:00:00.000Z", "venue-kanagawa"),
+    ],
+    venues,
+    organizations: [{ id: "org-1", name: "Fixture Dance Organization" }],
+    artistCredits: [{ event_revision_id: "yamada-rev", artist_id: "artist-1" }],
+    artists: [{ id: "artist-1", name: "山田太郎" }],
+    now,
+  });
+  const find = (id: string) =>
+    summaries.find((summary) => summary.id === id) as (typeof summaries)[number];
+
+  it("searches every field REQ-DISCOVERY-003 names", () => {
+    expect(matchesText(find("yamada"), "ソロ公演")).toBe(true);
+    expect(matchesText(find("yamada"), "山田")).toBe(true);
+    expect(matchesText(find("yamada"), "Tokyo Venue")).toBe(true);
+    expect(matchesText(find("yamada"), "Fixture Dance")).toBe(true);
+    expect(matchesText(find("yamada"), "コンテンポラリー")).toBe(true);
+  });
+
+  // Japanese has no word boundaries, so a prefix of a longer word has to match:
+  // a tokenizing index would not find コンテンポラリーダンス from コンテンポラリー.
+  it("matches inside a word rather than on a token boundary", () => {
+    expect(matchesText(find("yamada"), "ポラリーダ")).toBe(true);
+  });
+
+  it("folds width and case before comparing", () => {
+    expect(matchesText(find("yamada"), "ＹＡＭＡＤＡ")).toBe(true);
+    expect(matchesText(find("yamada"), "yamada")).toBe(true);
+  });
+
+  it("requires every term, which may land on different fields", () => {
+    expect(matchesText(find("yamada"), "山田 Tokyo")).toBe(true);
+    expect(matchesText(find("yamada"), "山田 Kanagawa")).toBe(false);
+  });
+
+  it("keeps an Event that matches nothing out", () => {
+    expect(matchesText(find("other"), "山田")).toBe(false);
+  });
+
+  it("treats a blank search as no search", () => {
+    expect(matchesText(find("other"), "   ")).toBe(true);
+  });
+
+  it("composes with the other filters", () => {
+    expect(matchesFilters(find("yamada"), { text: "山田", prefecture: "TOKYO" })).toBe(true);
+    expect(matchesFilters(find("yamada"), { text: "山田", prefecture: "KANAGAWA" })).toBe(false);
+    expect(matchesFilters(find("yamada"), { text: "存在しない" })).toBe(false);
   });
 });
