@@ -16,6 +16,13 @@ export async function generateMetadata({
   const title = event.cancelledAt ? `${event.title}（中止）` : event.title;
   const description = event.description ?? undefined;
 
+  // A link shared on a social platform or in a chat carries the Event's own
+  // image when it has one. The URL is the same delivery route the page uses,
+  // so a withdrawn or superseded Revision stops serving it at the same moment.
+  const images = event.mainImageAlt
+    ? [{ url: `/events/${eventId}/image`, alt: event.mainImageAlt }]
+    : undefined;
+
   return {
     title,
     description,
@@ -24,6 +31,13 @@ export async function generateMetadata({
       title,
       description,
       url: `/events/${eventId}`,
+      images,
+    },
+    twitter: {
+      card: images ? "summary_large_image" : "summary",
+      title,
+      description,
+      images,
     },
   };
 }
