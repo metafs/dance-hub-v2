@@ -144,6 +144,10 @@ tbody tr:last-child td { border-bottom: 0; }
 .discovery-filters { display: flex; flex-wrap: wrap; align-items: end; gap: 1rem; margin-bottom: 2rem; border: 1px solid var(--line); border-radius: 1rem; padding: 1.2rem; background: var(--surface); }
 .discovery-filters label { gap: .35rem; }
 .discovery-filters input, .discovery-filters select { min-width: 10rem; }
+/* The keyword box takes the full row so a long query stays readable; the
+   narrower controls wrap underneath it. */
+.discovery-search { flex-basis: 100%; }
+.discovery-search input { width: 100%; }
 .discovery-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1rem; margin: 0; padding: 0; list-style: none; }
 .discovery-card { border: 1px solid var(--line); border-radius: 1rem; padding: 1.4rem; background: var(--surface); transition: border .15s, transform .15s; }
 .discovery-card:hover { transform: translateY(-2px); border-color: var(--ink); }

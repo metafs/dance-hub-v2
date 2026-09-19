@@ -28,12 +28,17 @@ export function parseDiscoveryFilters(params: SearchParamsInput): DiscoveryFilte
   const to = single(params.to);
   const prefecture = single(params.prefecture);
   const eventType = single(params.type);
+  // Any text is a valid search, so unlike the others this is kept as given
+  // rather than checked against a known set. The length cap keeps a pasted
+  // document out of the query string; ADR-0020 normalizes at match time.
+  const text = single(params.q).slice(0, 200);
 
   return {
     from: tokyoDatePattern.test(from) ? from : null,
     to: tokyoDatePattern.test(to) ? to : null,
     prefecture: isPrefecture(prefecture) ? prefecture : null,
     eventType: isEventType(eventType) ? eventType : null,
+    text: text || null,
   };
 }
 
@@ -49,6 +54,7 @@ export function filterQueryString(filters: DiscoveryFilters): string {
   if (filters.to) params.set("to", filters.to);
   if (filters.prefecture) params.set("prefecture", filters.prefecture);
   if (filters.eventType) params.set("type", filters.eventType);
+  if (filters.text) params.set("q", filters.text);
 
   const query = params.toString();
   return query ? `?${query}` : "";
@@ -56,6 +62,6 @@ export function filterQueryString(filters: DiscoveryFilters): string {
 
 export function hasActiveFilter(filters: DiscoveryFilters): boolean {
   return Boolean(
-    filters.from || filters.to || filters.prefecture || filters.eventType,
+    filters.from || filters.to || filters.prefecture || filters.eventType || filters.text,
   );
 }

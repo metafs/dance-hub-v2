@@ -33,6 +33,7 @@ ADRs capture architectural decisions that should remain understandable to future
 | [0017](0017-no-quality-judgment-in-listing-review.md) | 掲載審査で作品の質を判断しない | Accepted |
 | [0018](0018-publication-states-and-withdrawal.md) | 公開状態と取り下げ | Accepted |
 | [0019](0019-rename-service-to-p9e.md) | サービス名を p9e に変更する | Accepted |
+| [0020](0020-discovery-text-search.md) | 探索のテキスト検索を射影上で行う | Proposed |
 
 ## Template
 

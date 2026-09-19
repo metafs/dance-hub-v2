@@ -13,11 +13,13 @@ describe("parseDiscoveryFilters", () => {
       to: "2026-05-31",
       prefecture: "KANAGAWA",
       type: "workshop",
+      q: "山田",
     })).toEqual({
       from: "2026-05-01",
       to: "2026-05-31",
       prefecture: "KANAGAWA",
       eventType: "workshop",
+      text: "山田",
     });
   });
 
@@ -27,6 +29,7 @@ describe("parseDiscoveryFilters", () => {
       to: null,
       prefecture: null,
       eventType: null,
+      text: null,
     });
   });
 
@@ -41,6 +44,7 @@ describe("parseDiscoveryFilters", () => {
       to: null,
       prefecture: null,
       eventType: null,
+      text: null,
     });
   });
 
@@ -51,6 +55,7 @@ describe("parseDiscoveryFilters", () => {
         to: null,
         prefecture: null,
         eventType: null,
+        text: null,
       });
   });
 
@@ -62,6 +67,14 @@ describe("parseDiscoveryFilters", () => {
   it("trims surrounding whitespace", () => {
     expect(parseDiscoveryFilters({ type: " festival " }).eventType).toBe("festival");
   });
+
+  // Unlike the other filters, any text is valid, so nothing is dropped. The cap
+  // only stops a pasted document from becoming the query string (ADR-0020).
+  it("keeps any search text, bounded in length", () => {
+    expect(parseDiscoveryFilters({ q: "  山田 太郎  " }).text).toBe("山田 太郎");
+    expect(parseDiscoveryFilters({ q: "" }).text).toBeNull();
+    expect(parseDiscoveryFilters({ q: "あ".repeat(500) }).text).toHaveLength(200);
+  });
 });
 
 describe("filterQueryString", () => {
@@ -71,6 +84,7 @@ describe("filterQueryString", () => {
       to: "2026-05-31",
       prefecture: "TOKYO" as const,
       eventType: "performance" as const,
+      text: "コンテンポラリー",
     };
 
     expect(parseDiscoveryFilters(
@@ -93,5 +107,6 @@ describe("hasActiveFilter", () => {
     expect(hasActiveFilter({})).toBe(false);
     expect(hasActiveFilter({ from: null, to: null })).toBe(false);
     expect(hasActiveFilter({ eventType: "talk" })).toBe(true);
+    expect(hasActiveFilter({ text: "山田" })).toBe(true);
   });
 });
