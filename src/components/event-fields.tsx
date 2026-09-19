@@ -9,6 +9,7 @@ type Props = {
   venues: { id: string; name: string; prefecture?: string }[];
   festivalParents: { id: string; title: string }[];
   ticketOffers?: TicketOfferDraft[];
+  canUploadMainImage?: boolean;
   hasMainImage?: boolean;
   defaults?: Record<string, string | boolean | null | undefined>;
   errors?: EventRevisionFieldErrors;
@@ -19,7 +20,7 @@ function FieldError({ errors, name }: { errors?: EventRevisionFieldErrors; name:
   return messages?.length ? <span className="field-error" id={`${name}-error`}>{messages.join(" ")}</span> : null;
 }
 
-export function EventFields({ artists, venues, festivalParents, ticketOffers = [], hasMainImage = false, defaults, errors }: Props) {
+export function EventFields({ artists, venues, festivalParents, ticketOffers = [], canUploadMainImage = true, hasMainImage = false, defaults, errors }: Props) {
   const value = (name: string) => typeof defaults?.[name] === "string" ? defaults[name] as string : "";
   const invalid = (name: keyof EventRevisionFieldErrors) => Boolean(errors?.[name]?.length);
   const describedBy = (name: keyof EventRevisionFieldErrors) => invalid(name) ? `${name}-error` : undefined;
@@ -40,7 +41,7 @@ export function EventFields({ artists, venues, festivalParents, ticketOffers = [
     <label><input name="noRegistrationRequired" type="checkbox" defaultChecked={defaults?.noRegistrationRequired === true}/> チケット・登録は不要</label>
     <label>外部リンクURL<input aria-describedby={describedBy("externalUrl")} aria-invalid={invalid("externalUrl")} name="externalUrl" type="url" defaultValue={value("externalUrl")} placeholder="https://…"/><FieldError errors={errors} name="externalUrl"/></label>
     <label>外部リンク表示名<input aria-describedby={describedBy("externalLabel")} aria-invalid={invalid("externalLabel")} name="externalLabel" defaultValue={value("externalLabel") || "公式サイト"} maxLength={120}/><FieldError errors={errors} name="externalLabel"/></label>
-    <fieldset><legend>メイン画像（下書きでは任意、提出時は必須）</legend><label>画像ファイル<input accept="image/jpeg,image/png,image/webp" aria-describedby={describedBy("image")} aria-invalid={invalid("image")} name="image" type="file"/><FieldError errors={errors} name="image"/></label><p className="field-help">{hasMainImage ? "現在この Revision には画像が設定されています。新しく選ぶと差し替わります。" : "この Revision にはまだ画像がありません。"}JPEG、PNG、WebP。10MBまで。</p><label>代替テキスト<input aria-describedby={describedBy("imageAlt")} aria-invalid={invalid("imageAlt")} name="imageAlt" defaultValue={value("imageAlt")} maxLength={500}/><FieldError errors={errors} name="imageAlt"/></label></fieldset>
+    <fieldset><legend>メイン画像（下書きでは任意、提出時は必須）</legend>{canUploadMainImage ? <><label>画像ファイル<input accept="image/jpeg,image/png,image/webp" aria-describedby={describedBy("image")} aria-invalid={invalid("image")} name="image" type="file"/><FieldError errors={errors} name="image"/></label><p className="field-help">{hasMainImage ? "現在この Revision には画像が設定されています。新しく選ぶと差し替わります。" : "この Revision にはまだ画像がありません。"}JPEG、PNG、WebP。10MBまで。</p><label>代替テキスト<input aria-describedby={describedBy("imageAlt")} aria-invalid={invalid("imageAlt")} name="imageAlt" defaultValue={value("imageAlt")} maxLength={500}/><FieldError errors={errors} name="imageAlt"/></label></> : <p className="field-help">画像と代替テキストは、下書きを作成した後の編集画面から追加します。</p>}</fieldset>
     <label>応募締切（東京都、audition / open_call / residencyで必須）<input aria-describedby={describedBy("applicationDeadline")} aria-invalid={invalid("applicationDeadline")} name="applicationDeadline" type="datetime-local" defaultValue={value("applicationDeadline")}/><FieldError errors={errors} name="applicationDeadline"/></label>
   </>;
 }

@@ -55,7 +55,6 @@ test("Event revision is reviewed before public release, then cancellation remain
   const under25 = offers.locator(".ticket-offer-row").nth(1);
   await under25.getByLabel("ラベル").fill("U25");
   await under25.getByLabel("金額（最小通貨単位）").fill("2000");
-  await draft.getByLabel("代替テキスト").fill("M4 E2E Eventのメイン画像");
   await draft.getByRole("button", { name: "下書きを作成" }).click();
   await expect(page).toHaveURL(/\/events\/[0-9a-f-]+/);
   const eventId = new URL(page.url()).pathname.split("/").at(-1)!;
@@ -67,6 +66,7 @@ test("Event revision is reviewed before public release, then cancellation remain
     mimeType: "image/png",
     buffer: pngFixture,
   });
+  await page.getByLabel("代替テキスト").fill("M4 E2E Eventのメイン画像");
   await page.getByRole("button", { name: "下書きを保存" }).click();
   await expect(page.getByText("下書きを保存しました。")).toBeVisible();
 

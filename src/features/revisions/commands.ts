@@ -122,7 +122,12 @@ export async function createEventDraftWithState(
   const { fields, content } = parsed.data;
   // The object key is namespaced by Event id, which does not exist until this
   // call returns, so a main image is added from the Event's own edit page.
-  const revisionContent = { ...content, imageObjectKey: null, imageContentType: null };
+  const revisionContent = {
+    ...content,
+    imageObjectKey: null,
+    imageContentType: null,
+    imageAlt: null,
+  };
   const { data: eventId, error } = await supabase.rpc("create_event_draft_with_content", {
     target_organization_id: organizationId,
     revision_fields: fields,
