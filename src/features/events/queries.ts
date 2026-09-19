@@ -23,7 +23,23 @@ export async function getPublicEventMetadata(eventId: string) {
     .eq("id", event.published_revision_id)
     .maybeSingle();
 
-  return revision ? { ...revision, cancelledAt: event.cancelled_at } : null;
+  if (!revision) return null;
+
+  // Whether a main image exists decides whether the Open Graph card carries
+  // one. Only its presence is needed: the image itself is served by
+  // /events/{id}/image, which resolves the approved Revision again (ADR-0016).
+  const { data: media } = await supabase
+    .from("event_media")
+    .select("alt_text")
+    .eq("event_revision_id", event.published_revision_id)
+    .eq("is_main", true)
+    .maybeSingle();
+
+  return {
+    ...revision,
+    cancelledAt: event.cancelled_at,
+    mainImageAlt: media?.alt_text ?? null,
+  };
 }
 
 /**

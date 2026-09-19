@@ -68,6 +68,34 @@ export function getPendingVenueCandidate(
 }
 
 /**
+ * Just enough of an Artist for page metadata. The full page query also loads
+ * every credited Event, which a <head> does not need and which would double
+ * the work for each request.
+ */
+export async function getPublicArtistMetadata(artistId: string) {
+  const supabase = await createSupabaseServerClient();
+  const { data } = await supabase
+    .from("artists")
+    .select("name, profile")
+    .eq("id", artistId)
+    .maybeSingle();
+
+  return data;
+}
+
+/** The Venue equivalent of getPublicArtistMetadata. */
+export async function getPublicVenueMetadata(venueId: string) {
+  const supabase = await createSupabaseServerClient();
+  const { data } = await supabase
+    .from("venues")
+    .select("name, prefecture, address_line1")
+    .eq("id", venueId)
+    .maybeSingle();
+
+  return data;
+}
+
+/**
  * Public Artist detail: the canonical record plus the approved Events it is
  * credited in (REQ-ARTIST-001, REQ-ARTIST-002). RLS limits event_artists to
  * the current published Revision, so an unapproved credit contributes nothing.
