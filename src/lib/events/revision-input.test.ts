@@ -102,8 +102,6 @@ describe("parseEventRevisionInput", () => {
     formData.set("applicationDeadline", "2030-04-01T19:00");
     formData.set("artistId", "artist-id");
     formData.set("noRegistrationRequired", "on");
-    formData.set("imageObjectKey", "events/test/cover.jpg");
-    formData.set("imageContentType", "image/jpeg");
     formData.set("imageAlt", "テスト画像");
     expect(parseEventRevisionInput(formData, { forSubmission: true }).success).toBe(true);
   });

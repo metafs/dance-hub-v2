@@ -1,6 +1,6 @@
 # Cross-cutting track — Event main-image delivery
 
-**Status:** Planned — MVP blocker
+**Status:** Implemented — staging verification outstanding
 
 **Understood as:** The existing Revision-owned `event_media` record is metadata, not an upload system. MVP completion requires a real, authorized path from image selection through private draft storage to approved public delivery.
 

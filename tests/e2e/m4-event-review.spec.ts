@@ -6,6 +6,13 @@ const fixtureArtistId = "cccccccc-cccc-4ccc-8ccc-cccccccccccc";
 const fixtureVenueId = "dddddddd-dddd-4ddd-8ddd-dddddddddddd";
 const eventTitle = "M4 E2E Event";
 
+// A 1x1 PNG. The upload path checks the leading bytes against the declared
+// content type, so the fixture has to be a real image rather than a stub.
+const pngFixture = Buffer.from(
+  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==",
+  "base64",
+);
+
 async function login(page: Page, email: string) {
   await page.goto("/login");
   await page.getByLabel("メールアドレス").fill(email);
@@ -48,12 +55,26 @@ test("Event revision is reviewed before public release, then cancellation remain
   const under25 = offers.locator(".ticket-offer-row").nth(1);
   await under25.getByLabel("ラベル").fill("U25");
   await under25.getByLabel("金額（最小通貨単位）").fill("2000");
-  await draft.getByLabel("object key").fill("events/m4-e2e/cover.jpg");
-  await draft.getByLabel("content type").fill("image/jpeg");
-  await draft.getByLabel("代替テキスト").fill("M4 E2E Eventのメイン画像");
   await draft.getByRole("button", { name: "下書きを作成" }).click();
   await expect(page).toHaveURL(/\/events\/[0-9a-f-]+/);
   const eventId = new URL(page.url()).pathname.split("/").at(-1)!;
+
+  // The object key is namespaced by Event id, which exists only once the draft
+  // has been created, so the main image is uploaded from the edit page.
+  await page.getByLabel("画像ファイル").setInputFiles({
+    name: "cover.png",
+    mimeType: "image/png",
+    buffer: pngFixture,
+  });
+  await page.getByLabel("代替テキスト").fill("M4 E2E Eventのメイン画像");
+  await page.getByRole("button", { name: "下書きを保存" }).click();
+  await expect(page.getByText("下書きを保存しました。")).toBeVisible();
+
+  // Nothing of a draft is served: the delivery route resolves the Event's
+  // approved Revision, and there is not one yet.
+  const draftImage = await page.request.get(`/events/${eventId}/image`);
+  expect(draftImage.status()).toBe(404);
+
   await page.getByLabel("説明").fill("");
   await page.getByRole("button", { name: "審査へ提出" }).click();
   await expect(page.getByText("審査提出には説明が必要です。")).toBeVisible();
@@ -91,6 +112,15 @@ test("Event revision is reviewed before public release, then cancellation remain
   await page.goto(`/events/${eventId}`);
   await expect(page.getByRole("heading", { name: eventTitle })).toBeVisible();
   await expect(page.getByText("Updated after Platform Admin feedback")).toBeVisible();
+  // The approved Revision's image is served by the delivery route, which
+  // resolves published_revision_id rather than trusting the URL.
+  const mainImage = page.getByRole("img", { name: "M4 E2E Eventのメイン画像" });
+  await expect(mainImage).toBeVisible();
+  await expect(mainImage).toHaveAttribute("src", `/events/${eventId}/image`);
+  const imageResponse = await page.request.get(`/events/${eventId}/image`);
+  expect(imageResponse.status()).toBe(200);
+  expect(imageResponse.headers()["content-type"]).toBe("image/png");
+
   await expect(page.getByText("一般前売")).toBeVisible();
   await expect(page.getByText(/3,000/)).toBeVisible();
   await expect(page.getByText("U25")).toBeVisible();

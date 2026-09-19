@@ -13,9 +13,9 @@ required alt text. This is defined by
 
 The selected storage runtime is Cloudflare R2. Cloudflare Images may be used for image
 delivery or transformation where useful; the current stack decision is recorded in
-[deployment](deployment.md). `src/features/media/schema.ts` requires the main-image
-object key, content type, and alt text to be supplied together, and accepts only image
-content types.
+[deployment](deployment.md). `src/features/media/schema.ts` accepts only JPEG, PNG,
+and WebP uploads, validates their leading bytes, and derives the object key from the
+authorized Event ID.
 
 ## Security boundary
 
@@ -44,8 +44,6 @@ design. In summary:
 
 ## Implementation status
 
-The application source has validation for main-image metadata and does not yet
-implement the contract above: there is no R2 binding, no upload path, and the public
-Event page renders a placeholder. Implementation is tracked as DH-10 and DH-11 in
-`../plans/initial-release-breakdown.md` and must preserve revision visibility and the
-security rules above.
+DH-10 and DH-11 implement the R2 binding, authorized upload path, and approved-only
+delivery route. The remaining staging verification is tracked as DH-14 in the
+[initial release breakdown](../plans/initial-release-breakdown.md).
