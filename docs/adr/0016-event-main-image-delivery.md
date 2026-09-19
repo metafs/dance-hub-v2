@@ -1,14 +1,14 @@
 # ADR-0016: Event main-image upload and delivery on R2
 
-**Status:** Proposed
+**Status:** Accepted
+**Accepted:** 2026-09-19
 
 ## Context
 
-ADR-0003 chose Cloudflare R2 for media object storage and left the delivery mechanics
-open. `docs/plans/media-delivery.md` records the resulting gap as an MVP blocker and
-requires five architecture points to be resolved and recorded before any storage code
-is merged. This ADR exists to hold those points as stated options. It does not decide
-them.
+ADR-0003 chose Cloudflare R2 for media object storage and left the delivery
+mechanics open. `docs/plans/media-delivery.md` records the resulting gap as an MVP
+blocker and requires five architecture points to be resolved and recorded before any
+storage code is merged. This ADR resolves them.
 
 What exists today:
 
@@ -16,90 +16,138 @@ What exists today:
   a `is_main` uniqueness index per Revision.
 - `src/features/media/schema.ts` validates that object key, content type, and alt text
   are supplied together and that the content type begins with `image/`. The object key
-  is taken from user input; nothing proves an object exists or who wrote it.
+  is taken from user input: the Revision editor renders text inputs labelled
+  `object key` and `content type`, so an Organizer types them by hand. Nothing proves
+  an object exists or who wrote it.
 - `wrangler.jsonc` declares `ASSETS`, `WORKER_SELF_REFERENCE`, and `IMAGES` bindings.
   There is no R2 bucket binding.
 - `src/features/events/components/public-event-page.tsx` renders a placeholder element
   carrying the alt text instead of an image.
 
-So the MVP has main-image *metadata* and no upload, no storage, and no delivery.
-REQ-EVENT-008 already requires an alt-texted main image at review submission, which
-means the review gate currently depends on a field no upload path produces.
+So the MVP has main-image *metadata* and no upload, no storage, and no delivery, while
+REQ-EVENT-008 already requires an alt-texted main image at review submission. The
+review gate depends on a field that no upload path produces.
+
+### One constraint that shapes the whole design
+
+`create_event_revision_draft` copies `event_media` rows — including `object_key` —
+from the approved Revision into the new draft (`20260902120000`, and again in
+`20260902150000`). **One stored object is therefore referenced by an unbounded number
+of Revisions.**
+
+Two consequences follow, and the decisions below are built around them:
+
+- An object key must not be namespaced by `event_revision_id`. A copied row would
+  otherwise carry another Revision's id, and any authorization rule of the form "the
+  key's prefix must match the Revision being edited" would either reject inherited
+  media or have to be weakened until it proves nothing.
+- Replacing a draft's image must not delete the object it replaces. The currently
+  published Revision may still reference that key, and deleting it would blank a live
+  public page.
 
 ## Decision
 
-**Not decided.** Each gate below lists the options identified from the existing
-architecture and requirements. Deciding is a separate step, per the repository's ADR
-convention.
+### 1. R2 bindings
 
-### Gate 1 — How Workers receive R2 bindings across environments
+One R2 bucket per environment, bound as `MEDIA` in `wrangler.jsonc`. Application code
+reaches it through `getCloudflareContext().env.MEDIA` from `@opennextjs/cloudflare`.
 
-- **1a.** One bucket per environment, bound as `MEDIA` in `wrangler.jsonc`, with
-  `wrangler dev` using local R2 emulation for development.
-- **1b.** One bucket with environment-prefixed object keys and a single binding.
-- **1c.** S3-compatible API with credentials in environment variables instead of a
-  Worker binding.
+`next dev` and `wrangler dev` use local R2 simulation, so local development and CI need
+no real bucket and no R2 credentials. `pnpm cf-typegen` generates the binding types
+that already feed `CloudflareEnv`.
 
-Open: whether local development and CI run against emulated R2, a real preview bucket,
-or a filesystem stub, and what `.env.example` and `docs/architecture/deployment.md` must
-then state.
+Rejected: a single bucket with environment-prefixed keys, which makes a production
+mistake in staging indistinguishable from correct behaviour; and the S3-compatible API
+with credentials in environment variables, which puts long-lived secrets in the
+environment when a binding needs none.
 
-### Gate 2 — Whether upload bytes pass through the application
+### 2. Upload path
 
-- **2a.** Bytes pass through a Server Action or Route Handler, which validates and
-  writes to R2. Simplest authorization story; Worker request-size limits apply.
-- **2b.** Server issues a short-lived presigned PUT for a server-derived key; the
-  browser uploads directly. Avoids the size limit; needs a confirmation step so
-  metadata is only recorded for an object that actually landed.
-- **2c.** Cloudflare Images direct-creator upload instead of raw R2.
+Upload bytes pass through the application. The existing Revision editor gains a file
+input, and the existing Server Action validates the bytes and writes them to R2.
 
-Open: the maximum accepted image size, and whether the size that decides between 2a and
-2b is a product constraint or an infrastructure one.
+A Cloudflare Worker accepts a request body up to 100 MB on the account plans in
+question, which is far above the limit in point 5, so the body size is not a reason to
+push bytes around the application. Next.js caps a Server Action body at 1 MB by
+default, so `experimental.serverActions.bodySizeLimit` is raised to `'11mb'` — the
+10 MB limit below plus room for multipart boundaries and part headers.
 
-### Gate 3 — How ownership and Revision state are verified
+This keeps the editor working without client-side JavaScript, which is how every other
+form in the application behaves, and keeps authorization in one place: the action that
+already decides whether this member may edit this Revision is the action that writes
+the object.
 
-- **3a.** Server derives the object key from `event_revision_id` plus a server-generated
-  random component, and never accepts a client-supplied key. The existing
-  `parseMainImage` signature changes accordingly.
-- **3b.** Authorization reuses the existing Revision edit policy: media is writable only
-  while the Revision is `draft` or `changes_requested`, and only by a Member of the
-  owning Organization.
-- **3c.** A `supabase/tests/database/` negative test proves a non-member and an
+Rejected: a short-lived direct-upload grant, which requires client-side JavaScript and
+introduces a window in which an object exists with no metadata row, or a metadata row
+points at an object that never arrived; and Cloudflare Images direct creator upload,
+which departs from the R2 decision in ADR-0003 for a benefit the MVP does not need.
+
+### 3. Ownership and Revision state
+
+- The server derives the object key as `events/{event_id}/{random}.{ext}`, where
+  `{random}` is server-generated and `{ext}` is fixed by the verified content type.
+  The application never accepts a client-supplied object key. `parseMainImage` changes
+  shape accordingly and the editor's `object key` and `content type` inputs are removed.
+- The key is namespaced by `event_id`, not `event_revision_id`, because Revision drafts
+  inherit keys from the Revision they were copied from. `event_id` is stable for the
+  life of the Event and its owning Organization does not change.
+- Writing media reuses the Revision edit authorization that already exists: a member of
+  the owning Organization, and a Revision in `draft` or `changes_requested`. The
+  existing `assert_event_revision_content_editable` trigger already enforces the state
+  half at the database level.
+- A negative RLS test in `supabase/tests/database/` proves that a non-member and an
   in-review Revision cannot write `event_media`, per the `area:db` / `area:auth`
   evidence rule in `AGENTS.md`.
 
-3a, 3b, and 3c are complementary rather than alternatives; the open point is whether
-anything beyond them is required.
+### 4. Public delivery
 
-### Gate 4 — How an approved object becomes publicly deliverable
+The bucket is private in every environment. Nothing is ever served directly from R2,
+and no storage URL is exposed.
 
-- **4a.** Private bucket for everything; a Worker route resolves an Event's current
-  `published_revision_id`, checks that the requested object belongs to that Revision,
-  and streams it. Draft objects are never reachable by URL.
-- **4b.** Two buckets: private for draft and in-review, public for approved. Approval
-  copies or moves the object. Delivery is a plain public URL; approval becomes a
-  storage operation that can fail independently of the database transaction.
-- **4c.** Single public bucket with unguessable keys. Rejected on its face by
-  `docs/architecture/security.md`, which prohibits public exposure of unapproved media
-  or its storage URLs, but recorded so the reason is not re-litigated.
+A route at `/events/{eventId}/image` resolves the Event's `published_revision_id`,
+reads the `is_main` row of that Revision, and streams that object. A draft or
+in-review object is unreachable because no published Revision points at it. The route
+responds 404 for an Event with no approved Revision and for an Event whose approved
+Revision has no main image.
 
-Open: whether 4a's per-request authorization check is acceptable at CDN cache
-granularity, and how 4b keeps storage and `published_revision_id` consistent when the
-copy fails after the transaction commits.
+The URL carries no object key, so a key is never disclosed even for approved media.
+The URL is stable across replacements, which is what makes the cache policy in point 5
+work.
 
-### Gate 5 — Validation, cache, replacement, cleanup, and recovery rules
+Approval therefore remains exactly what it is today: an update of
+`published_revision_id` inside the existing trusted transition. No object is copied,
+moved, or made public, so approval gains no step that can fail after the transaction
+commits.
 
-Points that need stated values rather than a choice between designs:
+Rejected: separate private and public buckets with a copy on approval, which splits
+approval into a database transaction plus a storage operation and leaves a published
+Event with no image when the second half fails; and a single public bucket with
+unguessable keys, which `docs/architecture/security.md` already prohibits by
+forbidding public exposure of unapproved media or its storage URLs.
 
-- Accepted MIME types and whether a content-signature (magic-byte) check is required in
-  addition to the declared content type.
-- Maximum byte size and maximum pixel dimensions.
-- Filename handling: whether any part of the client filename survives into the key.
-- Cache-control and immutability of delivered objects, and how a replacement
-  invalidates a cached response.
-- What happens to the previous object when a main image is replaced, and whether
-  abandoned draft objects are swept on a schedule or on Revision transition.
-- Whether an object deleted in error is recoverable, and from what.
+### 5. Validation, cache, replacement, and cleanup
+
+- **Accepted types:** `image/jpeg`, `image/png`, `image/webp`.
+- **Content signature:** the declared content type is not trusted. The leading bytes
+  are checked against the declared type and the upload is rejected on a mismatch.
+- **Maximum size:** 10 MB per image.
+- **Dimensions:** not checked in the MVP. Decoding an image to measure it is work the
+  release gate does not require, and the size limit already bounds the cost.
+- **Filename:** no part of the client filename is retained. The extension comes from
+  the verified content type.
+- **Cache:** the delivery route responds `Cache-Control: public, max-age=3600`.
+  It is deliberately not `immutable`: the URL is stable across replacements, and an
+  Event that has to be taken down for a rights complaint must stop being served within
+  a bounded time. A denied or missing response is `Cache-Control: no-store`.
+- **Replacement:** uploading a new main image writes a new object and repoints the
+  draft's `event_media` row. The previous object is left in place.
+- **Deletion:** the MVP deletes nothing from R2. Because Revision drafts copy object
+  keys, an object may be referenced by Revisions other than the one being edited, and
+  the cost of a wrong deletion is a blank image on a live page. Sweeping objects that
+  no `event_media` row references any more is a separate, post-MVP task.
+- **Recovery:** with nothing deleted, recovery within the MVP means repointing metadata
+  at an object that still exists. Bucket-level recovery is an operations concern and
+  belongs in the runbook, not here.
 
 ## Alternatives considered
 
@@ -110,26 +158,42 @@ Points that need stated values rather than a choice between designs:
   `event_media` pointing at objects the platform never verified, and leaves the review
   gate unable to confirm that an approved Event has a deliverable image.
 - **Store images in Supabase Storage instead of R2.** Departs from ADR-0003 and splits
-  media across two providers. Recorded because it would remove Gates 1 and 4 by using
+  media across two providers. Recorded because it would remove points 1 and 4 by using
   Supabase's own RLS-backed object access, which is the strongest argument against the
-  current split.
+  current split. Rejected because the application is deployed on Workers and a binding
+  to a bucket in the same platform is the shorter path, and because the delivery rule
+  in point 4 is a single query the application already knows how to make.
+- **Reference-counted deletion instead of keeping every object.** Rejected for the MVP:
+  it makes the correctness of a destructive operation depend on a join that the draft
+  copy semantics make easy to get wrong, in exchange for storage that costs little at
+  MVP volume.
 
 ## Consequences
 
-Stated here so they are visible before a decision is made, not as accepted outcomes.
-
-- `parseMainImage` and the M4 Revision editor change under every option in Gate 3: the
-  editor stops accepting an object key as a text field.
-- Whatever Gate 4 chooses becomes the only path by which M5 renders an approved image,
-  so `docs/plans/m5-public-discovery.md` cannot close its main-image acceptance
-  criterion before this ADR is decided.
-- Gate 1's choice determines whether CI can exercise upload at all, which decides
-  whether the `media-delivery.md` test plan runs in CI or only against staging.
+- `parseMainImage` and the M4 Revision editor change: the `object key` and
+  `content type` text inputs disappear and a file input takes their place. The E2E
+  coverage in `tests/e2e/m4-event-review.spec.ts` that fills those fields changes with
+  them.
+- REQ-EVENT-008 becomes satisfiable for the first time: an Organizer can supply a real
+  main image, so the review gate stops depending on a field with no supply path.
+- `docs/plans/m5-public-discovery.md` can close its main-image acceptance criterion:
+  the public Event page replaces the placeholder with the delivery route.
+- CI can exercise upload and delivery, because local R2 simulation needs no
+  credentials. The staging verification in `docs/plans/media-delivery.md` remains the
+  first exercise of a real bucket and of cache headers at the edge.
+- Storage grows without bound during the MVP. This is an accepted, recorded cost of the
+  deletion decision, not an oversight.
+- `next.config.ts` gains an `experimental.serverActions.bodySizeLimit` entry, which
+  applies to every Server Action in the application, not only this one.
 
 ## Revisit when
 
-- The five gates above are decided, at which point this ADR is rewritten as an Accepted
-  decision or superseded by one.
+- Object storage growth becomes a real cost, at which point the orphan sweep deferred
+  in point 5 becomes worth its risk.
 - Multiple images, Flyer PDF, or video upload enter scope, which `docs/product/scope.md`
-  currently defers to After Core MVP.
-- Image transformation beyond the main-image release gate becomes a requirement.
+  currently defers to After Core MVP. Several of these decisions are sized for exactly
+  one image per Revision.
+- An unpublish state for rights complaints is introduced, which would make the cache
+  window in point 5 a stated requirement rather than a judgement.
+- Image transformation beyond the main-image release gate becomes a requirement, at
+  which point the `IMAGES` binding already in `wrangler.jsonc` is the place to start.
