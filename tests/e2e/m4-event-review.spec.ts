@@ -80,7 +80,11 @@ test("Event revision is reviewed before public release, then cancellation remain
     buffer: pngFixture,
   });
   await page.getByRole("button", { name: "下書きを保存" }).click();
-  await expect(page.getByText("下書きを保存しました。")).toBeVisible();
+  // Waiting on the success notice would prove nothing: the edit page shows the
+  // same 下書きを保存しました。 for ?created=1, which is still in the URL from
+  // draft creation, so it is already on screen. Wait for the redirect instead,
+  // or the steps below race the save that is still in flight.
+  await expect(page).toHaveURL(/[?&]saved=1/);
 
   await page.getByLabel("説明").fill("");
   await page.getByRole("button", { name: "審査へ提出" }).click();
