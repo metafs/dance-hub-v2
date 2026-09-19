@@ -79,12 +79,18 @@ test("Event revision is reviewed before public release, then cancellation remain
     mimeType: "image/png",
     buffer: pngFixture,
   });
+  await page.getByLabel("代替テキスト").fill("M4 E2E Eventのメイン画像");
   await page.getByRole("button", { name: "下書きを保存" }).click();
   // Waiting on the success notice would prove nothing: the edit page shows the
   // same 下書きを保存しました。 for ?created=1, which is still in the URL from
   // draft creation, so it is already on screen. Wait for the redirect instead,
   // or the steps below race the save that is still in flight.
   await expect(page).toHaveURL(/[?&]saved=1/);
+
+  // Nothing of a draft is served: the delivery route resolves the Event's
+  // approved Revision, and there is not one yet.
+  const draftImage = await page.request.get(`/events/${eventId}/image`);
+  expect(draftImage.status()).toBe(404);
 
   await page.getByLabel("説明").fill("");
   await page.getByRole("button", { name: "審査へ提出" }).click();
@@ -123,6 +129,15 @@ test("Event revision is reviewed before public release, then cancellation remain
   await page.goto(`/events/${eventId}`);
   await expect(page.getByRole("heading", { name: eventTitle })).toBeVisible();
   await expect(page.getByText("Updated after Platform Admin feedback")).toBeVisible();
+  // The approved Revision's image is served by the delivery route, which
+  // resolves published_revision_id rather than trusting the URL.
+  const mainImage = page.getByRole("img", { name: "M4 E2E Eventのメイン画像" });
+  await expect(mainImage).toBeVisible();
+  await expect(mainImage).toHaveAttribute("src", `/events/${eventId}/image`);
+  const imageResponse = await page.request.get(`/events/${eventId}/image`);
+  expect(imageResponse.status()).toBe(200);
+  expect(imageResponse.headers()["content-type"]).toBe("image/png");
+
   await expect(page.getByText("一般前売")).toBeVisible();
   await expect(page.getByText(/3,000/)).toBeVisible();
   await expect(page.getByText("U25")).toBeVisible();

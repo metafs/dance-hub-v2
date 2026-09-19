@@ -7,6 +7,7 @@ import { redirect } from "next/navigation";
 
 import { requireOrganizationCapability } from "@/features/organizations/policy";
 import {
+  isAcceptedImageContentType,
   mainImageObjectKey,
   mainImageRejectionMessages,
   validateMainImagePairing,
@@ -21,7 +22,7 @@ type OrganizationSupabase = Awaited<
 >["supabase"];
 
 type MainImageResolution =
-  | { ok: true; imageObjectKey: string | null; imageContentType: string | null }
+  | { ok: true; eventId: string; imageObjectKey: string | null; imageContentType: string | null }
   | { ok: false; field: "image" | "imageAlt"; message: string };
 
 /**
@@ -43,9 +44,31 @@ type MainImageResolution =
 async function resolveMainImage(
   supabase: OrganizationSupabase,
   formData: FormData,
-  { eventId, altText, forSubmission }: { eventId: string; altText: string | null; forSubmission: boolean },
+  { organizationId, eventId, altText, forSubmission }: { organizationId: string; eventId: string; altText: string | null; forSubmission: boolean },
 ): Promise<MainImageResolution> {
   const revisionId = text(formData, "revisionId");
+  const { data: revision, error: revisionError } = await supabase
+    .from("event_revisions")
+    .select("event_id")
+    .eq("id", revisionId)
+    .eq("event_id", eventId)
+    .in("status", ["draft", "changes_requested"])
+    .maybeSingle();
+  if (revisionError || !revision) {
+    return { ok: false, field: "image", message: "編集対象のEvent Revisionを確認できませんでした。" };
+  }
+
+  const { data: event, error: eventError } = await supabase
+    .from("events")
+    .select("id")
+    .eq("id", revision.event_id)
+    .eq("owner_organization_id", organizationId)
+    .maybeSingle();
+  if (eventError || !event) {
+    return { ok: false, field: "image", message: "編集対象のEventを確認できませんでした。" };
+  }
+
+  const authorizedEventId = event.id;
   const upload = formData.get("image");
   const file = upload instanceof File && upload.size > 0 ? upload : null;
 
@@ -63,7 +86,7 @@ async function resolveMainImage(
     }
 
     const objectKey = mainImageObjectKey(
-      eventId,
+      authorizedEventId,
       crypto.randomUUID(),
       validation.extension,
     );
@@ -77,18 +100,29 @@ async function resolveMainImage(
       return { ok: false, field: "image", message: "画像を保存できませんでした。もう一度お試しください。" };
     }
 
-    return { ok: true, imageObjectKey: objectKey, imageContentType: validation.contentType };
+    return {
+      ok: true,
+      eventId: authorizedEventId,
+      imageObjectKey: objectKey,
+      imageContentType: validation.contentType,
+    };
   }
 
-  const { data: existing } = await supabase
+  const { data: existing, error: existingError } = await supabase
     .from("event_media")
     .select("object_key, content_type")
     .eq("event_revision_id", revisionId)
     .eq("is_main", true)
     .maybeSingle();
+  if (existingError) {
+    return { ok: false, field: "image", message: "既存のメイン画像を確認できませんでした。" };
+  }
 
   if (!existing && forSubmission) {
     return { ok: false, field: "image", message: "審査提出にはメイン画像が必要です。" };
+  }
+  if (existing && !isAcceptedImageContentType(existing.content_type)) {
+    return { ok: false, field: "image", message: "既存のメイン画像の形式を確認できませんでした。" };
   }
 
   const pairing = validateMainImagePairing({ hasObject: Boolean(existing?.object_key), altText });
@@ -96,6 +130,7 @@ async function resolveMainImage(
 
   return {
     ok: true,
+    eventId: authorizedEventId,
     imageObjectKey: existing?.object_key ?? null,
     imageContentType: existing?.content_type ?? null,
   };
@@ -167,7 +202,12 @@ export async function mutateEventDraftWithState(
   if (!parsed.success) return actionError(formData, submit ? "審査提出に必要な項目を確認してください。" : "入力内容を確認してください。", parsed.errors);
 
   const { fields, content } = parsed.data;
-  const image = await resolveMainImage(supabase, formData, { eventId, altText: content.imageAlt, forSubmission: submit });
+  const image = await resolveMainImage(supabase, formData, {
+    organizationId,
+    eventId,
+    altText: content.imageAlt,
+    forSubmission: submit,
+  });
   if (!image.ok) return actionError(formData, "メイン画像を確認してください。", { [image.field]: [image.message] });
 
   const revisionContent = {
@@ -176,15 +216,15 @@ export async function mutateEventDraftWithState(
     imageContentType: image.imageContentType,
   };
   const { error: revisionError } = await supabase.rpc("save_event_revision_with_content", {
-    target_event_id: eventId,
+    target_event_id: image.eventId,
     target_revision_id: revisionId,
     revision_fields: fields,
     revision_content: revisionContent,
     submit_for_review: submit,
   }).select("id").single();
   if (revisionError) return actionError(formData, submit ? "審査へ提出できませんでした。" : "このRevisionを保存できませんでした。編集可能な状態か確認してください。", { form: [submit ? "公開条件を満たしているか確認してください。" : "保存対象が見つからないか、編集できない状態です。"] });
-  revalidatePath(eventPath(organizationId));
-  redirect(`${eventPath(organizationId, eventId)}?${submit ? "submitted=1" : "saved=1"}`);
+  revalidatePath(eventPath(organizationId, image.eventId));
+  redirect(`${eventPath(organizationId, image.eventId)}?${submit ? "submitted=1" : "saved=1"}`);
 }
 
 export async function createNextEventRevisionDraft(formData: FormData) {

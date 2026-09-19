@@ -5,7 +5,7 @@
 
 ## MVP outcome
 
-DANCE HUB の MVP は、東京都・神奈川県のダンス Event を一般ユーザーが探索でき、承認済み Organization の Member が Event を下書き・審査提出し、Platform Admin の承認後に公開できる状態とする。公開後の変更と中止も審査対象とし、過去・中止 Event を削除しない。
+DANCE HUB の MVP は、東京都・神奈川県のダンス Event を一般ユーザーが探索でき、承認済み Organization の Member が Event を下書き・審査提出し、Platform Admin の承認後に公開できる状態とする。公開後の変更と中止も審査対象とする。中止 Event は `cancelled` として公開を維持し、主催者からの取り下げ要請には `withdrawn` への遷移で応じる（ADR-0018）。掲載可否の条文は `docs/product/listing-policy.md` を正本とする。
 
 ## Current foundation
 

@@ -2,6 +2,8 @@ import "server-only";
 
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 
+import { isAcceptedImageContentType, type AcceptedImageContentType } from "./schema";
+
 /**
  * The private R2 bucket holding Event main images (ADR-0016). Nothing is served
  * from it directly: writes go through the Revision edit action and reads through
@@ -18,8 +20,11 @@ async function mediaBucket() {
 export async function putMainImage(
   objectKey: string,
   bytes: Uint8Array,
-  contentType: string,
+  contentType: AcceptedImageContentType,
 ) {
+  if (!isAcceptedImageContentType(contentType)) {
+    throw new Error("Unsupported main image content type");
+  }
   const bucket = await mediaBucket();
   await bucket.put(objectKey, bytes, { httpMetadata: { contentType } });
 }
