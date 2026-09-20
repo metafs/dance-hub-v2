@@ -145,6 +145,11 @@ Event は三つの状態を取る。決定の理由は ADR-0018 を参照。
 
 出演者本人から自身の氏名または画像の削除要請があった場合、Event 全体を `withdrawn` にせず、当該箇所のみを削除する。Event の存在自体は `published` のまま維持する。
 
+### 操作
+
+取り下げと復帰は Platform Admin が `/admin/withdrawals` で行う。いずれも理由が必須で、
+`event_revision_audit_log` に記録される。手順は `docs/ops/runbooks/moderation.md`。
+
 ### `withdrawn` の意味
 
 `withdrawn` は外部から見て削除と同等である。一覧・検索・直 URL のいずれからも到達できない。内部的にはレコードを保持し、ADR-0007 の承認履歴と公開 Revision、および統計の集計母数を失わない。主催者への通知および利用規約上の表現は「削除」とする。
