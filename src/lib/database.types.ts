@@ -736,8 +736,8 @@ export type Database = {
           owner_organization_id: string
           parent_event_id: string | null
           published_revision_id: string | null
-          withdrawn_at: string | null
           withdrawal_reason: string | null
+          withdrawn_at: string | null
           withdrawn_by: string | null
         }
         Insert: {
@@ -748,8 +748,8 @@ export type Database = {
           owner_organization_id: string
           parent_event_id?: string | null
           published_revision_id?: string | null
-          withdrawn_at?: string | null
           withdrawal_reason?: string | null
+          withdrawn_at?: string | null
           withdrawn_by?: string | null
         }
         Update: {
@@ -760,8 +760,8 @@ export type Database = {
           owner_organization_id?: string
           parent_event_id?: string | null
           published_revision_id?: string | null
-          withdrawn_at?: string | null
           withdrawal_reason?: string | null
+          withdrawn_at?: string | null
           withdrawn_by?: string | null
         }
         Relationships: [
@@ -1519,12 +1519,12 @@ export type Database = {
         Returns: undefined
       }
       require_moderation_reason: { Args: { reason: string }; Returns: string }
-      resubmit_event_cancellation_request: {
-        Args: { requested_reason: string; target_request_id: string }
-        Returns: undefined
-      }
       restore_event: {
         Args: { restoration_reason: string; target_event_id: string }
+        Returns: undefined
+      }
+      resubmit_event_cancellation_request: {
+        Args: { requested_reason: string; target_request_id: string }
         Returns: undefined
       }
       set_organization_member_role: {
@@ -1832,4 +1832,3 @@ export const Constants = {
     },
   },
 } as const
-
