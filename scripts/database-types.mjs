@@ -72,6 +72,11 @@ try {
 }
 
 if (committed !== schemaTypes) {
+  const diff = spawnSync("diff", ["-u", outputPath, "-"], {
+    input: schemaTypes,
+    encoding: "utf8",
+  });
+  process.stderr.write(diff.stdout);
   console.error("Database types are stale. Run `pnpm db:types` and commit the result.");
   process.exit(1);
 }
