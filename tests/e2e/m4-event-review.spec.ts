@@ -32,7 +32,7 @@ test("Event revision is reviewed before public release, then cancellation remain
   test.setTimeout(120_000);
 
   await login(page, "owner@example.com");
-  await page.goto(`/workspace/${fixtureOrganizationId}/events`);
+  await page.goto(`/workspace/${fixtureOrganizationId}/events/new`);
   const draft = page.getByRole("heading", { name: "新しいEventを作成" }).locator("..");
   await draft.getByRole("button", { name: "下書きを作成" }).click();
   await expect(draft.getByText("Event名を入力してください。")).toBeVisible();
@@ -40,13 +40,13 @@ test("Event revision is reviewed before public release, then cancellation remain
   await draft.getByLabel("Event名").fill(eventTitle);
   await draft.getByLabel("説明").fill("First reviewable M4 event");
   await draft.locator('select[name="eventType"]').selectOption("performance");
-  await draft.getByLabel("Artist（canonical）").selectOption(fixtureArtistId);
-  await draft.getByLabel("会場（canonical）").selectOption(fixtureVenueId);
-  await draft.getByLabel("開始日時（東京都）").fill("2030-04-01T19:00");
-  await draft.getByLabel("終了日時（東京都）").fill("2030-04-01T20:30");
+  await draft.getByLabel("出演者").selectOption(fixtureArtistId);
+  await draft.getByLabel("会場").selectOption(fixtureVenueId);
+  await draft.getByLabel("開始日時").fill("2030-04-01T19:00");
+  await draft.getByLabel("終了日時").fill("2030-04-01T20:30");
   await draft.getByLabel("手段").selectOption("website");
   await draft.getByLabel("問い合わせ先").fill("https://dance.example.com/contact");
-  const offers = draft.getByRole("group", { name: "Ticket Offer（料金）" });
+  const offers = draft.getByRole("group", { name: "料金" });
   const addOffer = offers.getByRole("button", { name: "料金を追加" });
   await expect(addOffer).toBeEnabled();
   await addOffer.click();
@@ -118,7 +118,7 @@ test("Event revision is reviewed before public release, then cancellation remain
   await expect(page.getByRole("heading", { name: "Event Revisionに変更依頼があります" }).first()).toBeVisible();
   await expect(page.getByText("Description needs an update", { exact: true }).first()).toBeVisible();
   await page.goto(`/workspace/${fixtureOrganizationId}/events/${eventId}`);
-  await expect(page.getByText("changes_requested")).toBeVisible();
+  await expect(page.getByText("差し戻し", { exact: true })).toBeVisible();
   await page.getByLabel("説明").fill("Updated after Platform Admin feedback");
   await page.getByRole("button", { name: "審査へ提出" }).click();
   await logout(page);

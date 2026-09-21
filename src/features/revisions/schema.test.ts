@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { parseTicketOffers, ticketOfferPrice } from "./schema";
+import {
+  accessLinkKindLabel,
+  parseTicketOffers,
+  revisionStatusLabel,
+  ticketOfferPrice,
+} from "./schema";
 
 function offerForm(values: Record<string, string>) {
   const formData = new FormData();
@@ -44,5 +49,13 @@ describe("ticketOfferPrice", () => {
     expect(ticketOfferPrice({ price_type: "fixed", label: null, currency: "JPY", amount_minor: "3000", min_amount_minor: null, max_amount_minor: null, notes: null })).toContain("3,000");
     expect(ticketOfferPrice({ price_type: "fixed", label: null, currency: "EUR", amount_minor: "1250", min_amount_minor: null, max_amount_minor: null, notes: null })).toContain("12.50");
     expect(ticketOfferPrice({ price_type: "fixed", label: null, currency: "JPY", amount_minor: "9223372036854775807", min_amount_minor: null, max_amount_minor: null, notes: null })).toContain("9,223,372,036,854,775,807");
+  });
+});
+
+describe("organizer-facing labels", () => {
+  it("names Revision states and link kinds instead of showing enum values", () => {
+    expect(revisionStatusLabel("changes_requested")).toBe("差し戻し");
+    expect(revisionStatusLabel("in_review")).toBe("審査中");
+    expect(accessLinkKindLabel("registration")).toBe("申込");
   });
 });

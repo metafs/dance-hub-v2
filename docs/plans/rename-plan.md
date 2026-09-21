@@ -131,12 +131,14 @@ npm に publish していないため実害は小さいが、`pnpm` のワーク
 
 ### コード
 
-- [ ] `src/app/layout.tsx`、`src/app/workspace/layout.tsx`、`src/app/admin/events/page.tsx`、`src/app/admin/withdrawals/page.tsx`
-- [ ] `src/features/auth/components/` — `login-page.tsx`、`workspace-layout.tsx`
-- [ ] `src/features/discovery/components/` — `calendar-page.tsx`、`event-list-page.tsx`、`home-page.tsx`、`open-call-page.tsx`
-- [ ] `src/features/events/components/public-event-page.tsx`
-- [ ] `src/features/moderation/components/` — `application-review-queue.tsx`、`entity-review-page.tsx`、`event-review-queue.tsx`
-- [ ] `src/features/shared-entities/components/` — `public-artist-page.tsx`、`public-venue-page.tsx`
+UI と metadata の置換（M0-2）は、UI の作り直し（ADR-0022）と同じ変更で先に行った。ロゴタイプ・ロゴの差し替えも済んでいる。
+
+- [x] `src/app/layout.tsx`、`src/app/workspace/layout.tsx`、`src/app/admin/events/page.tsx`、`src/app/admin/withdrawals/page.tsx`
+- [x] `src/features/auth/components/` — `login-page.tsx`、`workspace-layout.tsx`
+- [x] `src/features/discovery/components/` — `calendar-page.tsx`、`event-list-page.tsx`、`home-page.tsx`、`open-call-page.tsx`
+- [x] `src/features/events/components/public-event-page.tsx`
+- [x] `src/features/moderation/components/` — `application-review-queue.tsx`、`entity-review-page.tsx`、`event-review-queue.tsx`
+- [x] `src/features/shared-entities/components/` — `public-artist-page.tsx`、`public-venue-page.tsx`
 - [ ] `src/lib/env.test.ts` — `dancehub.example` → `p8ce.example`
 - [ ] `package.json` の `name`
 - [ ] `.env.example` のコメント

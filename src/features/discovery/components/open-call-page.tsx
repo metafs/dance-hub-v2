@@ -1,71 +1,46 @@
-import Link from "next/link";
+import { EmptyState } from "@/ui/empty-state";
+import { RowList } from "@/ui/list-row";
+import { PageHead } from "@/ui/page-head";
 
-import { formatTokyoDateTime } from "@/lib/datetime";
-
-import { prefectureLabel } from "../projection";
 import { listOpenApplications } from "../queries";
+import { EventRow, monthDay } from "./event-row";
 
 export default async function OpenCallPage() {
   const events = await listOpenApplications();
 
   return (
-    <main className="workspace-main">
-      <Link className="back-link" href="/">← DANCE HUB</Link>
-      <div className="section-heading">
-        <h1>募集中</h1>
-        <p className="queue-count">{events.length}件</p>
-      </div>
-      <p className="lede">
-        オーディション、公募、レジデンスを応募締切の近い順に並べています。
-        開催日が未定のものも含みます。
-      </p>
+    <div className="container">
+      <PageHead
+        lede="オーディション、公募、レジデンスを応募締切の近い順に並べています。開催日が決まっていないものも含みます。"
+        meta={<span className="tabular">{events.length}件</span>}
+        title="募集中"
+      />
+      <p className="section-note">日時はすべて日本時間です。</p>
 
       {events.length === 0 ? (
-        <p className="empty-state">応募を受け付けているEventは現在ありません。</p>
+        <EmptyState>応募を受け付けているEventは現在ありません。</EmptyState>
       ) : (
-        <ul className="discovery-list">
+        <RowList bordered variant="lead-wide">
           {events.map((event) => {
             const [first] = event.schedules;
-
             return (
-              <li className="discovery-card" key={event.id}>
-                <p className="eyebrow">{event.typeLabel}</p>
-                <h3>
-                  <Link href={`/events/${event.id}`}>{event.title}</Link>
-                </h3>
-                <dl className="discovery-meta">
-                  <div>
-                    <dt>応募締切</dt>
-                    <dd>
-                      {formatTokyoDateTime(event.applicationDeadline as string)}（東京時間）
-                    </dd>
-                  </div>
-                  {first ? (
-                    <div>
-                      <dt>開催</dt>
-                      <dd>
-                        {formatTokyoDateTime(first.startsAt)} / {first.venueName}
-                        （{prefectureLabel(first.prefecture)}）
-                      </dd>
-                    </div>
-                  ) : (
-                    <div>
-                      <dt>開催</dt>
-                      <dd>未定</dd>
-                    </div>
-                  )}
-                  {event.organizationName ? (
-                    <div>
-                      <dt>主催</dt>
-                      <dd>{event.organizationName}</dd>
-                    </div>
-                  ) : null}
-                </dl>
-              </li>
+              <EventRow
+                detail={[
+                  event.organizationName ? `主催　${event.organizationName}` : null,
+                  first ? `開催　${monthDay(first.startsAt)}` : null,
+                ].filter(Boolean).join(" · ") || null}
+                event={event}
+                key={event.id}
+                lead={`締切 ${monthDay(event.applicationDeadline)}`}
+                schedule={first ?? null}
+                {...(first
+                  ? {}
+                  : { aside: <span className="row-aside-sub">開催日未定</span> })}
+              />
             );
           })}
-        </ul>
+        </RowList>
       )}
-    </main>
+    </div>
   );
 }

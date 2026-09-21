@@ -72,3 +72,43 @@ export function tokyoDayEndExclusive(date: string) {
 
   return new Date(new Date(start).getTime() + dayInMilliseconds).toISOString();
 }
+
+const weekdayNames = ["日曜日", "月曜日", "火曜日", "水曜日", "木曜日", "金曜日", "土曜日"] as const;
+
+function isValidInstant(value: string) {
+  return !Number.isNaN(new Date(value).getTime());
+}
+
+/** `HH:mm` of an instant on the Tokyo clock, or an empty string. */
+export function formatTokyoTime(value: string) {
+  if (!isValidInstant(value)) return "";
+  return toTokyoDateTimeLocal(value).slice(11, 16);
+}
+
+/** `YYYY.MM.DD` of the Tokyo calendar day an instant falls on. */
+export function formatTokyoDate(value: string) {
+  const day = tokyoDateKey(value);
+  return day ? day.replaceAll("-", ".") : "";
+}
+
+export type DayLabel = {
+  year: number;
+  /** `9.25`: the month unpadded, the day padded, as listings set dates. */
+  monthDay: string;
+  weekday: string;
+};
+
+/** The parts a listing shows for a `YYYY-MM-DD` Tokyo calendar day. */
+export function dayLabel(day: string): DayLabel | null {
+  if (!tokyoDatePattern.test(day)) return null;
+
+  const [year, month, date] = day.split("-").map(Number);
+  const weekday = new Date(Date.UTC(year, month - 1, date)).getUTCDay();
+  if (Number.isNaN(weekday)) return null;
+
+  return {
+    year,
+    monthDay: `${month}.${String(date).padStart(2, "0")}`,
+    weekday: weekdayNames[weekday],
+  };
+}

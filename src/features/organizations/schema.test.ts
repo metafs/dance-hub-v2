@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { hasOrganizationCapability } from "./schema";
+import {
+  applicationStatusLabel,
+  hasOrganizationCapability,
+  organizationRoleLabel,
+} from "./schema";
 
 describe("Organization role matrix", () => {
   it("limits member management to owners", () => {
@@ -22,5 +26,12 @@ describe("Organization role matrix", () => {
       expect(hasOrganizationCapability(role, "editEvents")).toBe(true);
       expect(hasOrganizationCapability(role, "createCandidates")).toBe(true);
     }
+  });
+
+  it("names roles and application states in Japanese for the workspace", () => {
+    expect(organizationRoleLabel("owner")).toBe("オーナー");
+    expect(organizationRoleLabel("editor")).toBe("編集者");
+    expect(applicationStatusLabel("submitted")).toBe("審査中");
+    expect(applicationStatusLabel("unknown")).toBe("unknown");
   });
 });

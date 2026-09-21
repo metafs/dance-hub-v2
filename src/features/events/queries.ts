@@ -133,12 +133,14 @@ export async function getPublicEventPageData(eventId: string) {
       .maybeSingle(),
     supabase
       .from("event_schedules")
-      .select("starts_at, ends_at, all_day, venues(name, prefecture)")
+      // The Venue id lets the page link to the Venue, so the relation
+      // REQ-VENUE-001 expresses through Schedules is also a route (G-002).
+      .select("starts_at, ends_at, all_day, venue_id, venues(id, name, prefecture, address_line1, address_line2)")
       .eq("event_revision_id", event.published_revision_id)
       .order("starts_at"),
     supabase
       .from("event_artists")
-      .select("role, display_order, artists(name)")
+      .select("role, display_order, artist_id, artists(id, name)")
       .eq("event_revision_id", event.published_revision_id)
       .order("display_order"),
     supabase

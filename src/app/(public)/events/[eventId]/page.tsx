@@ -21,7 +21,7 @@ export async function generateMetadata({
   // so a withdrawn or superseded Revision stops serving it at the same moment.
   const images = event.mainImageAlt
     ? [{ url: `/events/${eventId}/image`, alt: event.mainImageAlt }]
-    : [{ url: "/opengraph-image", alt: "DANCE HUB" }];
+    : [{ url: "/opengraph-image", alt: "p8ce" }];
 
   return {
     title,

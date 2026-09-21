@@ -20,9 +20,9 @@ async function logout(page: Page) {
 test("candidate activation produces canonical data without cross-organization disclosure", async ({ page }) => {
   await login(page, "owner@example.com");
   await page.goto(`/workspace/${fixtureOrganizationId}/entities`);
-  await page.getByRole("heading", { name: "Artist Candidate" }).locator("..").getByLabel("Artist名").fill("E2E Artist");
-  await page.getByRole("button", { name: "Artist候補を提出" }).click();
-  const candidates = page.getByRole("heading", { name: "このOrganizationの候補" }).locator("..");
+  await page.getByRole("heading", { name: "出演者の登録を申請" }).locator("..").getByLabel("出演者名").fill("E2E Artist");
+  await page.getByRole("button", { name: "出演者を申請" }).click();
+  const candidates = page.getByRole("heading", { name: "申請した候補" }).locator("..");
   await expect(candidates.getByText("E2E Artist", { exact: true })).toBeVisible();
   await logout(page);
 
@@ -41,6 +41,6 @@ test("candidate activation produces canonical data without cross-organization di
 
   await login(page, "owner@example.com");
   await page.goto(`/workspace/${fixtureOrganizationId}/entities`);
-  const canonicalSearch = page.getByRole("heading", { name: "Canonical search" }).locator("..");
+  const canonicalSearch = page.getByRole("heading", { name: "登録済みの出演者・会場" }).locator("..");
   await expect(canonicalSearch.getByText("E2E Artist", { exact: true })).toBeVisible();
 });

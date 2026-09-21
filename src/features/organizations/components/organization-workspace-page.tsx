@@ -1,17 +1,25 @@
 import Link from "next/link";
 
 import { requireOrganizationMembership } from "@/features/organizations/policy";
-import { getUserOrganizationMemberships } from "@/features/organizations/queries";
 import {
   hasOrganizationCapability,
-  isOrganizationRole,
+  organizationRoleLabel,
 } from "@/features/organizations/schema";
-
-import { OrganizationSelector } from "./organization-selector";
+import { Notice } from "@/ui/notice";
+import { AppPageHead } from "@/ui/page-head";
+import { Section } from "@/ui/section";
 
 const errorMessages: Record<string, string> = {
   "insufficient-role": "この操作にはOwner権限が必要です。",
 };
+
+const capabilities = [
+  ["Eventの下書き・編集・審査への提出", "editEvents"],
+  ["出演者・会場の登録申請", "createCandidates"],
+  ["Organization情報の編集", "editOrganization"],
+  ["MemberとRoleの管理", "manageMembers"],
+  ["Eventの中止申請", "requestCancellation"],
+] as const;
 
 export default async function OrganizationWorkspacePage({
   params,
@@ -22,79 +30,46 @@ export default async function OrganizationWorkspacePage({
 }) {
   const { organizationId } = await params;
   const query = await searchParams;
-  const { organization, role, supabase, user } =
-    await requireOrganizationMembership(organizationId);
-  const { data: memberships } = await getUserOrganizationMemberships(supabase, user.id);
-
-  const organizations = (memberships ?? []).flatMap((membership) => {
-    const value = membership.organizations;
-    const item = Array.isArray(value) ? value[0] : value;
-    return item && isOrganizationRole(membership.role)
-      ? [{ id: item.id, name: item.name, role: membership.role }]
-      : [];
-  });
-
-  const capabilities = [
-    ["Event Revisionを編集・提出", "editEvents"],
-    ["Artist / Venue Candidateを作成", "createCandidates"],
-    ["Organization情報を編集", "editOrganization"],
-    ["MemberとRoleを管理", "manageMembers"],
-    ["Eventの中止を申請", "requestCancellation"],
-  ] as const;
+  const { organization, role } = await requireOrganizationMembership(organizationId);
 
   return (
-    <main className="workspace-main">
-      <div className="workspace-toolbar">
-        <Link className="back-link" href="/workspace">← Workspace一覧</Link>
-        <OrganizationSelector organizations={organizations} selectedId={organizationId} />
-      </div>
+    <main className="container-app app-main">
+      <AppPageHead
+        description={`あなたは${organizationRoleLabel(role)}です。操作できる範囲はサーバー側で確認されます。`}
+        title={organization.name}
+      />
       {query.error && errorMessages[query.error] ? (
-        <p className="notice notice-error" role="alert">{errorMessages[query.error]}</p>
+        <Notice tone="error">{errorMessages[query.error]}</Notice>
       ) : null}
-      <section className="hero-card organization-hero">
-        <div>
-          <span className="role-chip">{role}</span>
-          <p className="eyebrow">Organization Workspace</p>
-          <h1>{organization.name}</h1>
-          <p className="lede">このWorkspaceでは、サーバーで検証されたRoleだけが操作できます。</p>
-        </div>
-        {hasOrganizationCapability(role, "manageMembers") ? (
-          <Link className="button button-secondary" href={`/workspace/${organizationId}/settings`}>
-            Organization設定
+
+      <div className="link-panels">
+        {hasOrganizationCapability(role, "editEvents") ? (
+          <Link className="link-panel" href={`/workspace/${organizationId}/events`}>
+            <strong>Event</strong>
+            <span>下書きの作成、審査への提出、公開後の更新と中止の申請</span>
           </Link>
         ) : null}
         {hasOrganizationCapability(role, "createCandidates") ? (
-          <Link className="button button-primary" href={`/workspace/${organizationId}/entities`}>
-            Artist / Venueを管理
+          <Link className="link-panel" href={`/workspace/${organizationId}/entities`}>
+            <strong>出演者・会場</strong>
+            <span>一覧にない出演者や会場の登録を申請</span>
           </Link>
         ) : null}
-        {hasOrganizationCapability(role, "editEvents") ? (
-          <Link className="button button-primary" href={`/workspace/${organizationId}/events`}>
-            Eventを管理
-          </Link>
-        ) : null}
-      </section>
-      <section className="section-block" aria-labelledby="permissions-title">
-        <div className="section-heading">
-          <div>
-            <p className="eyebrow">Authorization</p>
-            <h2 id="permissions-title">あなたの操作範囲</h2>
-          </div>
-        </div>
-        <div className="permission-list">
+      </div>
+
+      <Section id="organization-capabilities" rule size="small" title="あなたの操作範囲">
+        <dl className="capabilities">
           {capabilities.map(([label, capability]) => {
             const allowed = hasOrganizationCapability(role, capability);
             return (
-              <div className="permission-row" key={capability}>
-                <span>{label}</span>
-                <strong className={allowed ? "permission-yes" : "permission-no"}>
-                  {allowed ? "許可" : "不可"}
-                </strong>
+              <div key={capability}>
+                <dt>{label}</dt>
+                <dd data-allowed={allowed}>{allowed ? "できる" : "できない"}</dd>
               </div>
             );
           })}
-        </div>
-      </section>
+        </dl>
+      </Section>
     </main>
   );
 }

@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  dayLabel,
+  formatTokyoDate,
   formatTokyoDateTime,
+  formatTokyoTime,
   TOKYO_TIME_ZONE,
   toTokyoDateTimeLocal,
   tokyoDateKey,
@@ -71,5 +74,20 @@ describe("Tokyo calendar-day boundaries", () => {
   it("round-trips a day start back to the same calendar day", () => {
     const start = tokyoDayStart("2026-04-01");
     expect(start && tokyoDateKey(start)).toBe("2026-04-01");
+  });
+
+  it("sets listing times and dates on the Tokyo clock", () => {
+    // 2026-09-25T10:30Z is 19:30 on the 25th in Tokyo, while a UTC instant
+    // after 15:00 is already the next Tokyo day.
+    expect(formatTokyoTime("2026-09-25T10:30:00.000Z")).toBe("19:30");
+    expect(formatTokyoDate("2026-09-25T15:30:00.000Z")).toBe("2026.09.26");
+    expect(formatTokyoTime("not a date")).toBe("");
+    expect(formatTokyoDate("not a date")).toBe("");
+  });
+
+  it("labels a Tokyo calendar day for listings", () => {
+    expect(dayLabel("2026-09-25")).toEqual({ year: 2026, monthDay: "9.25", weekday: "金曜日" });
+    expect(dayLabel("2030-05-01")).toEqual({ year: 2030, monthDay: "5.01", weekday: "水曜日" });
+    expect(dayLabel("2026-9-25")).toBeNull();
   });
 });

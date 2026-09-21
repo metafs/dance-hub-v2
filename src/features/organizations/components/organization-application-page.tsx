@@ -2,6 +2,8 @@ import Link from "next/link";
 
 import { requireUser } from "@/features/auth/policy";
 import { submitOrganizationApplication } from "@/features/organizations/commands";
+import { Notice } from "@/ui/notice";
+import { AppPageHead } from "@/ui/page-head";
 
 const errorMessages: Record<string, string> = {
   "already-submitted": "審査中の申請がすでにあります。",
@@ -21,39 +23,41 @@ export default async function OrganizationApplicationPage({
   const params = await searchParams;
 
   return (
-    <main className="workspace-main narrow-main">
-      <Link className="back-link" href="/workspace">← Workspaceへ戻る</Link>
-      <section className="form-card" aria-labelledby="application-title">
-        <p className="eyebrow">Organization Application</p>
-        <h1 id="application-title">Organizationを申請</h1>
-        <p className="lede">審査承認後、あなたが最初のOwnerになります。</p>
-        {params.error && errorMessages[params.error] ? (
-          <p className="notice notice-error" role="alert">{errorMessages[params.error]}</p>
-        ) : null}
-        <form action={submitOrganizationApplication} className="form-stack">
-          <label>
-            Organization名 <span aria-hidden="true">*</span>
-            <input maxLength={160} name="name" required />
-          </label>
-          <label>
-            責任者を特定できる情報 <span aria-hidden="true">*</span>
-            <input maxLength={200} name="responsibleParty" required />
-          </label>
-          <label>
-            連絡先（メールアドレス、電話番号、問い合わせURLなど） <span aria-hidden="true">*</span>
-            <input maxLength={500} name="contact" required />
-          </label>
-          <label>
-            活動確認URL（公式サイト・SNS・過去公演） <span aria-hidden="true">*</span>
-            <input name="activityUrl" placeholder="https://example.com" required type="url" />
-          </label>
-          <label>
-            Webサイト
-            <input name="websiteUrl" placeholder="https://example.com" type="url" />
-          </label>
+    <main className="container-app app-main container-narrow">
+      <AppPageHead
+        breadcrumb={<><Link href="/workspace">Workspace</Link><span>/</span><span>Organizationを申請</span></>}
+        description="運営が確認して承認すると、あなたが最初のOwnerになります。承認されるまで、Eventの作成や掲載はできません。確認の基準は掲載基準Eです。"
+        title="Organizationを申請"
+      />
+      {params.error && errorMessages[params.error] ? (
+        <Notice tone="error">{errorMessages[params.error]}</Notice>
+      ) : null}
+      <form action={submitOrganizationApplication} className="form-panel">
+        <label>
+          <span>Organization名 <span className="required-mark">必須</span></span>
+          <input maxLength={160} name="name" required />
+        </label>
+        <label>
+          <span>責任者を特定できる情報 <span className="required-mark">必須</span></span>
+          <input maxLength={200} name="responsibleParty" required />
+        </label>
+        <label>
+          <span>連絡先（メールアドレス、電話番号、問い合わせURLなど） <span className="required-mark">必須</span></span>
+          <input maxLength={500} name="contact" required />
+        </label>
+        <label>
+          <span>活動確認URL（公式サイト・SNS・過去公演） <span className="required-mark">必須</span></span>
+          <input name="activityUrl" placeholder="https://example.com" required type="url" />
+        </label>
+        <label>
+          Webサイト
+          <input name="websiteUrl" placeholder="https://example.com" type="url" />
+        </label>
+        <div className="form-actions">
+          <p>申請内容は運営だけが確認します。</p>
           <button className="button button-primary" type="submit">審査へ提出</button>
-        </form>
-      </section>
+        </div>
+      </form>
     </main>
   );
 }

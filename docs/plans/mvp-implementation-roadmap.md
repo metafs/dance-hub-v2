@@ -33,7 +33,7 @@ plan doc の Status 表記ではなく、コードを読んで確認した状態
 | Metadata / sitemap / robots | 完了 | `src/app/sitemap.ts`、`src/app/robots.ts` |
 | 構造化データ（JSON-LD） | 未着手 | `src/` に `application/ld+json` がない |
 | Runbooks | 完了（未リハーサル） | `docs/ops/runbooks/` 4 本 |
-| 改名 | 文書の一部のみ | UI・metadata は `DANCE HUB` のまま（`src/app/layout.tsx` ほか） |
+| 改名 | UI・metadata は置換済み、文書は一部のみ | UI・metadata・ロゴは ADR-0022 の変更で `p8ce` に置換。文書、`package.json`、`.env.example`、`env.test.ts` は未 |
 | main image・Artist credit 任意化 | **未実装** | publication validation 関数が「Artist credit 1 件以上」「main image ちょうど 1 枚」を要求（`20260902130000_event_ticket_offers.sql`） |
 | 代理入力・取り下げ受付窓口 | 未着手 | listing policy の Implementation follow-ups |
 | 利用規約・プライバシーポリシー・運営者情報 | 未着手 | 該当 route なし |
