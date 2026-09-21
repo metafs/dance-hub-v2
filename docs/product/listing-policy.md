@@ -176,13 +176,13 @@ Event は三つの状態を取る。決定の理由は ADR-0018 を参照。
 
 以下は方針決定済みだが、本文書を条文として運用するために実装が残る事項である。
 
-| 項目 | 依存 |
-| --- | --- |
-| 削除要請の受付窓口とフォーム | 代理入力の開始前に必要 |
-| main image・Artist creditを任意とするpublication validationと画像なし表示 | `REQ-EVENT-008`、`REQ-MEDIA-001` |
-| Organization Applicationの責任者・連絡先・活動確認項目 | `REQ-ORG-002`、E-1〜E-3 |
-| 問い合わせ手段とB-7を検証するsubmission contract | `REQ-EVENT-008` |
-| 代理入力の識別と修正窓口表示 | C-5〜C-8、G-6 |
+| 項目 | 依存 | Roadmap |
+| --- | --- | --- |
+| 削除要請の受付窓口とフォーム | 代理入力の開始前に必要 | DH-21 |
+| main image・Artist creditを任意とするpublication validationと画像なし表示 | `REQ-EVENT-008`、`REQ-MEDIA-001` | DH-20 |
+| Organization Applicationの責任者・連絡先・活動確認項目 | `REQ-ORG-002`、E-1〜E-3 | DH-23 |
+| 問い合わせ手段とB-7を検証するsubmission contract | `REQ-EVENT-008` | DH-25 |
+| 代理入力の識別と修正窓口表示 | C-5〜C-8、G-6 | DH-22 |
 
 ## Open items
 

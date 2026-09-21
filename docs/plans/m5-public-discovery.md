@@ -1,6 +1,6 @@
 # M5 — Public discovery
 
-**Status:** Planned
+**Status:** Mostly complete — remaining work (DH-26 structured data, DH-27) is tracked in `docs/plans/mvp-implementation-roadmap.md` v0.4
 
 **Understood as:** Visitors discover only the current approved Revision while past and cancelled Events remain findable and clearly labelled.
 

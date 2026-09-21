@@ -1,6 +1,6 @@
 # M4 — Event draft and review workflow
 
-**Status:** Implemented — publication validation follow-up outstanding
+**Status:** Implemented — publication validation follow-up is DH-20 in `docs/plans/mvp-implementation-roadmap.md` v0.4
 
 **Understood as:** Event content is editable only while draft or changes-requested, submitted and reviewed through trusted database transitions, and an approved revision becomes the sole public pointer while prior approved content remains visible during a later review.
 
