@@ -1,7 +1,8 @@
 # ADR-0019: サービス名を p9e に変更する
 
-**Status:** Accepted
+**Status:** Superseded by ADR-0021
 **Accepted:** 2026-09-19
+**Superseded:** 2026-09-21
 
 ## Context
 
