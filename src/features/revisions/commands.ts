@@ -44,7 +44,7 @@ type MainImageResolution =
 async function resolveMainImage(
   supabase: OrganizationSupabase,
   formData: FormData,
-  { organizationId, eventId, altText, forSubmission }: { organizationId: string; eventId: string; altText: string | null; forSubmission: boolean },
+  { organizationId, eventId, altText }: { organizationId: string; eventId: string; altText: string | null },
 ): Promise<MainImageResolution> {
   const revisionId = text(formData, "revisionId");
   const { data: revision, error: revisionError } = await supabase
@@ -118,9 +118,6 @@ async function resolveMainImage(
     return { ok: false, field: "image", message: "既存のメイン画像を確認できませんでした。" };
   }
 
-  if (!existing && forSubmission) {
-    return { ok: false, field: "image", message: "審査提出にはメイン画像が必要です。" };
-  }
   if (existing && !isAcceptedImageContentType(existing.content_type)) {
     return { ok: false, field: "image", message: "既存のメイン画像の形式を確認できませんでした。" };
   }
@@ -206,7 +203,6 @@ export async function mutateEventDraftWithState(
     organizationId,
     eventId,
     altText: content.imageAlt,
-    forSubmission: submit,
   });
   if (!image.ok) return actionError(formData, "メイン画像を確認してください。", { [image.field]: [image.message] });
 

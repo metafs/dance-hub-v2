@@ -24,9 +24,9 @@ describe("parseEventRevisionInput", () => {
       errors: {
         description: ["審査提出には説明が必要です。"],
         eventType: ["審査提出には種別が必要です。"],
-        artistId: ["審査提出にはArtistが必要です。"],
         ticketOffers: ["料金、Ticket Link、またはチケット・登録不要のいずれかを設定してください。"],
-        imageAlt: ["審査提出には画像の代替テキストが必要です。"],
+        contactKind: ["審査提出には問い合わせ手段が必要です。"],
+        contactValue: ["審査提出には問い合わせ先が必要です。"],
       },
     });
   });
@@ -100,9 +100,10 @@ describe("parseEventRevisionInput", () => {
     formData.set("description", "募集内容");
     formData.set("eventType", "audition");
     formData.set("applicationDeadline", "2030-04-01T19:00");
-    formData.set("artistId", "artist-id");
     formData.set("noRegistrationRequired", "on");
-    formData.set("imageAlt", "テスト画像");
-    expect(parseEventRevisionInput(formData, { forSubmission: true }).success).toBe(true);
+    formData.set("contactKind", "email");
+    formData.set("contactValue", "contact@example.com");
+    const result = parseEventRevisionInput(formData, { forSubmission: true });
+    expect(result).toMatchObject({ success: true });
   });
 });

@@ -25,6 +25,8 @@ export type EventRevisionInput = {
     application_deadline: string | null;
     proposed_parent_event_id: string | null;
     no_registration_required: boolean;
+    contact_kind: "website" | "social" | "email" | null;
+    contact_value: string | null;
   };
   content: {
     artistId: string | null;
@@ -55,6 +57,7 @@ const eventRevisionFields = new Set<EventRevisionField>([
   "title", "description", "eventType", "applicationDeadline", "artistId", "artistRole",
   "venueId", "startsAt", "endsAt", "ticketOffers", "ticketUrl", "ticketLabel",
   "externalUrl", "externalLabel", "image", "imageAlt", "form",
+  "contactKind", "contactValue",
 ]);
 
 function optionalTokyoDateTime(message: string) {
@@ -78,6 +81,8 @@ function eventRevisionSchema({ forSubmission, requireIdentity }: { forSubmission
     applicationDeadline: optionalTokyoDateTime("有効な応募締切を入力してください。"),
     proposedParentEventId: z.string(),
     noRegistrationRequired: z.boolean(),
+    contactKind: z.enum(["website", "social", "email"]).or(z.literal("")),
+    contactValue: z.string().max(500, "問い合わせ先は500文字以内で入力してください。"),
     artistId: z.string(),
     artistRole: z.string().max(120, "クレジット表記は120文字以内で入力してください。"),
     venueId: z.string(),
@@ -110,11 +115,13 @@ function eventRevisionSchema({ forSubmission, requireIdentity }: { forSubmission
     if (!forSubmission) return;
     if (!value.description) issue("description", "審査提出には説明が必要です。");
     if (!value.eventType) issue("eventType", "審査提出には種別が必要です。");
-    if (!value.artistId) issue("artistId", "審査提出にはArtistが必要です。");
+    if (value.contactKind === "") issue("contactKind", "審査提出には問い合わせ手段が必要です。");
+    if (!value.contactValue) issue("contactValue", "審査提出には問い合わせ先が必要です。");
+    if (["website", "social"].includes(value.contactKind) && !httpUrl(value.contactValue)) issue("contactValue", "WebサイトまたはSNSはhttpまたはhttpsのURLで入力してください。");
+    if (value.contactKind === "email" && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(value.contactValue)) issue("contactValue", "有効なメールアドレスを入力してください。");
     if (!value.noRegistrationRequired && !httpUrl(value.ticketUrl) && !value.ticketOffers?.length) {
       issue("ticketOffers", "料金、Ticket Link、またはチケット・登録不要のいずれかを設定してください。");
     }
-    if (!value.imageAlt) issue("imageAlt", "審査提出には画像の代替テキストが必要です。");
     if (value.eventType && applyEventTypes.has(value.eventType)) {
       if (!tokyoDateTime(value.applicationDeadline)) issue("applicationDeadline", "この種別の審査提出には応募締切が必要です。");
     } else if (value.eventType && value.eventType !== "festival") {
@@ -168,6 +175,8 @@ export function readEventRevisionFormValues(formData: FormData): EventRevisionFo
     applicationDeadline: raw("applicationDeadline"),
     proposedParentEventId: raw("proposedParentEventId"),
     noRegistrationRequired: formData.get("noRegistrationRequired") === "on",
+    contactKind: raw("contactKind"),
+    contactValue: raw("contactValue"),
     artistId: raw("artistId"),
     artistRole: raw("artistRole"),
     venueId: raw("venueId"),
@@ -198,6 +207,8 @@ export function parseEventRevisionInput(
     applicationDeadline: formText(formData, "applicationDeadline"),
     proposedParentEventId: formText(formData, "proposedParentEventId"),
     noRegistrationRequired: formData.get("noRegistrationRequired") === "on",
+    contactKind: formText(formData, "contactKind"),
+    contactValue: formText(formData, "contactValue"),
     artistId: formText(formData, "artistId"),
     artistRole: formText(formData, "artistRole") || "出演",
     venueId: formText(formData, "venueId"),
@@ -228,6 +239,8 @@ export function parseEventRevisionInput(
         application_deadline: tokyoDateTime(value.applicationDeadline),
         proposed_parent_event_id: value.proposedParentEventId || null,
         no_registration_required: value.noRegistrationRequired,
+        contact_kind: value.contactKind || null,
+        contact_value: value.contactValue || null,
       },
       content: {
         artistId: value.artistId || null,

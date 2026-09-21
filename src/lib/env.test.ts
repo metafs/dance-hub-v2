@@ -36,6 +36,25 @@ describe("validateEnvironment", () => {
         supabaseUrl: "https://project.supabase.co",
       });
   });
+
+  it("requires Turnstile public and secret keys as a pair", () => {
+    expect(() => validateEnvironment({
+      ...validEnvironment,
+      NEXT_PUBLIC_TURNSTILE_SITE_KEY: "site-key",
+    })).toThrow("NEXT_PUBLIC_TURNSTILE_SITE_KEY and TURNSTILE_SECRET_KEY must be configured together.");
+    expect(() => validateEnvironment({
+      ...validEnvironment,
+      TURNSTILE_SECRET_KEY: "secret-key",
+    })).toThrow("NEXT_PUBLIC_TURNSTILE_SITE_KEY and TURNSTILE_SECRET_KEY must be configured together.");
+    expect(validateEnvironment({
+      ...validEnvironment,
+      NEXT_PUBLIC_TURNSTILE_SITE_KEY: "site-key",
+      TURNSTILE_SECRET_KEY: "secret-key",
+    })).toEqual({
+      supabasePublishableKey: "publishable-key",
+      supabaseUrl: "https://project.supabase.co",
+    });
+  });
 });
 
 describe("siteUrl", () => {

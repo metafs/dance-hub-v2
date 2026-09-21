@@ -93,6 +93,9 @@ insert into public.event_artists (event_revision_id, artist_id, role, display_or
 values ('eeeeeeee-eeee-4eee-8eee-eeeeeeeeeee1', 'cccccccc-cccc-4ccc-8ccc-cccccccccccc', '出演', 0);
 insert into public.event_schedules (event_revision_id, venue_id, starts_at)
 values ('eeeeeeee-eeee-4eee-8eee-eeeeeeeeeee1', 'dddddddd-dddd-4ddd-8ddd-dddddddddddd', '2030-04-01 10:00:00+00');
+update public.event_revisions
+set contact_kind = 'website', contact_value = 'https://example.com/contact'
+where id = 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeee1';
 insert into public.event_media (event_revision_id, object_key, content_type, alt_text, is_main, display_order)
 values ('eeeeeeee-eeee-4eee-8eee-eeeeeeeeeee1', 'events/ticket-offer-test.jpg', 'image/jpeg', 'Ticket Offer test', true, 0);
 

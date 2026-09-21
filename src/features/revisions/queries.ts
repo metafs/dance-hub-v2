@@ -29,7 +29,7 @@ export function getRevisionEditOverview(
     supabase
       .from("event_revisions")
       .select(
-        "id, event_id, title, description, event_type, application_deadline, proposed_parent_event_id, no_registration_required, status, created_at",
+        "id, event_id, title, description, event_type, application_deadline, proposed_parent_event_id, no_registration_required, contact_kind, contact_value, status, created_at",
       )
       .eq("event_id", eventId)
       .order("created_at", { ascending: false }),

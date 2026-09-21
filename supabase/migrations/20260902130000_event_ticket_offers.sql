@@ -494,12 +494,14 @@ begin
 
   insert into public.event_revisions (
     event_id, created_by, status, title, description, event_type,
-    application_deadline, proposed_parent_event_id, no_registration_required
+    application_deadline, proposed_parent_event_id, no_registration_required,
+    contact_kind, contact_value
   ) values (
     target_event.id, auth.uid(), 'draft', source_revision.title,
     source_revision.description, source_revision.event_type,
     source_revision.application_deadline, target_event.parent_event_id,
-    source_revision.no_registration_required
+    source_revision.no_registration_required, source_revision.contact_kind,
+    source_revision.contact_value
   ) returning id into next_revision_id;
 
   insert into public.event_schedules (event_revision_id, venue_id, starts_at, ends_at, all_day)
