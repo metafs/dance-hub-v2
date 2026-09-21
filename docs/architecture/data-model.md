@@ -69,7 +69,7 @@ The Festival parent is proposed on the child Event Revision and copied to the st
 
 ## Media
 
-`event_media` belongs to an Event Revision. The schema supports ordered multiple media, while the MVP editor and publication validation expose exactly one main image with required alt text.
+`event_media` belongs to an Event Revision. The schema supports ordered multiple media, while the MVP editor exposes at most one optional main image. An Event may publish without an `event_media` row; a main image that is present requires alt text.
 
 ## Ticket offers and links
 
