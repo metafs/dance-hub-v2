@@ -8,6 +8,8 @@ export type EnvironmentSource = Readonly<Record<string, string | undefined>>;
 const supabaseUrlName = "NEXT_PUBLIC_SUPABASE_URL";
 const supabasePublishableKeyName = "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY";
 const siteUrlName = "NEXT_PUBLIC_SITE_URL";
+const turnstileSiteKeyName = "NEXT_PUBLIC_TURNSTILE_SITE_KEY";
+const turnstileSecretKeyName = "TURNSTILE_SECRET_KEY";
 
 function requiredValue(source: EnvironmentSource, name: string) {
   const value = source[name]?.trim();
@@ -29,6 +31,11 @@ function validHttpUrl(source: EnvironmentSource, name: string) {
 }
 
 export function validateEnvironment(source: EnvironmentSource = process.env): Environment {
+  const turnstileSiteKey = source[turnstileSiteKeyName]?.trim();
+  const turnstileSecretKey = source[turnstileSecretKeyName]?.trim();
+  if (Boolean(turnstileSiteKey) !== Boolean(turnstileSecretKey)) {
+    throw new Error(`Environment variables ${turnstileSiteKeyName} and ${turnstileSecretKeyName} must be configured together.`);
+  }
   return {
     supabasePublishableKey: requiredValue(source, supabasePublishableKeyName),
     supabaseUrl: validHttpUrl(source, supabaseUrlName),
