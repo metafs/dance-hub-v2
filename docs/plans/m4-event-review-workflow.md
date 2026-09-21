@@ -1,6 +1,6 @@
 # M4 — Event draft and review workflow
 
-**Status:** Complete
+**Status:** Implemented — publication validation follow-up outstanding
 
 **Understood as:** Event content is editable only while draft or changes-requested, submitted and reviewed through trusted database transitions, and an approved revision becomes the sole public pointer while prior approved content remains visible during a later review.
 
@@ -17,11 +17,11 @@ The User who most recently submitted a Revision, or requested a cancellation, re
 
 ## Acceptance criteria
 
-- Members create and edit drafts with schedules, canonical Artist credits, structured Ticket Offers, independent access links, external links, and one main-image record with alt text.
+- Members create and edit drafts with schedules, optional canonical Artist credits, structured Ticket Offers, independent access links, external links, and an optional main-image record whose presence requires alt text.
 - Submission and review use the trusted Revision functions.
 - Platform Admin can request changes or approve; a later approved Revision supersedes the published pointer atomically.
 - Owner and Admin can request cancellation and Platform Admin can approve it.
 - Revision and cancellation decisions create an immutable, recipient-only notification whose read state can be updated.
 - E2E covers the complete revision and cancellation journeys.
 
-The current main-image record and publication validation establish the Revision data contract. Actual upload, private storage, and approved public delivery are tracked as the independent MVP blocker in `docs/plans/media-delivery.md`.
+Upload, private storage, and approved public delivery are implemented. The remaining M4 follow-up is to align the trusted publication validation and editing UI with REQ-EVENT-008: main image and Artist credits become optional, while inquiry information and the seven-day submission rule become enforceable.

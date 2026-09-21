@@ -26,20 +26,21 @@ A draft requires an owning Organization, creator, and title.
 Review submission requires:
 
 - title, description, and Event Type;
-- a main image with alt text;
-- one or more Artist credits;
+- an Organizer and inquiry method;
+- alt text when a main image is supplied;
+- a role or explicit uncredited value for each supplied Artist credit;
 - ticket pricing, ticket/registration link, or explicit no-registration information; and
 - either the applicable time contract below or a valid Festival child structure.
 
 Time contract:
 
 - `apply` Event Types require an Application Deadline and may have zero Schedules.
-- Other non-Festival Event Types require one or more Schedules with a Venue and `Asia/Tokyo` timestamps.
+- Other non-Festival Event Types require one or more Schedules with a Venue and `Asia/Tokyo` timestamps, submitted for review no later than seven Tokyo calendar days before the first Schedule date.
 - A Festival may be drafted without children, but requires at least one child Event with an approved, Schedule-bearing public revision before its own approval.
 
 All review-submission requirements are rechecked at approval. A Revision which no longer satisfies them is returned as `changes_requested`; an approved Revision always becomes the public revision immediately.
 
-Ticket or participation information means at least one valid Ticket Offer, one valid external ticket/registration URL, or an explicit `no_registration_required` value. Artist credits reference activated canonical Artists and include a role or explicit uncredited role value.
+Ticket or participation information means at least one valid Ticket Offer, one valid external ticket/registration URL, or an explicit `no_registration_required` value. Main images and Artist credits are optional. When present, a main image has alt text, and Artist credits reference activated canonical Artists and include a role or explicit uncredited role value.
 
 ## Alternatives considered
 
