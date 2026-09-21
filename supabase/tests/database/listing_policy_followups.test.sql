@@ -4,7 +4,7 @@
 begin;
 
 create extension if not exists pgtap with schema extensions;
-select plan(8);
+select plan(11);
 
 select ok(
   not has_table_privilege('anon', 'public.listing_requests', 'select, insert, update, delete'),
@@ -59,6 +59,26 @@ select throws_ok(
   $$update public.event_schedules set starts_at = now() + interval '6 days' where event_revision_id = '12121212-bbbb-4bbb-8bbb-000000000001'; select public.assert_event_revision_reviewable('12121212-bbbb-4bbb-8bbb-000000000001')$$,
   'P0001', 'physical events must be submitted at least 7 Tokyo calendar days before the first schedule',
   'a physical Event inside the seven-day window is not reviewable'
+);
+
+insert into public.listing_requests (id, event_id, kind, requester_contact, message)
+values ('12121212-cccc-4ccc-8ccc-000000000001', '12121212-aaaa-4aaa-8aaa-000000000001', 'withdrawal', 'private@example.com', 'Do not expose this contact');
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '11111111-1111-4111-8111-111111111111', true);
+select is(
+  (select count(*)::integer from public.listing_requests),
+  0,
+  'a non-admin authenticated user cannot read listing requests'
+);
+select lives_ok(
+  $$update public.listing_requests set resolution_note = 'unauthorized' where id = '12121212-cccc-4ccc-8ccc-000000000001'$$,
+  'a non-admin authenticated update is filtered by RLS'
+);
+reset role;
+select is(
+  (select resolution_note from public.listing_requests where id = '12121212-cccc-4ccc-8ccc-000000000001'),
+  null,
+  'a non-admin authenticated user cannot resolve a listing request'
 );
 
 select * from finish();

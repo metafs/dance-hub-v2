@@ -33,6 +33,13 @@ GitHub Actions には deploy workflow が無い。`.github/workflows/` にある
 | `NEXT_PUBLIC_SUPABASE_URL` | 必須 | 起動時に例外。全ページ停止 |
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | 必須 | 同上 |
 | `NEXT_PUBLIC_SITE_URL` | 任意 | 起動はする。sitemap と絶対 URL が出ない |
+| `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | Turnstile受付を有効にする場合は必須 | 未設定だと公開の掲載要請フォームを無効化 |
+| `TURNSTILE_SECRET_KEY` | `NEXT_PUBLIC_TURNSTILE_SITE_KEY` と同時に必須 | 未設定だと要請検証に失敗 |
+
+掲載削除・修正要請フォームを有効にする場合、Turnstile の公開キーと秘密キーは必ず
+同じ環境の組として設定する。片方だけを設定してはならない。`.env.example` をテンプレートに
+して、公開キーは `NEXT_PUBLIC_TURNSTILE_SITE_KEY`、秘密キーはサーバー専用の
+`TURNSTILE_SECRET_KEY` に登録する。秘密キーをブラウザ変数やリポジトリへ置かない。
 
 `NEXT_PUBLIC_SITE_URL` は任意だが、未設定のまま公開すると sitemap が機能しない。初回
 デプロイでは必ず設定する。
