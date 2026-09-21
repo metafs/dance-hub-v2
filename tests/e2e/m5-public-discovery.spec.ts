@@ -100,7 +100,7 @@ test("a Visitor reaches Events through Artist and Venue pages", async ({ page })
 
   await page.goto(`/venues/${kanagawaVenueId}`);
   await expect(page.getByRole("heading", { name: "Fixture Kanagawa Venue" })).toBeVisible();
-  await expect(page.getByText("神奈川県")).toBeVisible();
+  await expect(page.getByText("神奈川県", { exact: true })).toBeVisible();
   // The Venue relationship is expressed through Schedules, so this Venue lists
   // the Event whose second Schedule is there.
   await expect(page.getByRole("link", { name: multiVenue })).toBeVisible();
