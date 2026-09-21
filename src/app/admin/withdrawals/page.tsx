@@ -4,6 +4,7 @@ import { logout } from "@/app/login/actions";
 import { requirePlatformAdmin } from "@/lib/auth/authorization";
 
 import { restoreEvent, withdrawEvent } from "./actions";
+import { markEventAsProxy, resolveListingRequest } from "@/features/listing-requests/commands";
 
 const errorMessages: Record<string, string> = {
   "event-required": "対象のEvent IDを入力してください。",
@@ -33,7 +34,7 @@ function organizationName(value: OrganizationValue) {
 export default async function WithdrawalQueue({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string; done?: string }>;
+  searchParams: Promise<{ error?: string; done?: string; requestError?: string; requestResolved?: string; proxyError?: string; proxyMarked?: string }>;
 }) {
   const params = await searchParams;
   const { supabase } = await requirePlatformAdmin();
@@ -49,6 +50,12 @@ export default async function WithdrawalQueue({
     .not("withdrawn_at", "is", null)
     .order("withdrawn_at", { ascending: false });
   if (error) throw new Error("Withdrawn events could not be loaded.");
+  const { data: requests, error: requestsError } = await supabase
+    .from("listing_requests")
+    .select("id, event_id, kind, requester_contact, message, created_at, events!listing_requests_event_id_fkey(event_revisions!events_published_revision_fk(title))")
+    .is("resolved_at", null)
+    .order("created_at");
+  if (requestsError) throw new Error("Listing requests could not be loaded.");
 
   return (
     <div className="app-shell">
@@ -74,6 +81,24 @@ export default async function WithdrawalQueue({
 
         {params.error && errorMessages[params.error] ? <p className="notice notice-error" role="alert">{errorMessages[params.error]}</p> : null}
         {params.done && doneMessages[params.done] ? <p className="notice notice-success">{doneMessages[params.done]}</p> : null}
+        {params.requestResolved ? <p className="notice notice-success">受付要請を完了にしました。</p> : null}
+        {params.requestError ? <p className="notice notice-error" role="alert">受付要請を更新できませんでした。</p> : null}
+        {params.proxyMarked ? <p className="notice notice-success">Eventを代理入力として識別しました。</p> : null}
+        {params.proxyError ? <p className="notice notice-error" role="alert">代理入力として識別できませんでした。Event ID と画像がないことを確認してください。</p> : null}
+
+        <section className="review-list" aria-label="代理入力の識別">
+          <div className="section-heading"><p className="eyebrow">Proxy listing</p><h2>代理入力として識別する</h2></div>
+          <article className="review-card"><p className="field-help">公開情報を転記した、画像を持たないEventだけを代理入力として記録します。以後、画像は追加できず、公開ページに修正・削除窓口が表示されます。</p><form action={markEventAsProxy} className="review-form"><label>Event ID <input name="eventId" required /></label><button className="button button-secondary" type="submit">代理入力として識別</button></form></article>
+        </section>
+
+        <section className="review-list" aria-label="公開フォームからの要請">
+          <div className="section-heading"><p className="eyebrow">Public intake</p><h2>受付待ちの要請</h2></div>
+          {requests?.length ? requests.map((request) => {
+            const event = Array.isArray(request.events) ? request.events[0] : request.events;
+            const revision = event?.event_revisions ? (Array.isArray(event.event_revisions) ? event.event_revisions[0] : event.event_revisions) : null;
+            return <article className="review-card" key={request.id}><div className="review-card-header"><div><p className="eyebrow">{request.kind === "withdrawal" ? "掲載削除" : "情報修正"}</p><h2>{revision?.title ?? "公開Event"}</h2></div><span className="status status-submitted">open</span></div><dl className="details-list"><div><dt>Event ID</dt><dd><code>{request.event_id}</code></dd></div><div><dt>連絡先</dt><dd>{request.requester_contact}</dd></div><div><dt>要請内容</dt><dd>{request.message}</dd></div></dl>{request.kind === "withdrawal" ? <Link className="text-link" href={`#withdraw-event-id`}>下の取り下げフォームで処理する</Link> : null}<form action={resolveListingRequest} className="review-form"><input name="requestId" type="hidden" value={request.id}/><label>対応メモ（内部）<textarea name="note" rows={2}/></label><button className="button button-secondary" type="submit">受付を完了にする</button></form></article>;
+          }) : <div className="empty-state">受付待ちの要請はありません。</div>}
+        </section>
 
         <section className="review-list" aria-label="Eventの取り下げ">
           <div className="section-heading">

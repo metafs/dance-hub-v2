@@ -9,7 +9,7 @@ export function getApplicationReviewQueue(
 ) {
   return supabase
     .from("organization_applications")
-    .select("id, applicant_id, name, website_url, status, created_at")
+    .select("id, applicant_id, name, website_url, responsible_party, contact, activity_url, status, created_at")
     .eq("status", "submitted")
     .order("created_at");
 }

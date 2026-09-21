@@ -87,6 +87,7 @@ export default async function PublicEventPage({
           {organization?.name ? (
             <p className="organizer-line">主催: {organization.name}</p>
           ) : null}
+          {event.listing_origin === "proxy" ? <p className="notice">このEventは公開情報をもとにDANCE HUBが代理入力しています。内容の修正・掲載削除は<a className="text-link" href={`/listing-requests?event=${eventId}&kind=correction`}>こちらからご連絡ください</a>。</p> : null}
           <p className="lede">{revision.description}</p>
         </div>
       </section>
@@ -155,6 +156,7 @@ export default async function PublicEventPage({
           })}
         </div>
       </section>
+      {revision.contact_value ? <section className="section-block"><h2>お問い合わせ</h2>{revision.contact_kind === "email" ? <a className="text-link" href={`mailto:${revision.contact_value}`}>{revision.contact_value}</a> : <a className="text-link" href={revision.contact_value} rel="noreferrer" target="_blank">{revision.contact_kind === "social" ? "SNSで問い合わせる" : "公式サイトで問い合わせる"}</a>}</section> : null}
       <section className="section-block">
         <h2>Artist</h2>
         <div className="details-list">{credits?.map((credit) => {
@@ -173,6 +175,7 @@ export default async function PublicEventPage({
         {revision.application_deadline ? <p>申込締切: {formatTokyoDateTime(revision.application_deadline)}（東京時間）</p> : null}
       </section>
       {links?.length ? <section className="section-block"><h2>関連リンク</h2><div className="button-row">{links.map((item) => <a className="button button-quiet" href={item.url} key={item.display_order} rel="noreferrer" target="_blank">{item.label}</a>)}</div></section> : null}
+      <p className="field-help">主催者・権利者・出演者の方は、<Link className="text-link" href={`/listing-requests?event=${eventId}&kind=withdrawal`}>掲載の削除または修正を要請</Link>できます。</p>
     </main>
   );
 }

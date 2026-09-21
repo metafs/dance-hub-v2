@@ -520,6 +520,8 @@ export type Database = {
       event_revisions: {
         Row: {
           application_deadline: string | null
+          contact_kind: Database["public"]["Enums"]["event_contact_kind"] | null
+          contact_value: string | null
           created_at: string
           created_by: string
           decision_reason: string | null
@@ -536,6 +538,10 @@ export type Database = {
         }
         Insert: {
           application_deadline?: string | null
+          contact_kind?:
+            | Database["public"]["Enums"]["event_contact_kind"]
+            | null
+          contact_value?: string | null
           created_at?: string
           created_by: string
           decision_reason?: string | null
@@ -552,6 +558,10 @@ export type Database = {
         }
         Update: {
           application_deadline?: string | null
+          contact_kind?:
+            | Database["public"]["Enums"]["event_contact_kind"]
+            | null
+          contact_value?: string | null
           created_at?: string
           created_by?: string
           decision_reason?: string | null
@@ -733,6 +743,7 @@ export type Database = {
           cancelled_at: string | null
           created_at: string
           id: string
+          listing_origin: Database["public"]["Enums"]["listing_origin"]
           owner_organization_id: string
           parent_event_id: string | null
           published_revision_id: string | null
@@ -745,6 +756,7 @@ export type Database = {
           cancelled_at?: string | null
           created_at?: string
           id?: string
+          listing_origin?: Database["public"]["Enums"]["listing_origin"]
           owner_organization_id: string
           parent_event_id?: string | null
           published_revision_id?: string | null
@@ -757,6 +769,7 @@ export type Database = {
           cancelled_at?: string | null
           created_at?: string
           id?: string
+          listing_origin?: Database["public"]["Enums"]["listing_origin"]
           owner_organization_id?: string
           parent_event_id?: string | null
           published_revision_id?: string | null
@@ -802,35 +815,95 @@ export type Database = {
           },
         ]
       }
+      listing_requests: {
+        Row: {
+          created_at: string
+          event_id: string
+          id: string
+          kind: Database["public"]["Enums"]["listing_request_kind"]
+          message: string
+          requester_contact: string
+          resolution_note: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          id?: string
+          kind: Database["public"]["Enums"]["listing_request_kind"]
+          message: string
+          requester_contact: string
+          resolution_note?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          id?: string
+          kind?: Database["public"]["Enums"]["listing_request_kind"]
+          message?: string
+          requester_contact?: string
+          resolution_note?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "listing_requests_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listing_requests_resolved_by_fkey"
+            columns: ["resolved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organization_applications: {
         Row: {
+          activity_url: string | null
           applicant_id: string
+          contact: string | null
           created_at: string
           decision_reason: string | null
           id: string
           name: string
+          responsible_party: string | null
           reviewed_at: string | null
           reviewed_by: string | null
           status: Database["public"]["Enums"]["application_status"]
           website_url: string | null
         }
         Insert: {
+          activity_url?: string | null
           applicant_id: string
+          contact?: string | null
           created_at?: string
           decision_reason?: string | null
           id?: string
           name: string
+          responsible_party?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
           status?: Database["public"]["Enums"]["application_status"]
           website_url?: string | null
         }
         Update: {
+          activity_url?: string | null
           applicant_id?: string
+          contact?: string | null
           created_at?: string
           decision_reason?: string | null
           id?: string
           name?: string
+          responsible_party?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
           status?: Database["public"]["Enums"]["application_status"]
@@ -1466,6 +1539,14 @@ export type Database = {
         Returns: boolean
       }
       is_platform_admin: { Args: { check_user?: string }; Returns: boolean }
+      mark_event_as_proxy: {
+        Args: { target_event_id: string }
+        Returns: undefined
+      }
+      mark_listing_request_resolved: {
+        Args: { note: string; target_request_id: string }
+        Returns: undefined
+      }
       merge_artist_candidate: {
         Args: {
           candidate_id: string
@@ -1550,6 +1631,7 @@ export type Database = {
       candidate_status: "pending" | "activated" | "rejected" | "merged"
       event_access_link_kind: "ticket" | "registration"
       event_cancellation_status: "in_review" | "changes_requested" | "approved"
+      event_contact_kind: "website" | "social" | "email"
       event_review_action:
         | "revision_submitted"
         | "revision_changes_requested"
@@ -1586,6 +1668,8 @@ export type Database = {
         | "residency"
         | "festival"
         | "other"
+      listing_origin: "organizer" | "proxy"
+      listing_request_kind: "withdrawal" | "correction"
       organization_audit_action:
         | "application_approved"
         | "application_rejected"
@@ -1753,6 +1837,7 @@ export const Constants = {
       candidate_status: ["pending", "activated", "rejected", "merged"],
       event_access_link_kind: ["ticket", "registration"],
       event_cancellation_status: ["in_review", "changes_requested", "approved"],
+      event_contact_kind: ["website", "social", "email"],
       event_review_action: [
         "revision_submitted",
         "revision_changes_requested",
@@ -1793,6 +1878,8 @@ export const Constants = {
         "festival",
         "other",
       ],
+      listing_origin: ["organizer", "proxy"],
+      listing_request_kind: ["withdrawal", "correction"],
       organization_audit_action: [
         "application_approved",
         "application_rejected",

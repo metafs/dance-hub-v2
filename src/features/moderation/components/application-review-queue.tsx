@@ -61,6 +61,9 @@ export default async function ApplicationReviewQueue({
               <dl className="details-list">
                 <div><dt>Applicant ID</dt><dd>{application.applicant_id}</dd></div>
                 <div><dt>Webサイト</dt><dd>{application.website_url ?? "—"}</dd></div>
+                <div><dt>責任者</dt><dd>{application.responsible_party}</dd></div>
+                <div><dt>連絡先</dt><dd>{application.contact}</dd></div>
+                <div><dt>活動確認</dt><dd>{application.activity_url}</dd></div>
               </dl>
               <form className="review-form">
                 <input name="applicationId" type="hidden" value={application.id} />
