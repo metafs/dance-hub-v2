@@ -26,6 +26,9 @@ test("application approval creates the initial Owner workspace", async ({ page }
 
   await page.getByRole("link", { name: "Organizationを申請" }).click();
   await page.getByLabel(/Organization名/).fill("E2E Dance Organization");
+  await page.getByLabel("責任者を特定できる情報").fill("E2E代表者");
+  await page.getByLabel(/連絡先/).fill("contact@dance.example.com");
+  await page.getByLabel("活動確認URL（公式サイト・SNS・過去公演）").fill("https://dance.example.com/activity");
   await page.getByLabel("Webサイト").fill("https://dance.example.com");
   await page.getByRole("button", { name: "審査へ提出" }).click();
   await expect(page.getByText("Organization申請を提出しました。")).toBeVisible();

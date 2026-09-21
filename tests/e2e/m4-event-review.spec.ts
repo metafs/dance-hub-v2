@@ -4,7 +4,9 @@ const password = "DanceHub123!";
 const fixtureOrganizationId = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
 const fixtureArtistId = "cccccccc-cccc-4ccc-8ccc-cccccccccccc";
 const fixtureVenueId = "dddddddd-dddd-4ddd-8ddd-dddddddddddd";
-const eventTitle = "M4 E2E Event";
+// The local database is intentionally reusable during development, so this
+// fixture must not select a prior run's review card or notification.
+const eventTitle = `M4 E2E Event ${Date.now()}`;
 
 // A 1x1 PNG. The upload path checks the leading bytes against the declared
 // content type, so the fixture has to be a real image rather than a stub.
@@ -42,6 +44,8 @@ test("Event revision is reviewed before public release, then cancellation remain
   await draft.getByLabel("会場（canonical）").selectOption(fixtureVenueId);
   await draft.getByLabel("開始日時（東京都）").fill("2030-04-01T19:00");
   await draft.getByLabel("終了日時（東京都）").fill("2030-04-01T20:30");
+  await draft.getByLabel("手段").selectOption("website");
+  await draft.getByLabel("問い合わせ先").fill("https://dance.example.com/contact");
   const offers = draft.getByRole("group", { name: "Ticket Offer（料金）" });
   const addOffer = offers.getByRole("button", { name: "料金を追加" });
   await expect(addOffer).toBeEnabled();
@@ -111,8 +115,8 @@ test("Event revision is reviewed before public release, then cancellation remain
 
   await login(page, "owner@example.com");
   await page.getByRole("link", { name: /通知/ }).click();
-  await expect(page.getByRole("heading", { name: "Event Revisionに変更依頼があります" })).toBeVisible();
-  await expect(page.getByText("Description needs an update", { exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Event Revisionに変更依頼があります" }).first()).toBeVisible();
+  await expect(page.getByText("Description needs an update", { exact: true }).first()).toBeVisible();
   await page.goto(`/workspace/${fixtureOrganizationId}/events/${eventId}`);
   await expect(page.getByText("changes_requested")).toBeVisible();
   await page.getByLabel("説明").fill("Updated after Platform Admin feedback");

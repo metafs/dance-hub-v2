@@ -4,7 +4,7 @@
 begin;
 
 create extension if not exists pgtap with schema extensions;
-select plan(7);
+select plan(8);
 
 select ok(
   not has_table_privilege('anon', 'public.listing_requests', 'select, insert, update, delete'),
@@ -13,6 +13,12 @@ select ok(
 select ok(
   not has_table_privilege('authenticated', 'public.listing_requests', 'insert'),
   'authenticated users cannot bypass the server-side Turnstile gate either'
+);
+select ok(
+  has_column_privilege('authenticated', 'public.organization_applications', 'responsible_party', 'insert')
+  and has_column_privilege('authenticated', 'public.organization_applications', 'contact', 'insert')
+  and has_column_privilege('authenticated', 'public.organization_applications', 'activity_url', 'insert'),
+  'an applicant can write the required E-1 through E-3 evidence fields'
 );
 
 insert into public.events (id, owner_organization_id)
