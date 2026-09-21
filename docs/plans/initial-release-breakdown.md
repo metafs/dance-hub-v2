@@ -1,7 +1,10 @@
 # DANCE HUB — Initial release breakdown
 
-**Status:** Draft
-**Last Updated:** 2026-09-18
+**Status:** Superseded for remaining work by `docs/plans/mvp-implementation-roadmap.md` v0.4
+**Last Updated:** 2026-09-21
+
+> 2026-09-21 時点で DH-01〜DH-12 と DH-15 は実装済みである。残る DH-13・DH-14・DH-16・DH-17 と、
+> 新規の DH-20 以降は roadmap v0.4 で管理する。本書は 2026-09-18 時点の分解記録として残す。
 
 ## Purpose
 
