@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 
-export const alt = "p8ce（ペイス）— 関東・関西のダンスとパフォーマンスを探す";
+export const alt = "p8ce（ペイス）— 東京都・神奈川県のダンスとパフォーマンスを探す";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -17,7 +17,7 @@ export default function OpenGraphImage() {
         <div style={{ color: "#5f5f5b", fontSize: 36 }}>ペイス</div>
       </div>
       <div style={{ borderTop: "2px solid #141414", display: "flex", fontSize: 40, paddingTop: 32 }}>
-        関東・関西のダンスとパフォーマンスを探す
+        東京都・神奈川県のダンスとパフォーマンスを探す
       </div>
     </div>,
     size,

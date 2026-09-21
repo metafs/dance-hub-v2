@@ -4,6 +4,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 import {
   calendarDays,
+  filterSchedulesForFilters,
   matchesFilters,
   openApplications,
   projectEvents,
@@ -118,7 +119,12 @@ export async function listPublicEvents(filters: DiscoveryFilters = {}) {
   const events = await loadPublicEvents();
 
   return sortByDiscoveryOrder(
-    events.filter((event) => matchesFilters(event, filters)),
+    events
+      .filter((event) => matchesFilters(event, filters))
+      .map((event) => ({
+        ...event,
+        schedules: filterSchedulesForFilters(event.schedules, filters),
+      })),
   );
 }
 

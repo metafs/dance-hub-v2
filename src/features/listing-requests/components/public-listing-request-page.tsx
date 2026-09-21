@@ -27,7 +27,7 @@ export default async function PublicListingRequestPage({ searchParams }: { searc
         meta={<span>掲載について</span>}
         title={kind === "withdrawal" ? "掲載の削除を依頼する" : "掲載内容の修正を依頼する"}
       />
-      {query.submitted ? <Notice tone="success">依頼を受け付けました。確認後にご連絡します。</Notice> : null}
+      {query.submitted ? <Notice role="status" tone="success">依頼を受け付けました。確認後にご連絡します。</Notice> : null}
       {query.error ? <Notice tone="error">{errors[query.error] ?? "依頼を送信できませんでした。"}</Notice> : null}
       {siteKey ? (
         <form action={submitListingRequest} className="form-stack">

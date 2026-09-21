@@ -30,7 +30,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
       <main className="site-main">{children}</main>
       <SiteFooter
         brand={<Logotype reading="／ ペイス" />}
-        description="関東・関西のダンスとパフォーマンスを探す"
+        description="東京都・神奈川県のダンスとパフォーマンスを探す"
         items={footerNavigation}
         navLabel="サイト"
       />

@@ -21,7 +21,7 @@ const instrumentSans = localFont({
 const siteName = "p8ce";
 // The one-line description travels with the name wherever p8ce stands alone
 // (docs/brand/identity.md, 一行説明とタグライン).
-const siteDescription = "関東・関西のダンスとパフォーマンスを探す";
+const siteDescription = "東京都・神奈川県のダンスとパフォーマンスを探す";
 const origin = siteUrl();
 
 export const metadata: Metadata = {

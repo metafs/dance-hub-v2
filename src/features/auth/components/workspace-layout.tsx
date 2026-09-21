@@ -13,7 +13,9 @@ export default async function WorkspaceLayout({ children }: { children: React.Re
     .eq("recipient_user_id", user.id)
     .is("read_at", null);
 
-  if (error) throw new Error("通知件数を読み込めませんでした。");
+  if (error) {
+    console.error("Unread review notification count could not be loaded.", error);
+  }
 
   return (
     <div className="app">
@@ -26,12 +28,12 @@ export default async function WorkspaceLayout({ children }: { children: React.Re
           <div className="app-account">
             {/* The name keeps the count in words, the badge shows it at a glance. */}
             <Link
-              aria-label={unreadCount ? `通知 (${unreadCount})` : "通知"}
+              aria-label={!error && unreadCount ? `通知 (${unreadCount})` : "通知"}
               className="text-link"
               href="/workspace/notifications"
             >
               通知
-              {unreadCount ? <span aria-hidden="true" className="count-badge">{unreadCount}</span> : null}
+              {!error && unreadCount ? <span aria-hidden="true" className="count-badge">{unreadCount}</span> : null}
             </Link>
             <Link className="text-link" href="/">公開ページ</Link>
             <span className="app-account-email">{user.email}</span>
