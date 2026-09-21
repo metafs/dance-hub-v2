@@ -1,8 +1,8 @@
 # DANCE HUB — Product Requirements
 
 **Status:** Draft
-**Version:** 0.4
-**Last Updated:** 2026-09-03
+**Version:** 0.5
+**Last Updated:** 2026-09-20
 
 ## 1. Product Definition
 
@@ -13,7 +13,7 @@ DANCE HUB は、ダンス・パフォーマンスの Event、Artist、Venue、Or
 - **G-001 — Discovery:** 日付・地域・種別・テキストから Event を発見できる。
 - **G-002 — Structured information:** Event、Artist、Venue、Organization、Schedule の関係を ID で表現する。
 - **G-003 — Moderated publishing:** 主催者が情報を下書き・申請し、Platform Admin の承認後に公開する。
-- **G-004 — Archive:** 終了・中止した Event も公開情報として保持する。
+- **G-004 — Archive:** 終了・中止した Event も公開情報として保持する。ただし、`docs/product/listing-policy.md` F に基づき取り下げた Event は、履歴を内部保持したまま公開面から除外する。
 - **G-005 — Extensibility:** 検索、統計、研究利用へ拡張できるデータ構造を保つ。
 
 ## 3. Users
@@ -30,7 +30,7 @@ DANCE HUB は、ダンス・パフォーマンスの Event、Artist、Venue、Or
 
 #### REQ-EVENT-001 — Public list
 
-公開済みの最新承認 Revision を持つ Event を一覧表示できること。Cancelled Event は一覧・詳細から除外せず、明示的な中止表示をすること。
+公開済みの最新承認 Revision を持つ Event を一覧表示できること。Cancelled Event は一覧・詳細から除外せず、明示的な中止表示をすること。`withdrawn` Event は一覧、検索、直 URL、sitemap のすべてから除外すること。
 
 #### REQ-EVENT-002 — Event detail
 
@@ -72,11 +72,13 @@ Ticket Offerは `fixed`、`free`、`range`、`donation`、`pay_what_you_can`、`
 
 #### REQ-EVENT-007 — Archive and cancellation
 
-過去・Cancelled Event を自動削除しないこと。過去判定は `apply` が応募締切経過、通常 Event が全 Schedule 終了、Festival が子 Event の Schedule 範囲終了とする。Cancelled Event は公開を継続し、`cancelled_at` と中止理由を表示する。
+過去・Cancelled Event を自動削除しないこと。過去判定は `apply` が応募締切経過、通常 Event が全 Schedule 終了、Festival が子 Event の Schedule 範囲終了とする。Cancelled Event は公開を継続し、`cancelled_at` と中止理由を表示する。掲載取り下げは物理削除ではなく `withdrawn` への遷移とし、承認履歴を内部保持したまま公開を停止する。取り下げ条件の正本は `docs/product/listing-policy.md` F とする。
 
 #### REQ-EVENT-008 — Publication validation
 
-Draft 保存時は、作成者が所属する Organization とタイトルを必須とする。審査提出時は、タイトル、説明、Event Type、alt text 付き main image、少なくとも 1 件の Artist credit、Ticket Offer・Ticket / 申込 Link・`no_registration_required` のいずれかを必須とする。さらに、`apply` は応募締切、通常の非 Festival Event は Venue 付き Schedule、Festival は公開前に Venue 付き Schedule を持つ承認済み子 Event を必須とする。
+Draft 保存時は、作成者が所属する Organization とタイトルを必須とする。審査提出時は、タイトル、説明、Event Type、主催 Organization、問い合わせ手段、Ticket Offer・Ticket / 申込 Link・`no_registration_required` のいずれかを必須とする。main image と Artist credit は必須としない。main image を登録する場合は alt text を必須とし、Artist credit を登録する場合は role または uncredited 値を必須とする。
+
+`apply` は応募締切を必須とし、Schedule を 0 件にできる。通常の非 Festival Event は Venue 付き Schedule を必須とし、Festival は公開前に Venue 付き Schedule を持つ承認済み子 Event を必須とする。物理 Schedule を持つ Event は、`Asia/Tokyo` の暦日で最初の開催日の 7 日前以前に審査へ提出する。データの完全性に加え、Platform Admin は `docs/product/listing-policy.md` の掲載基準を満たすことを承認時に確認する。
 
 ### 4.2 Discovery
 
@@ -129,7 +131,7 @@ Owner は常に最低 1 人残ること。Platform Admin は Organization Member
 
 #### REQ-ORG-002 — Organization application
 
-認証済み User が Organization Application を提出し、Platform Admin が承認する。承認時に Organization と初期 Owner Membership を 1 transaction で作成する。却下時には Organization を作成しない。未承認 Application は Event を作成・公開する権限を与えない。
+認証済み User が Organization Application を提出し、Platform Admin が承認する。Application は、Organization 名、責任者を特定できる情報、有効な連絡先、公式サイト・SNS・過去公演のいずれかによる活動確認情報を含むこと。承認基準の正本は `docs/product/listing-policy.md` E とする。承認時に Organization と初期 Owner Membership を 1 transaction で作成する。却下時には Organization を作成しない。未承認 Application は Event を作成・公開する権限を与えない。
 
 ### 4.5 Authentication, media, and audit
 
@@ -139,7 +141,7 @@ Organizer 機能は認証を要求し、Organization の書込みと Candidate �
 
 #### REQ-MEDIA-001 — Main image
 
-MVP の編集 UI は Event Revision ごとに main image を 1 枚だけ扱い、必須の alt text を保存する。スキーマは将来の複数 Media を許容する。
+MVP の編集 UI は Event Revision ごとに任意の main image を 1 枚だけ扱う。画像を登録する場合は alt text を必須とする。画像がない Event も公開でき、一覧と詳細は画像の有無によらず成立すること。スキーマは将来の複数 Media を許容する。
 
 #### REQ-AUDIT-001 — Audit trail
 
@@ -153,7 +155,7 @@ MVP の通知手段はアプリ内インボックスに限定する。Email、pu
 
 ## 5. Constraints
 
-- MVP の公開対象は東京都・神奈川県の Venue を持つ Event とする。
+- MVP の物理 Schedule が対象とする Venue は東京都・神奈川県に限定する。Schedule 0 件の `apply` Event は地域を持たず、地域絞り込みには現れない。
 - 日時、日付境界、Calendar の表示・絞り込みは `Asia/Tokyo` を標準とする。
 - 公開中の Event 内容は承認済み Revision からのみ提供する。
 - Artist と Organization は別 Entity とし、両者の代表関係は MVP では扱わない。

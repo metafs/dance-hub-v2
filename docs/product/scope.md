@@ -39,7 +39,7 @@
 - Draft 保存、Schedule の追加・削除、Venue 指定、Artist / Credit、Ticket Offer、Ticket / 申込 Link、外部 URL
 - `apply` Event の応募締切（Schedule 0 件を許容）
 - Festival 子 Event 紐づけ
-- Event Revision ごとの main image 1 枚と alt text
+- Event Revision ごとの任意の main image 1 枚。登録する場合は alt text 必須
 
 ### Development foundation
 

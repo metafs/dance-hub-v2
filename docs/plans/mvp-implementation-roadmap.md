@@ -13,7 +13,7 @@ DANCE HUB の MVP は、東京都・神奈川県のダンス Event を一般ユ�
 - M2 の認証・Organization onboarding、M3 の共有 Entity moderation、M4 の Event Revision review journey が完了済み。
 - Ticket Offer は Revision-owned content として追加済み。
 - M5 Public discovery と M6 Release candidate は未着手。
-- Event media はRevision metadataと公開必須検証まで実装済みだが、R2 upload/deliveryは `docs/plans/media-delivery.md` の独立したMVP blockerである。
+- Event media の R2 upload/delivery は実装済みで、staging検証が残る。trusted publication validationは旧要件どおりmain imageを必須にしているため、任意化するfollow-upが必要である。
 
 ## Milestones
 
@@ -55,11 +55,11 @@ DANCE HUB の MVP は、東京都・神奈川県のダンス Event を一般ユ�
 
 ### M4 — Event draft and review workflow
 
-**Status:** Complete — detailed plan: `docs/plans/m4-event-review-workflow.md`
+**Status:** Implemented — publication validation follow-up outstanding; detailed plan: `docs/plans/m4-event-review-workflow.md`
 
 **Goal:** Organizer が公開要件を満たす Event Revision を作り、Platform Admin が審査できる。
 
-**Scope:** Draft editor、Schedule / Venue、Artist credit、Ticket Offer、Ticket / 申込 Link、外部 Link、main image 1 枚と alt text、Festival child、submit、changes requested、approve、公開後 Revision、cancellation review、提出者への審査結果通知。
+**Scope:** Draft editor、Schedule / Venue、任意の Artist credit、Ticket Offer、Ticket / 申込 Link、外部 Link、任意の main image 1 枚（登録時は alt text 必須）、Festival child、submit、changes requested、approve、公開後 Revision、cancellation review、提出者への審査結果通知。
 
 **Done when:** E2E で「Draft → 提出 → 差戻し → 再提出 → 承認 → 公開後変更」と「中止申請 → 承認 → 中止表示」が通る。公開ページは審査中も直前の承認 Revision を表示する。
 

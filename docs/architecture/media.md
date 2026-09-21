@@ -1,13 +1,13 @@
 # DANCE HUB - Media Architecture
 
 **Status:** Draft  
-**Last Updated:** 2026-09-03
+**Last Updated:** 2026-09-20
 
 ## Current contract
 
 Media belongs to an Event Revision through `event_media`; the schema supports ordered
-multiple media. The MVP editor and publication validation expose one main image with
-required alt text. This is defined by
+multiple media. The MVP editor exposes at most one optional main image. An Event may
+publish without media; when a main image is supplied, alt text is required. This is defined by
 [REQ-MEDIA-001](../product/requirements.md#45-authentication-media-and-audit) and the
 [data model](data-model.md#media).
 

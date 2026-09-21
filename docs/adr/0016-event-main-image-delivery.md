@@ -25,8 +25,9 @@ What exists today:
   carrying the alt text instead of an image.
 
 So the MVP has main-image *metadata* and no upload, no storage, and no delivery, while
-REQ-EVENT-008 already requires an alt-texted main image at review submission. The
-review gate depends on a field that no upload path produces.
+main images are part of the Event editing and public-detail scope. An Event may be
+published without an image; when an Organizer supplies one, the platform still needs
+an authorized path that proves an object exists and controls who may read it.
 
 ### One constraint that shapes the whole design
 
@@ -157,9 +158,10 @@ forbidding public exposure of unapproved media or its storage URLs.
 
 ## Alternatives considered
 
-- **Defer media to post-MVP and publish without images.** Contradicts REQ-EVENT-008,
-  which requires an alt-texted main image at review submission, and would require
-  changing the publication validation that M4 already implements.
+- **Defer media to post-MVP.** Rejected because main-image editing remains in MVP
+  scope even though an image is optional. Accepting image metadata without a real,
+  authorized object path would leave Organizer input unverifiable and approved images
+  undeliverable.
 - **Keep user-authored object keys and treat upload as an operator task.** Leaves
   `event_media` pointing at objects the platform never verified, and leaves the review
   gate unable to confirm that an approved Event has a deliverable image.
@@ -183,8 +185,10 @@ forbidding public exposure of unapproved media or its storage URLs.
 - Draft creation carries no main image. The object key is namespaced by Event id,
   which does not exist until that call returns, so the create form offers neither the
   file nor its alt text and both are set from the Event's edit page afterwards.
-- REQ-EVENT-008 becomes satisfiable for the first time: an Organizer can supply a real
-  main image, so the review gate stops depending on a field with no supply path.
+- REQ-EVENT-008 and REQ-MEDIA-001 become satisfiable for Events that carry an image:
+  an Organizer can supply a real main image and the public surface can deliver it
+  without exposing draft media. Events without an image do not create an
+  `event_media` row.
 - `docs/plans/m5-public-discovery.md` can close its main-image acceptance criterion:
   the public Event page replaces the placeholder with the delivery route.
 - CI can exercise upload and delivery, because local R2 simulation needs no
