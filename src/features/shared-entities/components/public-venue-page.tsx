@@ -1,10 +1,9 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { prefectureLabel } from "@/features/discovery/projection";
+import { prefectureName } from "@/features/shared-entities/schema";
 import { getPublicVenuePageData } from "@/features/shared-entities/queries";
 
-import PublicEventList from "./public-event-list";
+import { EntityEventSections } from "./entity-event-sections";
 
 export default async function PublicVenuePage({
   params,
@@ -19,40 +18,29 @@ export default async function PublicVenuePage({
   const { venue, events } = data;
 
   return (
-    <main className="workspace-main narrow-main">
-      <Link className="back-link" href="/">← DANCE HUB</Link>
-      <section className="hero-card">
-        <div>
-          <p className="eyebrow">Venue</p>
-          <h1>{venue.name}</h1>
-          <p className="lede">
-            {prefectureLabel(venue.prefecture)} {venue.address_line1}
-            {venue.address_line2 ? ` ${venue.address_line2}` : ""}
-          </p>
-        </div>
-      </section>
-      {venue.website_url ? (
-        <section className="section-block">
-          <h2>Web サイト</h2>
-          <div className="button-row">
-            <a
-              className="button button-quiet"
-              href={venue.website_url}
-              rel="noreferrer"
-              target="_blank"
-            >
-              {venue.website_url}
-            </a>
-          </div>
-        </section>
-      ) : null}
-      <section className="section-block">
-        <h2>この会場の Event</h2>
-        <PublicEventList
-          emptyMessage="公開中のEventはまだありません。"
-          events={events}
-        />
-      </section>
-    </main>
+    <div className="container entity-layout">
+      <div className="entity-profile">
+        <p className="page-meta"><span>会場</span></p>
+        <h1>{venue.name}</h1>
+        <p>
+          {prefectureName(venue.prefecture)} {venue.address_line1}
+          {venue.address_line2 ? ` ${venue.address_line2}` : ""}
+        </p>
+        {venue.website_url ? (
+          <a className="text-link" href={venue.website_url} rel="noreferrer" target="_blank">
+            ウェブサイト
+          </a>
+        ) : null}
+        <dl className="entity-facts">
+          <dt>掲載されている上演</dt>
+          <dd>{events.length}件</dd>
+        </dl>
+      </div>
+
+      <div className="entity-events">
+        {/* Every row is at this Venue, so the rows leave the venue out. */}
+        <EntityEventSections events={events} idPrefix="venue" showVenue={false} />
+      </div>
+    </div>
   );
 }

@@ -2,6 +2,7 @@
 
 **Status:** Accepted
 **Accepted:** 2026-09-03
+**Amended by:** ADR-0022（書体。Geist を Instrument Sans の同梱に置き換えた）
 
 ## Context
 

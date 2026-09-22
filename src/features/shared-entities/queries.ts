@@ -105,7 +105,7 @@ export async function getPublicArtistPageData(artistId: string) {
 
   const { data: artist } = await supabase
     .from("artists")
-    .select("id, name, profile, website_url")
+    .select("id, name, artist_type, profile, website_url")
     .eq("id", artistId)
     .maybeSingle();
 

@@ -1,9 +1,9 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { artistTypeLabel } from "@/features/shared-entities/schema";
 import { getPublicArtistPageData } from "@/features/shared-entities/queries";
 
-import PublicEventList from "./public-event-list";
+import { EntityEventSections } from "./entity-event-sections";
 
 export default async function PublicArtistPage({
   params,
@@ -18,38 +18,30 @@ export default async function PublicArtistPage({
   const { artist, events, roleByRevision } = data;
 
   return (
-    <main className="workspace-main narrow-main">
-      <Link className="back-link" href="/">← DANCE HUB</Link>
-      <section className="hero-card">
-        <div>
-          <p className="eyebrow">Artist</p>
-          <h1>{artist.name}</h1>
-          {artist.profile ? <p className="lede">{artist.profile}</p> : null}
-        </div>
-      </section>
-      {artist.website_url ? (
-        <section className="section-block">
-          <h2>Web サイト</h2>
-          <div className="button-row">
-            <a
-              className="button button-quiet"
-              href={artist.website_url}
-              rel="noreferrer"
-              target="_blank"
-            >
-              {artist.website_url}
-            </a>
-          </div>
-        </section>
-      ) : null}
-      <section className="section-block">
-        <h2>関連 Event</h2>
-        <PublicEventList
-          emptyMessage="公開中のEventはまだありません。"
+    <div className="container entity-layout">
+      <div className="entity-profile">
+        <p className="page-meta"><span>出演者</span><span>{artistTypeLabel(artist.artist_type)}</span></p>
+        <h1>{artist.name}</h1>
+        {artist.profile ? <p className="prose">{artist.profile}</p> : null}
+        {artist.website_url ? (
+          <a className="text-link" href={artist.website_url} rel="noreferrer" target="_blank">
+            ウェブサイト
+          </a>
+        ) : null}
+        <dl className="entity-facts">
+          <dt>掲載されている上演</dt>
+          <dd>{events.length}件</dd>
+        </dl>
+      </div>
+
+      <div className="entity-events">
+        <EntityEventSections
+          detailFor={(event) => roleByRevision.get(event.publishedRevisionId) ?? null}
           events={events}
-          roleByRevision={roleByRevision}
+          idPrefix="artist"
+          showVenue
         />
-      </section>
-    </main>
+      </div>
+    </div>
   );
 }

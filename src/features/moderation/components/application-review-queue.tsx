@@ -1,13 +1,15 @@
-import Link from "next/link";
-
-import { logout } from "@/features/auth/commands";
-import { requirePlatformAdmin } from "@/features/moderation/policy";
-
 import {
   approveApplication,
   rejectApplication,
 } from "@/features/moderation/commands";
+import { requirePlatformAdmin } from "@/features/moderation/policy";
 import { getApplicationReviewQueue } from "@/features/moderation/queries";
+import { DefinitionRows } from "@/ui/definition-rows";
+import { EmptyState } from "@/ui/empty-state";
+import { Notice } from "@/ui/notice";
+import { AppPageHead } from "@/ui/page-head";
+import { Section } from "@/ui/section";
+import { StateLabel } from "@/ui/state-label";
 
 const errorMessages: Record<string, string> = {
   "invalid-application": "申請を特定できませんでした。",
@@ -25,61 +27,54 @@ export default async function ApplicationReviewQueue({
   const { data: applications } = await getApplicationReviewQueue(supabase);
 
   return (
-    <div className="app-shell">
-      <header className="app-header">
-        <Link className="wordmark" href="/workspace">DANCE HUB</Link>
-        <form action={logout}>
-          <button className="button button-quiet" type="submit">ログアウト</button>
-        </form>
-      </header>
-      <main className="workspace-main">
-        <Link className="back-link" href="/workspace">← Workspaceへ戻る</Link>
-        <section className="hero-card">
-        <div>
-          <p className="eyebrow">Platform Admin</p>
-          <h1>Organization申請審査</h1>
-          <p className="lede">承認するとOrganizationと初期Ownerが同一transactionで作成されます。</p>
-        </div>
-        <span className="queue-count">{applications?.length ?? 0}件</span>
-        </section>
-        {params.error && errorMessages[params.error] ? (
-          <p className="notice notice-error" role="alert">{errorMessages[params.error]}</p>
-        ) : null}
-        {params.reviewed ? (
-          <p className="notice notice-success">審査結果を保存しました。</p>
-        ) : null}
-        <section className="review-list" aria-label="審査待ちOrganization申請">
-          {applications?.length ? applications.map((application) => (
-            <article className="review-card" key={application.id}>
-              <div className="review-card-header">
-                <div>
-                  <p className="eyebrow">Submitted</p>
+    <main className="container-app app-main">
+      <AppPageHead
+        description="承認すると、Organizationと最初のOwnerが同時に作成されます。判断の基準は掲載基準Eです。"
+        title="Organization申請の審査"
+      />
+      {params.error && errorMessages[params.error] ? <Notice tone="error">{errorMessages[params.error]}</Notice> : null}
+      {params.reviewed ? <Notice tone="success">審査結果を保存しました。</Notice> : null}
+
+      <Section
+        aside={<span className="tabular muted">{applications?.length ?? 0}件</span>}
+        id="queue-applications"
+        rule
+        size="small"
+        title="審査待ちの申請"
+      >
+        {applications?.length ? (
+          <div className="panels">
+            {applications.map((application) => (
+              <article className="review-item" key={application.id}>
+                <div className="review-item-head">
                   <h2>{application.name}</h2>
+                  <StateLabel tone="dashed">審査中</StateLabel>
                 </div>
-                <span className="status status-submitted">submitted</span>
-              </div>
-              <dl className="details-list">
-                <div><dt>Applicant ID</dt><dd>{application.applicant_id}</dd></div>
-                <div><dt>Webサイト</dt><dd>{application.website_url ?? "—"}</dd></div>
-                <div><dt>責任者</dt><dd>{application.responsible_party}</dd></div>
-                <div><dt>連絡先</dt><dd>{application.contact}</dd></div>
-                <div><dt>活動確認</dt><dd>{application.activity_url}</dd></div>
-              </dl>
-              <form className="review-form">
-                <input name="applicationId" type="hidden" value={application.id} />
-                <label>
-                  審査メモ / 却下理由
-                  <textarea name="reason" rows={3} />
-                </label>
-                <div className="button-row">
-                  <button className="button button-primary" formAction={approveApplication} type="submit">承認</button>
-                  <button className="button button-danger" formAction={rejectApplication} type="submit">却下</button>
-                </div>
-              </form>
-            </article>
-          )) : <div className="empty-state">審査待ちの申請はありません。</div>}
-        </section>
-      </main>
-    </div>
+                <DefinitionRows
+                  rows={[
+                    { key: "applicant", term: "申請者ID", detail: <code>{application.applicant_id}</code> },
+                    { key: "responsible", term: "責任者", detail: application.responsible_party },
+                    { key: "contact", term: "連絡先", detail: application.contact },
+                    { key: "activity", term: "活動確認", detail: application.activity_url },
+                    { key: "website", term: "Webサイト", detail: application.website_url ?? "—" },
+                  ]}
+                />
+                <form className="review-form">
+                  <input name="applicationId" type="hidden" value={application.id} />
+                  <label>
+                    審査メモ / 却下理由
+                    <textarea name="reason" rows={3} />
+                  </label>
+                  <div className="button-row">
+                    <button className="button button-primary" formAction={approveApplication} type="submit">承認</button>
+                    <button className="button button-danger" formAction={rejectApplication} type="submit">却下</button>
+                  </div>
+                </form>
+              </article>
+            ))}
+          </div>
+        ) : <EmptyState>審査待ちの申請はありません。</EmptyState>}
+      </Section>
+    </main>
   );
 }

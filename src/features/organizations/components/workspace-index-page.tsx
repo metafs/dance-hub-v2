@@ -2,9 +2,16 @@ import Link from "next/link";
 
 import { requireUser } from "@/features/auth/policy";
 import { getWorkspaceIndexData } from "@/features/organizations/queries";
-import { isOrganizationRole } from "@/features/organizations/schema";
-
-import { OrganizationSelector } from "./organization-selector";
+import {
+  applicationStatusLabel,
+  isOrganizationRole,
+  organizationRoleLabel,
+} from "@/features/organizations/schema";
+import { EmptyState } from "@/ui/empty-state";
+import { Notice } from "@/ui/notice";
+import { AppPageHead } from "@/ui/page-head";
+import { Section } from "@/ui/section";
+import { StateLabel } from "@/ui/state-label";
 
 const errorMessages: Record<string, string> = {
   "organization-access-denied": "このOrganizationへアクセスする権限がありません。",
@@ -30,80 +37,68 @@ export default async function WorkspaceIndex({
   });
 
   return (
-    <main className="workspace-main">
-      <section className="hero-card">
-        <div>
-          <p className="eyebrow">Identity &amp; Organization</p>
-          <h1>Workspace</h1>
-          <p className="lede">所属Organizationを選び、権限に応じた業務を開始します。</p>
-        </div>
-        {organizations.length ? (
-          <OrganizationSelector organizations={organizations} />
-        ) : (
-          <Link className="button button-primary" href="/workspace/apply">
-            Organizationを申請
-          </Link>
-        )}
-      </section>
+    <main className="container-app app-main">
+      <AppPageHead
+        description="所属しているOrganizationを選ぶと、Eventの掲載と更新、出演者・会場の登録申請ができます。"
+        title="Workspace"
+      />
 
       {params.error && errorMessages[params.error] ? (
-        <p className="notice notice-error" role="alert">
-          {errorMessages[params.error]}
-        </p>
+        <Notice tone="error">{errorMessages[params.error]}</Notice>
       ) : null}
       {params.submitted ? (
-        <p className="notice notice-success">Organization申請を提出しました。</p>
+        <Notice tone="success">Organization申請を提出しました。</Notice>
       ) : null}
 
-      <section className="section-block" aria-labelledby="organizations-title">
-        <div className="section-heading">
-          <div>
-            <p className="eyebrow">Memberships</p>
-            <h2 id="organizations-title">所属Organization</h2>
-          </div>
-          {organizations.length ? (
-            <Link className="text-link" href="/workspace/apply">
-              別のOrganizationを申請
-            </Link>
-          ) : null}
-        </div>
+      <Section
+        aside={organizations.length ? (
+          <Link className="text-link" href="/workspace/apply">別のOrganizationを申請</Link>
+        ) : null}
+        id="workspace-organizations"
+        rule
+        size="small"
+        title="所属Organization"
+      >
         {organizations.length ? (
-          <div className="card-grid">
+          <div className="org-cards">
             {organizations.map((organization) => (
-              <Link className="entity-card" href={`/workspace/${organization.id}`} key={organization.id}>
-                <span className="role-chip">{organization.role}</span>
-                <h3>{organization.name}</h3>
-                <span className="text-link">Workspaceを開く →</span>
+              <Link className="org-card" href={`/workspace/${organization.id}`} key={organization.id}>
+                <StateLabel tone="quiet">{organizationRoleLabel(organization.role)}</StateLabel>
+                <span className="org-card-name">{organization.name}</span>
+                <span className="org-card-more">Workspaceを開く →</span>
               </Link>
             ))}
           </div>
         ) : (
-          <div className="empty-state">承認済みのOrganizationはまだありません。</div>
+          <>
+            <EmptyState>承認済みのOrganizationはまだありません。掲載を始めるには、Organizationを申請してください。</EmptyState>
+            <div>
+              <Link className="button button-primary" href="/workspace/apply">Organizationを申請</Link>
+            </div>
+          </>
         )}
-      </section>
+      </Section>
 
-      <section className="section-block" aria-labelledby="applications-title">
-        <div className="section-heading">
-          <div>
-            <p className="eyebrow">Applications</p>
-            <h2 id="applications-title">申請状況</h2>
-          </div>
-        </div>
+      <Section id="workspace-applications" rule size="small" title="申請状況">
         {applications?.length ? (
           <div className="table-wrap">
-            <table>
+            <table className="table">
               <thead>
                 <tr>
-                  <th>Organization</th>
-                  <th>状態</th>
-                  <th>審査メモ</th>
+                  <th scope="col">Organization</th>
+                  <th scope="col">状態</th>
+                  <th scope="col">審査コメント</th>
                 </tr>
               </thead>
               <tbody>
                 {applications.map((application) => (
                   <tr key={application.id}>
                     <td>{application.name}</td>
-                    <td><span className={`status status-${application.status}`}>{application.status}</span></td>
+                    <td>
+                      <StateLabel tone={application.status === "submitted" ? "dashed" : application.status === "approved" ? "solid" : "outline"}>
+                        {applicationStatusLabel(application.status)}
+                      </StateLabel>
+                    </td>
                     <td>{application.decision_reason ?? "—"}</td>
                   </tr>
                 ))}
@@ -111,17 +106,27 @@ export default async function WorkspaceIndex({
             </table>
           </div>
         ) : (
-          <div className="empty-state">申請履歴はありません。</div>
+          <EmptyState>申請履歴はありません。</EmptyState>
         )}
-      </section>
+      </Section>
 
       {isPlatformAdmin === true ? (
-        <div className="admin-banner">
-          <span>Platform Admin</span>
-          <Link href="/admin/applications">Organization申請の審査キュー →</Link>
-          <Link href="/admin/entities">Artist / Venue候補の審査 →</Link>
-          <Link href="/admin/events">Event公開・中止の審査 →</Link>
-        </div>
+        <Section id="workspace-admin" rule size="small" title="運営">
+          <div className="link-panels">
+            <Link className="link-panel" href="/admin/events">
+              <strong>Event公開・中止の審査</strong>
+              <span>公開・更新の申請と中止の申請</span>
+            </Link>
+            <Link className="link-panel" href="/admin/applications">
+              <strong>Organization申請の審査キュー</strong>
+              <span>新しい主催者の承認</span>
+            </Link>
+            <Link className="link-panel" href="/admin/entities">
+              <strong>出演者・会場候補の審査</strong>
+              <span>登録・却下・重複の統合</span>
+            </Link>
+          </div>
+        </Section>
       ) : null}
     </main>
   );

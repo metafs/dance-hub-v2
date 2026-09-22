@@ -1,27 +1,127 @@
 import Link from "next/link";
 
 import { requireOrganizationCapability } from "@/features/organizations/policy";
+import { eventTypeLabel, isEventType, revisionStatusLabel } from "@/features/revisions/schema";
 import { getRevisionListData } from "@/features/revisions/queries";
+import { formatTokyoDate } from "@/lib/datetime";
+import { EmptyState } from "@/ui/empty-state";
+import { AppPageHead } from "@/ui/page-head";
+import { Mark, StateLabel } from "@/ui/state-label";
 
-import { EventDraftForm } from "@/components/event-draft-form";
-
-const errorMessages: Record<string, string> = {
-  "create-failed": "下書きを作成できませんでした。権限と入力内容を確認してください。",
-  "invalid-input": "日時、URL、画像メタデータの入力内容を確認してください。",
+type RevisionRow = {
+  id: string;
+  event_id: string;
+  title: string;
+  event_type: string | null;
+  status: string;
+  created_at: string;
 };
 
-export default async function EventListPage({ params, searchParams }: { params: Promise<{ organizationId: string }>; searchParams: Promise<{ error?: string }> }) {
-  const { organizationId } = await params;
-  const query = await searchParams;
-  const { organization, supabase } = await requireOrganizationCapability(organizationId, "editEvents");
-  const [{ data: revisions }, { data: artists }, { data: venues }] =
-    await getRevisionListData(supabase);
+const openStatuses = new Set(["draft", "in_review", "changes_requested"]);
 
-  return <main className="workspace-main">
-    <Link className="back-link" href={`/workspace/${organizationId}`}>← Workspaceへ戻る</Link>
-    <section className="hero-card"><div><p className="eyebrow">Event workflow</p><h1>Event Draft</h1><p className="lede">{organization.name} のEventを下書きとして作成します。公開にはPlatform Adminの承認が必要です。</p></div></section>
-    {query.error ? <p className="notice notice-error" role="alert">{errorMessages[query.error] ?? "保存できませんでした。"}</p> : null}
-    <section className="section-block"><h2>作成済みのRevision</h2><div className="card-grid">{revisions?.map((revision) => <article className="entity-card" key={revision.id}><span className="status">{revision.status}</span><h3>{revision.title}</h3><Link className="text-link" href={`/workspace/${organizationId}/events/${revision.event_id}?revision=${revision.id}`}>編集する →</Link></article>)}</div></section>
-    <section className="section-block"><EventDraftForm organizationId={organizationId} artists={artists ?? []} venues={venues ?? []} festivalParents={(revisions ?? []).filter((revision) => revision.event_type === "festival").map((revision) => ({ id: revision.event_id, title: revision.title }))}/></section>
-  </main>;
+/**
+ * One row per Event rather than per Revision. The newest Revision names the
+ * Event; whether any Revision was approved says whether a public page exists
+ * (REQ-EVENT-005: approving a Revision moves the published pointer).
+ */
+function eventsFromRevisions(revisions: readonly RevisionRow[]) {
+  const byEvent = new Map<string, RevisionRow[]>();
+  for (const revision of revisions) {
+    byEvent.set(revision.event_id, [...(byEvent.get(revision.event_id) ?? []), revision]);
+  }
+
+  return [...byEvent.entries()].map(([eventId, eventRevisions]) => {
+    const [latest] = eventRevisions;
+    const open = eventRevisions.find((revision) => openStatuses.has(revision.status)) ?? null;
+    return {
+      eventId,
+      latest,
+      open,
+      published: eventRevisions.some((revision) => revision.status === "approved"),
+    };
+  });
+}
+
+export default async function EventListPage({
+  params,
+}: {
+  params: Promise<{ organizationId: string }>;
+}) {
+  const { organizationId } = await params;
+  const { supabase } = await requireOrganizationCapability(organizationId, "editEvents");
+  const [{ data: revisions }] = await getRevisionListData(supabase);
+  const events = eventsFromRevisions((revisions ?? []) as RevisionRow[]);
+  const returned = events.filter((item) => item.open?.status === "changes_requested");
+  const base = `/workspace/${organizationId}/events`;
+
+  return (
+    <main className="container-app app-main">
+      <AppPageHead
+        actions={<Link className="button button-primary" href={`${base}/new`}>新しいEventを作成</Link>}
+        description="公開には運営の審査が必要です。審査で確認するのは記載の形式と権利だけで、内容の良し悪しは判断しません。"
+        title="Event"
+      />
+
+      {returned.map((item) => (
+        <div className="callout" key={item.eventId}>
+          <div>
+            <p className="callout-title">差し戻されています：{item.latest.title}</p>
+            <p className="callout-detail">運営からのコメントを確認し、直して再提出してください。</p>
+          </div>
+          <Link className="text-link" href={`${base}/${item.eventId}?revision=${item.open?.id}`}>
+            直して再提出する
+          </Link>
+        </div>
+      ))}
+
+      {events.length ? (
+        <div className="table-wrap">
+          <table className="table">
+            <thead>
+              <tr>
+                <th scope="col">Event</th>
+                <th scope="col">公開ページ</th>
+                <th scope="col">編集中の版</th>
+                <th scope="col">更新</th>
+              </tr>
+            </thead>
+            <tbody>
+              {events.map((item) => (
+                <tr key={item.eventId}>
+                  <td>
+                    <div className="table-title">
+                      <Link href={`${base}/${item.eventId}?revision=${(item.open ?? item.latest).id}`}>
+                        {item.latest.title}
+                      </Link>
+                      <span className="table-sub">
+                        {item.latest.event_type && isEventType(item.latest.event_type)
+                          ? eventTypeLabel(item.latest.event_type)
+                          : "種別未設定"}
+                      </span>
+                    </div>
+                  </td>
+                  <td>
+                    {item.published
+                      ? <Mark shape="filled">公開中</Mark>
+                      : <Mark shape="open">未公開</Mark>}
+                  </td>
+                  <td>
+                    {item.open ? (
+                      <StateLabel tone={item.open.status === "changes_requested" ? "solid" : item.open.status === "in_review" ? "dashed" : "quiet"}>
+                        {revisionStatusLabel(item.open.status)}
+                      </StateLabel>
+                    ) : <span className="muted">—</span>}
+                  </td>
+                  <td className="tabular muted">{formatTokyoDate(item.latest.created_at)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <EmptyState>まだEventがありません。「新しいEventを作成」から下書きを作ります。</EmptyState>
+      )}
+      <p className="section-note table-note">● 公開中　○ 未公開。中止になったEventも公開ページに中止として残ります。</p>
+    </main>
+  );
 }

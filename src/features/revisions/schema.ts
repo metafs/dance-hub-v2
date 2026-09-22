@@ -72,6 +72,42 @@ export function isApplyEventType(eventType: EventType): boolean {
   return eventTypeGroup(eventType) === "apply";
 }
 
+export type EventRevisionStatus = Database["public"]["Enums"]["event_revision_status"];
+export type EventCancellationStatus = Database["public"]["Enums"]["event_cancellation_status"];
+export type EventAccessLinkKind = Database["public"]["Enums"]["event_access_link_kind"];
+
+const revisionStatusLabels: Record<EventRevisionStatus, string> = {
+  draft: "下書き",
+  in_review: "審査中",
+  changes_requested: "差し戻し",
+  approved: "承認済み",
+  superseded: "過去の版",
+};
+
+/** Organizer-facing names for Revision states (REQ-EVENT-005). */
+export function revisionStatusLabel(status: string): string {
+  return revisionStatusLabels[status as EventRevisionStatus] ?? status;
+}
+
+const cancellationStatusLabels: Record<EventCancellationStatus, string> = {
+  in_review: "審査中",
+  changes_requested: "差し戻し",
+  approved: "承認済み",
+};
+
+export function cancellationStatusLabel(status: string): string {
+  return cancellationStatusLabels[status as EventCancellationStatus] ?? status;
+}
+
+const accessLinkKindLabels: Record<EventAccessLinkKind, string> = {
+  ticket: "チケット",
+  registration: "申込",
+};
+
+export function accessLinkKindLabel(kind: string): string {
+  return accessLinkKindLabels[kind as EventAccessLinkKind] ?? kind;
+}
+
 export const eventTypeOptions = eventTypes.map((eventType) => ({
   value: eventType,
   label: eventTypeTaxonomy[eventType].label,

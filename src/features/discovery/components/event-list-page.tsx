@@ -1,11 +1,23 @@
 import Link from "next/link";
 
-import { eventTypeOptions } from "@/features/revisions/schema";
+import { eventTypeLabel } from "@/features/revisions/schema";
 
-import DiscoveryEventList from "./discovery-event-list";
-import { hasActiveFilter, parseDiscoveryFilters, prefectures } from "../filters";
-import { prefectureLabel } from "../projection";
+import { hasActiveFilter, parseDiscoveryFilters } from "../filters";
+import { prefectureLabel, type DiscoveryFilters } from "../projection";
 import { listPublicEvents } from "../queries";
+import { DiscoveryFilterForm } from "./discovery-filters";
+import { EventListing } from "./event-listing";
+
+function filterSummary(filters: DiscoveryFilters) {
+  const parts: string[] = [];
+  if (filters.text) parts.push(`「${filters.text}」`);
+  if (filters.from || filters.to) {
+    parts.push(`${(filters.from ?? "").replaceAll("-", ".")}〜${(filters.to ?? "").replaceAll("-", ".")}`);
+  }
+  if (filters.prefecture) parts.push(prefectureLabel(filters.prefecture));
+  if (filters.eventType) parts.push(eventTypeLabel(filters.eventType));
+  return parts.join(" · ");
+}
 
 export default async function EventListPage({
   searchParams,
@@ -14,79 +26,33 @@ export default async function EventListPage({
 }) {
   const filters = parseDiscoveryFilters(await searchParams);
   const events = await listPublicEvents(filters);
+  const active = hasActiveFilter(filters);
 
   return (
-    <main className="workspace-main">
-      <Link className="back-link" href="/">← DANCE HUB</Link>
-      <div className="section-heading">
-        <h1>Event</h1>
-        <p className="queue-count">{events.length}件</p>
-      </div>
+    <div className="container discovery-layout">
+      <DiscoveryFilterForm filters={filters} />
 
-      {/*
-        A plain GET form keeps the filters in the URL and working without
-        client-side JavaScript, which is what makes a filtered view shareable.
-      */}
-      <form action="/events" className="discovery-filters" method="get">
-        <label className="discovery-search">
-          キーワード
-          {/*
-            One box over Event 名, Artist 名, Venue 名 and Organization 名
-            (REQ-DISCOVERY-003). Matching happens on the loaded projection, so
-            there is nothing to configure per field here (ADR-0020).
-          */}
-          <input
-            defaultValue={filters.text ?? ""}
-            maxLength={200}
-            name="q"
-            placeholder="Event名、出演者、会場、主催"
-            type="search"
-          />
-        </label>
-        <label>
-          開始日
-          <input defaultValue={filters.from ?? ""} name="from" type="date" />
-        </label>
-        <label>
-          終了日
-          <input defaultValue={filters.to ?? ""} name="to" type="date" />
-        </label>
-        <label>
-          地域
-          <select defaultValue={filters.prefecture ?? ""} name="prefecture">
-            <option value="">すべて</option>
-            {prefectures.map((prefecture) => (
-              <option key={prefecture} value={prefecture}>
-                {prefectureLabel(prefecture)}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label>
-          種別
-          <select defaultValue={filters.eventType ?? ""} name="type">
-            <option value="">すべて</option>
-            {eventTypeOptions.map((option) => (
-              <option key={option.value} value={option.value}>{option.label}</option>
-            ))}
-          </select>
-        </label>
-        <div className="button-row">
-          <button className="button button-primary" type="submit">絞り込む</button>
-          {hasActiveFilter(filters) ? (
-            <Link className="button button-quiet" href="/events">条件をクリア</Link>
-          ) : null}
+      <div>
+        <div className="discovery-results-head">
+          <h1>探す</h1>
+          <div className="discovery-summary">
+            {active ? <span>{filterSummary(filters)}</span> : null}
+            <span className="tabular">{events.length}件</span>
+            {active ? <Link className="text-link" href="/events">条件をクリア</Link> : null}
+          </div>
         </div>
-      </form>
+        <p className="section-note">日時はすべて日本時間です。</p>
 
-      <DiscoveryEventList
-        emptyMessage={
-          hasActiveFilter(filters)
-            ? "この条件に合うEventは見つかりませんでした。"
-            : "公開中のEventはまだありません。"
-        }
-        events={events}
-      />
-    </main>
+        <EventListing
+          compact
+          emptyMessage={
+            active
+              ? "この条件に合うEventは見つかりませんでした。"
+              : "公開中のEventはまだありません。"
+          }
+          events={events}
+        />
+      </div>
+    </div>
   );
 }

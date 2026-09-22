@@ -13,10 +13,10 @@ const labels: Record<TicketPriceType, string> = {
   free: "無料",
   range: "価格範囲",
   donation: "カンパ制",
-  pay_what_you_can: "Pay What You Can",
-  sliding_scale: "Sliding Scale",
-  dynamic: "Dynamic Pricing",
-  included: "別料金・Pass等に含まれる",
+  pay_what_you_can: "払える額で（Pay What You Can）",
+  sliding_scale: "スライディングスケール",
+  dynamic: "変動価格",
+  included: "別料金・パス等に含まれる",
 };
 
 const subscribeToHydration = () => () => undefined;
@@ -41,8 +41,8 @@ export function TicketOfferEditor({ initialOffers = [], describedBy }: { initial
 
   return (
     <fieldset aria-describedby={describedBy} className="ticket-offer-editor">
-      <legend>Ticket Offer（料金）</legend>
-      <p className="field-help">Ticket Linkとは独立しています。金額は最小通貨単位で入力します（JPY 3,000円 = 3000、EUR 12.50 = 1250）。</p>
+      <legend className="field-label">料金</legend>
+      <p className="field-help">前売・当日・学生など、料金ごとに1行ずつ追加します。金額は最小通貨単位で入力します（3,000円なら 3000、EUR 12.50 なら 1250）。</p>
       {offers.map((offer, index) => {
         const prefix = `ticketOffer.${offer.key}`;
         const exactAmount = offer.priceType === "fixed" || offer.priceType === "sliding_scale";
@@ -52,18 +52,18 @@ export function TicketOfferEditor({ initialOffers = [], describedBy }: { initial
         return (
           <div className="ticket-offer-row" key={offer.key}>
             <input name="ticketOfferKey" type="hidden" value={offer.key} />
-            <div className="review-card-header"><strong>料金 {index + 1}</strong><button className="button button-quiet" onClick={() => setOffers((current) => current.filter((candidate) => candidate.key !== offer.key))} type="button">削除</button></div>
+            <div className="ticket-offer-head"><span>料金 {index + 1}</span><button className="button button-quiet button-small" onClick={() => setOffers((current) => current.filter((candidate) => candidate.key !== offer.key))} type="button">削除</button></div>
             <label>料金タイプ<select name={`${prefix}.priceType`} onChange={(event) => changeType(offer.key, event.target.value as TicketPriceType)} value={offer.priceType}>{ticketPriceTypes.map((type) => <option key={type} value={type}>{labels[type]}</option>)}</select></label>
-            <label>ラベル<input defaultValue={value(offer.label)} maxLength={120} name={`${prefix}.label`} placeholder="一般前売、U25、Accessなど" /></label>
+            <label>ラベル<input defaultValue={value(offer.label)} maxLength={120} name={`${prefix}.label`} placeholder="一般前売、U25、アクセシビリティ席など" /></label>
             {hasCurrency ? <label>通貨コード<input defaultValue={value(offer.currency || "JPY")} maxLength={3} minLength={3} name={`${prefix}.currency`} pattern="[A-Za-z]{3}" placeholder="JPY" required={exactAmount || rangeAmount} /></label> : null}
             {exactAmount ? <label>金額（最小通貨単位）<input defaultValue={value(offer.amountMinor)} min="0" name={`${prefix}.amountMinor`} required step="1" type="number" /></label> : null}
             {rangeAmount ? <><label>最低金額（最小通貨単位）<input defaultValue={value(offer.minAmountMinor)} min="0" name={`${prefix}.minAmountMinor`} required step="1" type="number" /></label><label>最高金額（最小通貨単位）<input defaultValue={value(offer.maxAmountMinor)} min="0" name={`${prefix}.maxAmountMinor`} required step="1" type="number" /></label></> : null}
             {optionalMinimum ? <label>最低金額（任意・最小通貨単位）<input defaultValue={value(offer.minAmountMinor)} min="0" name={`${prefix}.minAmountMinor`} step="1" type="number" /></label> : null}
-            <label>補足<textarea defaultValue={value(offer.notes)} name={`${prefix}.notes`} placeholder="対象条件、Pass名、価格変動についての説明など" rows={2} /></label>
+            <label>補足<textarea defaultValue={value(offer.notes)} name={`${prefix}.notes`} placeholder="対象条件、パスの名前、価格が変わる条件など" rows={2} /></label>
           </div>
         );
       })}
-      <button className="button button-secondary" disabled={!isHydrated} onClick={addOffer} type="button">料金を追加</button>
+      <div><button className="button button-dashed" disabled={!isHydrated} onClick={addOffer} type="button">料金を追加</button></div>
     </fieldset>
   );
 }

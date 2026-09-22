@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 type OrganizationOption = {
   id: string;
   name: string;
-  role: string;
+  roleLabel: string;
 };
 
 export function OrganizationSelector({
@@ -18,21 +18,20 @@ export function OrganizationSelector({
   const router = useRouter();
 
   return (
-    <label className="organization-selector">
-      Organization
+    <label className="org-switch">
+      <span className="visually-hidden">Organizationを切り替える</span>
       <select
-        aria-label="Organizationを選択"
         defaultValue={selectedId ?? ""}
         onChange={(event) => {
           if (event.target.value) router.push(`/workspace/${event.target.value}`);
         }}
       >
         <option disabled value="">
-          選択してください
+          Organizationを選択
         </option>
         {organizations.map((organization) => (
           <option key={organization.id} value={organization.id}>
-            {organization.name}（{organization.role}）
+            {organization.name}（{organization.roleLabel}）
           </option>
         ))}
       </select>

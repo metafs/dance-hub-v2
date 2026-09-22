@@ -5,13 +5,11 @@ import {
   markReviewNotificationRead,
 } from "@/app/workspace/notifications/actions";
 import { requireUser } from "@/features/auth/policy";
+import { formatTokyoDateTime } from "@/lib/datetime";
 import { reviewNotificationHref, reviewNotificationLabel } from "@/lib/review-notifications";
-
-const tokyoDateTime = new Intl.DateTimeFormat("ja-JP", {
-  dateStyle: "medium",
-  timeStyle: "short",
-  timeZone: "Asia/Tokyo",
-});
+import { EmptyState } from "@/ui/empty-state";
+import { AppPageHead } from "@/ui/page-head";
+import { StateLabel } from "@/ui/state-label";
 
 export default async function ReviewNotificationsPage() {
   const { supabase, user } = await requireUser();
@@ -26,51 +24,52 @@ export default async function ReviewNotificationsPage() {
   const hasUnread = notifications.some((notification) => notification.read_at === null);
 
   return (
-    <main className="workspace-main">
-      <section className="section-block" aria-labelledby="notifications-title">
-        <div className="section-heading">
-          <div>
-            <p className="eyebrow">Review inbox</p>
-            <h1 id="notifications-title">審査結果の通知</h1>
-            <p className="lede">Organization申請、Event公開、中止申請の審査結果を確認できます。</p>
-          </div>
-          {hasUnread ? (
-            <form action={markAllReviewNotificationsRead}>
-              <button className="button button-quiet" type="submit">すべて既読にする</button>
-            </form>
-          ) : null}
-        </div>
+    <main className="container-app app-main container-narrow">
+      <AppPageHead
+        actions={hasUnread ? (
+          <form action={markAllReviewNotificationsRead}>
+            <button className="button button-quiet button-small" type="submit">すべて既読にする</button>
+          </form>
+        ) : null}
+        description="Organization申請、Eventの公開、中止申請の審査結果が届きます。"
+        title="審査結果の通知"
+      />
 
-        {notifications.length ? (
-          <div className="notification-list">
-            {notifications.map((notification) => (
-              <article
-                className={`review-card notification-card${notification.read_at ? "" : " notification-unread"}`}
-                key={notification.id}
-              >
-                <div>
-                  <span className="status">{notification.read_at ? "既読" : "未読"}</span>
+      {notifications.length ? (
+        <div className="panels">
+          {notifications.map((notification) => (
+            <article
+              className={notification.read_at ? "review-item" : "review-item panel-strong"}
+              key={notification.id}
+            >
+              <div className="review-item-head">
+                <div className="review-item-title">
+                  <span className="review-item-sub tabular">
+                    {formatTokyoDateTime(notification.created_at)}
+                  </span>
                   <h2>{reviewNotificationLabel(notification.kind)}</h2>
-                  <p><strong>{notification.subject}</strong></p>
-                  {notification.decision_reason ? <p>{notification.decision_reason}</p> : null}
-                  <p className="muted">{tokyoDateTime.format(new Date(notification.created_at))}</p>
                 </div>
-                <div className="button-row">
-                  <Link className="text-link" href={reviewNotificationHref(notification)}>対象を確認 →</Link>
-                  {notification.read_at === null ? (
-                    <form action={markReviewNotificationRead}>
-                      <input name="notificationId" type="hidden" value={notification.id} />
-                      <button className="button button-quiet" type="submit">既読にする</button>
-                    </form>
-                  ) : null}
-                </div>
-              </article>
-            ))}
-          </div>
-        ) : (
-          <div className="empty-state">審査結果の通知はまだありません。</div>
-        )}
-      </section>
+                <StateLabel tone={notification.read_at ? "quiet" : "solid"}>
+                  {notification.read_at ? "既読" : "未読"}
+                </StateLabel>
+              </div>
+              <p><strong>{notification.subject}</strong></p>
+              {notification.decision_reason ? <p>{notification.decision_reason}</p> : null}
+              <div className="button-row">
+                <Link className="text-link" href={reviewNotificationHref(notification)}>対象を確認 →</Link>
+                {notification.read_at === null ? (
+                  <form action={markReviewNotificationRead}>
+                    <input name="notificationId" type="hidden" value={notification.id} />
+                    <button className="button button-quiet button-small" type="submit">既読にする</button>
+                  </form>
+                ) : null}
+              </div>
+            </article>
+          ))}
+        </div>
+      ) : (
+        <EmptyState>審査結果の通知はまだありません。</EmptyState>
+      )}
     </main>
   );
 }

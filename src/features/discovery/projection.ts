@@ -254,11 +254,21 @@ export function matchesFilters(
   if (filters.eventType && event.eventType !== filters.eventType) return false;
   if (filters.text && !matchesText(event, filters.text)) return false;
 
-  const needsSchedule = Boolean(filters.from || filters.to || filters.prefecture);
-  if (!needsSchedule) return true;
-  if (event.schedules.length === 0) return false;
+  return filterSchedulesForFilters(event.schedules, filters).length > 0
+    || !needsScheduleFilters(filters);
+}
 
-  return event.schedules.some((schedule) => {
+function needsScheduleFilters(filters: DiscoveryFilters) {
+  return Boolean(filters.from || filters.to || filters.prefecture);
+}
+
+export function filterSchedulesForFilters(
+  schedules: readonly DiscoveryScheduleView[],
+  filters: DiscoveryFilters,
+): DiscoveryScheduleView[] {
+  if (!needsScheduleFilters(filters)) return [...schedules];
+
+  return schedules.filter((schedule) => {
     if (filters.prefecture && schedule.prefecture !== filters.prefecture) return false;
 
     const day = tokyoDateKey(schedule.startsAt);
@@ -271,6 +281,13 @@ export function matchesFilters(
 
 function firstScheduleStart(event: DiscoveryEventSummary) {
   return event.schedules[0]?.startsAt ?? null;
+}
+
+function discoverySortInstant(event: DiscoveryEventSummary) {
+  if (event.state !== "published" && event.eventType && isApplyEventType(event.eventType)) {
+    return event.applicationDeadline;
+  }
+  return firstScheduleStart(event);
 }
 
 /**
@@ -290,8 +307,8 @@ export function sortByDiscoveryOrder(
     const rankDifference = rank(left) - rank(right);
     if (rankDifference !== 0) return rankDifference;
 
-    const leftStart = firstScheduleStart(left);
-    const rightStart = firstScheduleStart(right);
+    const leftStart = discoverySortInstant(left);
+    const rightStart = discoverySortInstant(right);
     if (leftStart && rightStart && leftStart !== rightStart) {
       return rank(left) === 2
         ? rightStart.localeCompare(leftStart)

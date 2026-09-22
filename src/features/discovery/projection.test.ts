@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   calendarDays,
+  filterSchedulesForFilters,
   prefectureLabel,
   matchesFilters,
   matchesText,
@@ -252,6 +253,18 @@ describe("matchesFilters", () => {
     })).toBe(false);
   });
 
+  it("retains only the matching Schedules for a filtered Event", () => {
+    const both = find("both");
+
+    expect(filterSchedulesForFilters(both.schedules, {
+      prefecture: "KANAGAWA",
+      from: "2026-06-01",
+      to: "2026-06-30",
+    }).map((item) => [item.startsAt, item.prefecture])).toEqual([
+      ["2026-06-02T10:00:00.000Z", "KANAGAWA"],
+    ]);
+  });
+
   it("filters by Event Type", () => {
     expect(matchesFilters(find("both"), { eventType: "workshop" })).toBe(true);
     expect(matchesFilters(find("both"), { eventType: "performance" })).toBe(false);
@@ -308,6 +321,30 @@ describe("openApplications", () => {
 
     expect(openApplications(summaries).map((summary) => summary.id))
       .toEqual(["soon", "late"]);
+  });
+});
+
+describe("sortByDiscoveryOrder", () => {
+  it("uses the application deadline for archived apply Events", () => {
+    const summaries = projectEvents({
+      events: [event("audition"), event("performance")],
+      revisions: [
+        revision("audition", {
+          event_type: "audition",
+          application_deadline: "2026-09-01T00:00:00.000Z",
+        }),
+        revision("performance"),
+      ],
+      schedules: [
+        schedule("audition", "2026-10-10T10:00:00.000Z"),
+        schedule("performance", "2026-03-15T10:00:00.000Z"),
+      ],
+      venues,
+      now,
+    });
+
+    expect(sortByDiscoveryOrder(summaries).map((summary) => summary.id))
+      .toEqual(["audition", "performance"]);
   });
 });
 
