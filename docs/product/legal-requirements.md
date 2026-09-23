@@ -39,7 +39,7 @@ MVP ロードマップ v0.4 の M7（DH-30〜DH-32）で公開する利用規約
 | 依頼者の連絡先、依頼内容 | 掲載の削除・修正依頼 | Supabase（`listing_requests`） | しない | `20260921000000_listing_policy_followups.sql` |
 | bot 判定のための情報 | 削除・修正依頼の送信時 | Cloudflare Turnstile が処理 | しない | `src/features/listing-requests/commands.ts` |
 | 画像 | Event 申請 | Cloudflare R2（非公開バケット） | 承認後に配信経路からのみ | ADR-0016 |
-| エラー記録（メソッド、パス、エラー内容） | サーバーエラー発生時 | Cloudflare Workers Logs | しない | ADR-0023（提案中） |
+| エラー記録（メソッド、パス、エラー内容） | サーバーエラー発生時 | Cloudflare Workers Logs | しない | ADR-0023 |
 
 委託先として名前が挙がるもの: Supabase（データベース・認証）、Cloudflare（配信・画像保存・Turnstile・ログ）。
 

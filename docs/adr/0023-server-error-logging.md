@@ -1,7 +1,8 @@
 # ADR-0023: サーバーエラーを Workers Logs に構造化して記録する
 
-**Status:** Proposed
+**Status:** Accepted
 **Proposed:** 2026-09-23
+**Accepted:** 2026-09-24
 
 ## Context
 
