@@ -1,14 +1,23 @@
 # p8ce — MVP Implementation Roadmap
 
 **Status:** Active
-**Version:** 0.4
-**Last Updated:** 2026-09-21
+**Version:** 0.5
+**Last Updated:** 2026-09-23
 
 ## MVP outcome
 
 p8ce の MVP は、東京都・神奈川県の Event を一般ユーザーが探索でき、承認済み Organization の Member が Event を下書き・審査提出し、Platform Admin の承認後に公開できる状態とする。公開後の変更と中止も審査対象とする。中止 Event は `cancelled` として公開を維持し、主催者からの取り下げ要請には `withdrawn` への遷移で応じる（ADR-0018）。掲載可否の条文は `docs/product/listing-policy.md` を正本とする。
 
 初期在庫は Organizer の自己申請に加え、運営による公開情報の代理入力（listing policy C-5〜C-8）で確保する。代理入力の開始には、取り下げ要請の受付窓口が先に稼働していることを条件とする。
+
+## Changes from v0.4
+
+- **状態表を `main` @ `85b8eb5` に合わせた。** M4.1（DH-24 を除く）、UI の作り直し（ADR-0022）、改名の UI 部分（M0-2）が完了している。
+- **DEC-R1 を保留にし、改名の前提条件から外した**（`d388655`、ADR-0021 と rename plan で決定済み）。ドメインは公開前までに決める。
+- **DEC-R5 を決定済みとした。** 代理入力は `events.listing_origin`（`organizer` / `proxy`）で表す（#66）。
+- **DH-16 で、公開 Revision の審査メモ（`decision_reason`）が匿名で読めることが分かった。** 修正は `fix/anonymous-privileges`。
+- **DH-27 を完了とした。** ADR-0020 を Accepted にした。
+- 2026-09-23 に作成した PR を「In review」として状態表に記す。マージ後に完了へ移す。
 
 ## Changes from v0.3
 
@@ -17,28 +26,28 @@ p8ce の MVP は、東京都・神奈川県の Event を一般ユーザーが探
 - **改名（ADR-0021）を M0 として最優先に置いた。** Event の恒久 URL と sitemap を公開する前に完了させる。
 - **法務・公開ページを M7、初期在庫とクローズドβを M8 として独立させた。** M6 の技術的な release gate と、運用上の公開条件を分けて追跡する。
 
-## Verified current state (2026-09-21, `main` @ `4d43339`)
+## Verified current state (2026-09-23, `main` @ `85b8eb5`)
 
-plan doc の Status 表記ではなく、コードを読んで確認した状態である。
+plan doc の Status 表記ではなく、コードを読んで確認した状態である。「In review」は 2026-09-23 に作成したブランチで、`main` には未マージである。
 
 | 領域 | 状態 | 根拠 |
 | --- | --- | --- |
-| M1 Domain integrity | 完了 | `supabase/migrations/` 16 本、`supabase/tests/database/` 8 本 |
-| M2 Identity / Organization | 完了 | `src/features/organizations/`、`tests/e2e/m2-onboarding.spec.ts` |
-| M3 Moderated entities | 完了 | `src/features/shared-entities/`、`tests/e2e/m3-entities.spec.ts` |
-| M4 Event review workflow | 完了（policy 追随が残る） | `src/features/revisions/`、`tests/e2e/m4-event-review.spec.ts` |
-| M5 Public discovery | ほぼ完了 | `/events`、`/calendar`、`/open-calls`、`/artists/[id]`、`/venues/[id]`、`src/features/discovery/`、`tests/e2e/m5-public-discovery.spec.ts` |
+| M1〜M4 | 完了 | `supabase/migrations/` 20 本、`supabase/tests/database/` 9 本、`tests/e2e/m2`〜`m4` |
+| M4.1 Listing policy alignment | 完了（DH-24 を除く） | `20260921000000_listing_policy_followups.sql` ほか 3 本、`listing_policy_followups.test.sql`、`/listing-requests`、`/admin/withdrawals` |
+| 代理入力の E2E | In review | `test/proxy-listing-journey` |
+| M5 Public discovery | ほぼ完了 | `/events`、`/calendar`、`/open-calls`、`/artists/[id]`、`/venues/[id]`、`tests/e2e/m5-public-discovery.spec.ts` |
+| 構造化データ（JSON-LD、DH-26） | In review | `feature/event-structured-data` |
+| UI 基盤 | 完了 | ADR-0022、`src/ui/`、`docs/design/ui.md` |
 | Media upload / delivery | 実装済み・staging 未検証 | `src/features/media/`、`/events/[eventId]/image`、ADR-0016 |
 | Withdrawal | 完了 | `20260919020000_event_withdrawal.sql`、`/admin/withdrawals`、ADR-0018 |
 | Metadata / sitemap / robots | 完了 | `src/app/sitemap.ts`、`src/app/robots.ts` |
-| 構造化データ（JSON-LD） | 未着手 | `src/` に `application/ld+json` がない |
+| 改名 | UI・metadata・ロゴは完了。文書・`package.json`・テスト用ドメインは In review | M0-2 は ADR-0022 の変更で完了。M0-1 は `chore/rename-to-p8ce` |
+| 匿名ユーザーの権限（DH-16） | **公開 Revision の審査メモ・審査者・作成者が匿名で読める。** 修正は In review | `fix/anonymous-privileges`（migration と `anonymous_privileges.test.sql`） |
+| 掲載基準の公開ページ（DH-33） | In review | `feature/public-listing-policy` |
+| 利用規約・プライバシーポリシー・運営者情報 | 未着手。記載要件の整理は In review | `feature/public-listing-policy` の `docs/product/legal-requirements.md` |
+| Error tracking（DH-28） | In review（ADR-0023 Proposed） | `feature/server-error-logging` |
 | Runbooks | 完了（未リハーサル） | `docs/ops/runbooks/` 4 本 |
-| 改名 | UI・metadata は置換済み、文書は一部のみ | UI・metadata・ロゴは ADR-0022 の変更で `p8ce` に置換。文書、`package.json`、`.env.example`、`env.test.ts` は未 |
-| main image・Artist credit 任意化 | **未実装** | publication validation 関数が「Artist credit 1 件以上」「main image ちょうど 1 枚」を要求（`20260902130000_event_ticket_offers.sql`） |
-| 代理入力・取り下げ受付窓口 | 未着手 | listing policy の Implementation follow-ups |
-| 利用規約・プライバシーポリシー・運営者情報 | 未着手 | 該当 route なし |
 | staging 環境 | 未着手 | `wrangler.jsonc` に `env` 定義なし |
-| Error tracking | 未着手 | `docs/architecture/observability.md` |
 
 ## Decisions required before implementation
 
@@ -46,14 +55,14 @@ plan doc の Status 表記ではなく、コードを読んで確認した状態
 
 | ID | 決定事項 | ブロックするもの |
 | --- | --- | --- |
-| DEC-R1 | `p8ce.dance` の取得可否（ADR-0021 の前提条件） | M0 全体 |
+| DEC-R1 | `p8ce.dance` の取得可否。**保留**（2026-09-21）。改名の前提条件からは外し、公開前に決める | M0-3 |
 | DEC-R2 | Event の恒久 URL 形式。`/events/{uuid}` を維持するか、slug を併用するか | M0-3、M5 の sitemap / JSON-LD 確定 |
 | DEC-R3 | 対象地域。`docs/product/scope.md` は東京都・神奈川県。拡張する場合は Prefecture enum・filter・listing policy A-1 の改訂を伴う | M8 の代理入力対象範囲 |
 | DEC-R4 | Event Type への発表会区分の追加（ADR-0008 改訂、listing policy Open items） | DH-24 |
-| DEC-R5 | 代理入力の表現。運営 Organization から入力するか、Event / Revision に入力経路の属性を持たせるか | DH-22 |
+| DEC-R5 | ~~代理入力の表現~~ **決定済み**：`events.listing_origin`（`organizer` / `proxy`）（#66） | — |
 | DEC-R6 | 代理入力を G-2 の週 20 件審査上限に算入するか | M8 の在庫計画 |
-| DEC-R7 | `authenticated` が公開実績のある Organization の全列を読める状態（DH-19 残件）を許容するか | DH-16 |
-| DEC-R8 | ADR 番号 0012 の重複を改番するか | なし（新規 ADR は 0022 から採番） |
+| DEC-R7 | `authenticated` が公開実績のある Organization の全列と、公開 Revision の審査メモ（`decision_reason`）を読める状態を許容するか。列権限はロール単位のため、閉じるには view か RPC が要る。anon 側は `fix/anonymous-privileges` で閉じる | DH-16 の残件 |
+| DEC-R8 | ADR 番号 0012 の重複を改番するか | なし（新規 ADR は 0024 から採番。0023 は `feature/server-error-logging` が使用） |
 
 ## Milestones
 
@@ -69,14 +78,14 @@ Draft → 提出 → 差戻し → 再提出 → 承認 → 公開後変更、�
 
 ### M0 — Rename to p8ce
 
-**Status:** Blocked on DEC-R1 — detailed plan: `docs/plans/rename-plan.md`
+**Status:** M0-2 complete, M0-1 in review (`chore/rename-to-p8ce`), M0-3 waiting on DEC-R1 and DEC-R2 — detailed plan: `docs/plans/rename-plan.md`
 
 **Goal:** Event の恒久 URL と sitemap を外部へ出す前に、サービス名を p8ce へ揃える。
 
 | ID | 内容 | area | 依存 |
 | --- | --- | --- | --- |
-| M0-1 | 文書の置換（`AGENTS.md` を最優先） | `docs` | DEC-R1 |
-| M0-2 | UI・metadata・siteName・wordmark の置換、ロゴ適用（`docs/brand/identity.md`） | `frontend` | DEC-R1 |
+| M0-1 | 文書の置換（`AGENTS.md` を最優先） | `docs` | — |
+| M0-2 | UI・metadata・siteName・wordmark の置換、ロゴ適用（`docs/brand/identity.md`） | `frontend` | — |
 | M0-3 | 本番ドメインと canonical URL・sitemap の base URL 設定 | `infra` `frontend` | DEC-R1, DEC-R2 |
 
 Worker 名・R2 バケット名・テスト用パスワードなど、rename plan が「機械置換してはいけない箇所」とするものは残す。
@@ -85,7 +94,7 @@ Worker 名・R2 バケット名・テスト用パスワードなど、rename pla
 
 ### M4.1 — Listing policy alignment
 
-**Status:** Planned
+**Status:** Complete except DH-24 (#66). The proxy E2E is in review (`test/proxy-listing-journey`).
 
 **Goal:** 2026-09-19〜20 に決定した listing policy を、審査・公開の契約として実装する。
 
@@ -104,27 +113,27 @@ DH-20・DH-21・DH-23・DH-25 は相互に独立し、並列に着手できる�
 
 ### M5 — Public discovery
 
-**Status:** Mostly complete — detailed plan: `docs/plans/m5-public-discovery.md`
+**Status:** Mostly complete — DH-26 in review (`feature/event-structured-data`), DH-27 complete — detailed plan: `docs/plans/m5-public-discovery.md`
 
 実装済み：Event 一覧・詳細、Calendar、日付・地域・Event Type・テキスト検索（ADR-0020）、応募締切一覧、Artist / Venue 詳細、Festival 親子、過去・中止表示、匿名 critical journey E2E。
 
 | ID | 内容 | area | 依存 |
 | --- | --- | --- | --- |
-| DH-26 | 構造化データ。schema.org `Event` / `Place` / `PerformingGroup` の JSON-LD、`eventStatus` を `cancelled` と整合させる。Rich Results Test の結果を記録 | `frontend` | M0-3 |
+| DH-26 | 構造化データ。schema.org `Event` / `Place` / `PerformingGroup` の JSON-LD、`eventStatus` を `cancelled` と整合させる。Rich Results Test の結果を記録（本番ドメインでの確認は M0-3 の後） | `frontend` | — |
 | DH-27 | ADR-0020 を実装に合わせて Accepted にする | `docs` | — |
 
 **Done when:** DH-26 が完了し、Rich Results Test で Event 構造化データがエラーなく通る。
 
 ### M6 — Release candidate
 
-**Status:** Planned — detailed plan: `docs/plans/m6-release-candidate.md`
+**Status:** In progress — DH-16 and DH-28 in review (`fix/anonymous-privileges`, `feature/server-error-logging`) — detailed plan: `docs/plans/m6-release-candidate.md`
 
 | ID | 内容 | area | 依存 |
 | --- | --- | --- | --- |
 | DH-13 | accessibility・keyboard / focus・form error・responsive QA と欠陥修正 | `frontend` | M4.1 |
 | DH-14 | Cloudflare staging 環境の定義とデプロイ。R2 bucket と edge cache header の検証。Organizer・Admin・Visitor の critical journey を staging で実行 | `infra` | M0-3 |
-| DH-16 | 公開情報漏洩テストの拡張。draft / candidate / application / 未承認 media に加え、取り下げ要請と代理入力の経路 | `db` `auth` | DH-21, DH-22 |
-| DH-28 | Error tracking の最小構成と、`observability.md` の更新 | `infra` | DH-14 |
+| DH-16 | 公開情報漏洩テストの拡張。anon の権限面全体（表・列・関数）を固定するテストと、見つかった露出の修正 | `db` `auth` | — |
+| DH-28 | Error tracking の最小構成と、`observability.md` の更新（Workers Logs への出力確認は DH-14） | `infra` | — |
 | DH-29 | runbook のリハーサル（deploy、migration rollback、media recovery、moderation）と結果の記録 | `infra` `docs` | DH-14 |
 | DH-17 | リリースチェックリストと既知の制約の記録 | `docs` | 上記すべて |
 
@@ -132,7 +141,7 @@ DH-20・DH-21・DH-23・DH-25 は相互に独立し、並列に着手できる�
 
 ### M7 — Legal and public policy pages
 
-**Status:** Planned
+**Status:** In progress — DH-33 and the requirements for DH-30〜32 in review (`feature/public-listing-policy`)
 
 **Goal:** 第三者の情報を掲載・受付するサービスとして公開できる状態にする。
 
@@ -164,17 +173,15 @@ DH-20・DH-21・DH-23・DH-25 は相互に独立し、並列に着手できる�
 ## Critical path and parallel execution
 
 ```text
-DEC-R1 ─ M0 改名 ─ M0-3 ドメイン / URL (DEC-R2) ─┬─ DH-26 JSON-LD
-                                                 └─ DH-14 staging ─ DH-28 / DH-29 ─┐
-M4.1 ─┬─ DH-20 必須緩和 ─ DH-22 代理入力 (DEC-R5) ─┐                              │
-      ├─ DH-21 取り下げ窓口 ────────────────────────┼─ DH-16 漏洩 test ─ DH-13 ─ DH-17 ─ M8 β ─ 一般公開
-      ├─ DH-23 申請項目                              │                              │
-      └─ DH-25 B-5 / B-7                             │                              │
-M7 DH-30〜33 ─────────────────────────────────────────┴──────────────────────────────┘
+DEC-R1 ドメイン + DEC-R2 URL ─ M0-3 ─┬─ DH-26 を本番ドメインで確認
+                                      └─ DH-14 staging ─ DH-28 確認 / DH-29 ─┐
+DH-13 accessibility ──────────────────────────────────────────────────────────┼─ DH-17 ─ M8 β ─ 一般公開
+M7 DH-30〜32 条文（法的助言） ─────────────────────────────────────────────────┘
+DEC-R4 ─ DH-24 発表会区分（公開の条件ではない。M8 の代理入力より前が望ましい）
 ```
 
-- クリティカルパスは DEC-R1 → M0 → M0-3 → DH-14 → DH-17 → M8。
-- M4.1 の DH-20・DH-21・DH-23・DH-25 と M7 は、互いに同じファイルを触らず並列に進められる。1 Issue = 1 Branch = 1 Worktree で扱う。
+- クリティカルパスは DEC-R1・DEC-R2 → M0-3 → DH-14 → DH-17 → M8。ドメインが決まらない限り staging の先へ進めない。
+- DH-13 と M7 の条文は、ドメインと独立に進められる。1 Issue = 1 Branch = 1 Worktree で扱う。
 - 代理入力（M8 の 1）は DH-21 の完了を待つ。M7 の完了を待たずに内部で入力を進めてよいが、公開は M7 完了後とする。
 
 各マイルストーンで `pnpm check` と Cloudflare production build を維持する。Organization Role の操作範囲は `docs/architecture/auth.md`、公開必須項目と日付規則は `docs/product/requirements.md` を正本とする。

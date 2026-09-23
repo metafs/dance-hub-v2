@@ -1,7 +1,8 @@
 # ADR-0020: 探索のテキスト検索を射影上で行う
 
-**Status:** Proposed
+**Status:** Accepted
 **Proposed:** 2026-09-20
+**Accepted:** 2026-09-23
 
 ## Context
 

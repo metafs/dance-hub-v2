@@ -50,3 +50,6 @@ next-env.d.ts
 
 supabase/.temp/
 supabase/.branches/
+# Session hand-off files (git bundles, PR guides). Never part of the product.
+.claude-transfer/
+*.bundle
