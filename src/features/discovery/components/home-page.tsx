@@ -39,7 +39,7 @@ export default async function Home() {
         />
         <div className="home-hero-body">
           <div>
-            <h1 id="home-title">関東・関西のダンスとパフォーマンスを探す</h1>
+            <h1 id="home-title">東京都・神奈川県のダンスとパフォーマンスを探す</h1>
             <p className="home-tagline">どの上演にも、それぞれのペースがある。</p>
           </div>
           <form action="/events" className="home-search" method="get" role="search">
