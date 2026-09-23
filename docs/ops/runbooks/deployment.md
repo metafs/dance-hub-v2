@@ -74,6 +74,22 @@ GitHub Actions には deploy workflow が無い。`.github/workflows/` にある
    - 画像を持つ公開 Event の `/events/{id}/image` が 200 を返す（R2 binding の証拠）
    - `/sitemap.xml` に公開 Event が含まれる
    - `/admin/events` が未ログインで `/login` に飛ぶ
+   - Cloudflare ダッシュボードの Worker → Observability に、デプロイ後の
+     `event:request_error` が増えていない（ADR-0023）
+
+## エラーの調べ方
+
+サーバー側で捕捉されなかったエラーは、`instrumentation.ts` の `onRequestError` が1行の JSON
+として console に書き、Workers Logs が保存する（ADR-0023）。
+
+- **ダッシュボード:** Workers & Pages → 対象 Worker → Observability。`event` が
+  `request_error` の行を、`routePath`・`routeType`・`digest` で絞り込む。
+- **その場で追う:** `pnpm exec wrangler tail --format json`。本番のトラフィックを流すため、
+  調査が済んだら止める。
+- **利用者からの報告:** Next.js のエラー画面が示す digest は、記録の `digest` と一致する。
+
+記録にはリクエストヘッダー、Cookie、クエリ文字列を含めない。含まれていた場合は
+ADR-0023 に反するため、コードを直す。
 
 ## 切り戻し
 
@@ -97,5 +113,6 @@ GitHub Actions には deploy workflow が無い。`.github/workflows/` にある
 
 - deploy workflow が無く、実行記録が残らない。
 - staging が無いため、本番が最初の実行環境になる。DH-14 の対象。
-- デプロイ後の異常を検知する仕組みが無い（`docs/architecture/observability.md`）。
-  上記「直後に確認する」は人手の代替であり、監視ではない。
+- エラーは記録されるが、通知されない（ADR-0023）。人が Observability を見に行くまで
+  気づかない。上記「直後に確認する」は人手の代替であり、監視ではない。
+- Workers Logs への出力は staging で未確認（DH-14）。
