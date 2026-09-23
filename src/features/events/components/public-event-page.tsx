@@ -9,6 +9,7 @@ import { EventRow, PublicationStateLabel, scheduleTime } from "@/features/discov
 import { listingSchedule } from "@/features/discovery/listing";
 import { getPublicEventPageData } from "@/features/events/queries";
 import { eventPublicationState } from "@/features/events/publication-state";
+import { buildEventStructuredData } from "@/features/events/structured-data";
 import {
   accessLinkKindLabel,
   eventTypeLabel,
@@ -16,7 +17,7 @@ import {
   type TicketOfferInput,
   type TicketPriceType,
 } from "@/features/revisions/schema";
-import { prefectureName } from "@/features/shared-entities/schema";
+import { prefectureName, type ArtistType } from "@/features/shared-entities/schema";
 import {
   dayLabel,
   formatTokyoDate,
@@ -24,7 +25,9 @@ import {
   formatTokyoTime,
   tokyoDateKey,
 } from "@/lib/datetime";
+import { siteUrl } from "@/lib/env";
 import { DefinitionRows } from "@/ui/definition-rows";
+import { JsonLd } from "@/ui/json-ld";
 import { RowList } from "@/ui/list-row";
 import { Notice } from "@/ui/notice";
 import { PageHead } from "@/ui/page-head";
@@ -116,13 +119,68 @@ export default async function PublicEventPage({
       .map((venue) => [venue.id, venue]),
   ).values()];
 
+  type CreditedArtist = { id: string; name: string; artist_type: ArtistType };
   const creditRows = (credits ?? []).map((credit) => {
-    const artist = one(credit.artists as { id: string; name: string } | { id: string; name: string }[] | null);
+    const artist = one(credit.artists as CreditedArtist | CreditedArtist[] | null);
     return { role: credit.role, order: credit.display_order, artist };
+  });
+
+  // Structured data describes exactly the approved Revision rendered below
+  // (DH-26). A Festival takes its dates and Venues from its child Events.
+  const structuredData = buildEventStructuredData({
+    eventId,
+    origin: siteUrl(),
+    title: revision.title,
+    description: revision.description,
+    cancelled: Boolean(event.cancelled_at),
+    organizationName: organization?.name ?? null,
+    hasMainImage: Boolean(media),
+    schedules: (schedules ?? []).map((schedule) => {
+      const venue = one(schedule.venues as VenueValue | VenueValue[] | null);
+      return {
+        startsAt: schedule.starts_at,
+        endsAt: schedule.ends_at,
+        allDay: schedule.all_day,
+        venue: venue
+          ? {
+            id: venue.id,
+            name: venue.name,
+            prefecture: venue.prefecture,
+            addressLine1: venue.address_line1,
+            addressLine2: venue.address_line2,
+          }
+          : null,
+      };
+    }),
+    contributors: creditRows.flatMap((credit) => credit.artist
+      ? [{ id: credit.artist.id, name: credit.artist.name, artistType: credit.artist.artist_type }]
+      : []),
+    offers: (ticketOffers ?? []).map((offer) => ({
+      priceType: offer.price_type as TicketPriceType,
+      label: offer.label,
+      currency: offer.currency,
+      amountMinor: offer.amount_minor,
+      minAmountMinor: offer.min_amount_minor,
+      maxAmountMinor: offer.max_amount_minor,
+    })),
+    offerUrl: accessLinks?.[0]?.url ?? null,
+    festivalChildren: revision.event_type === "festival"
+      ? children.map((child) => ({
+        id: child.id,
+        title: child.title,
+        schedules: child.schedules.map((schedule) => ({
+          startsAt: schedule.startsAt,
+          endsAt: schedule.endsAt,
+          allDay: schedule.allDay,
+          venue: { id: schedule.venueId, name: schedule.venueName, prefecture: schedule.prefecture },
+        })),
+      }))
+      : undefined,
   });
 
   return (
     <div className="container">
+      <JsonLd data={structuredData} />
       <PageHead
         meta={
           <>
