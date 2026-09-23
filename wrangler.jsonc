@@ -7,6 +7,12 @@
 		"nodejs_compat",
 		"global_fetch_strictly_public"
 	],
+	"observability": {
+		// Workers Logs keeps console output, including the one-line JSON record
+		// instrumentation.ts writes for every server request error (ADR-0023).
+		"enabled": true,
+		"head_sampling_rate": 1
+	},
 	"assets": {
 		"directory": ".open-next/assets",
 		"binding": "ASSETS"

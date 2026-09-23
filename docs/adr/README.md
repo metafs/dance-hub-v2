@@ -36,6 +36,7 @@ ADRs capture architectural decisions that should remain understandable to future
 | [0020](0020-discovery-text-search.md) | 探索のテキスト検索を射影上で行う | Proposed |
 | [0021](0021-rename-service-to-p8ce.md) | サービス名を p8ce とする | Accepted |
 | [0022](0022-editorial-ui-foundation.md) | 無彩色の UI 基盤と Instrument Sans の同梱 | Accepted |
+| [0023](0023-server-error-logging.md) | サーバーエラーを Workers Logs に構造化して記録する | Proposed |
 
 ## Template
 
