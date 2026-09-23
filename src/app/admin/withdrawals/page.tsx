@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { requirePlatformAdmin } from "@/lib/auth/authorization";
 import { formatTokyoDateTime } from "@/lib/datetime";
 import { DefinitionRows } from "@/ui/definition-rows";
@@ -29,6 +30,8 @@ function organizationName(value: OrganizationValue) {
   if (Array.isArray(value)) return value[0]?.name ?? "不明なOrganization";
   return value?.name ?? "不明なOrganization";
 }
+
+export const metadata: Metadata = { title: "掲載の依頼と取り下げ" };
 
 export default async function WithdrawalQueue({
   searchParams,

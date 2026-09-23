@@ -42,14 +42,14 @@ export default async function OrganizationLayout({
 
   return (
     <>
-      <div className="app-context">
+      <section aria-label="作業中のOrganization" className="app-context">
         <div className="container-app app-context-inner">
           <div className="app-context-org">
             <OrganizationSelector organizations={organizations} selectedId={organizationId} />
           </div>
-          <TabNav items={tabs} label="Organization" />
+          <TabNav items={tabs} label="Organizationのメニュー" />
         </div>
-      </div>
+      </section>
       {children}
     </>
   );

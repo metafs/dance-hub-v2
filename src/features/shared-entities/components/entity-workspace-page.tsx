@@ -19,6 +19,7 @@ import { Notice } from "@/ui/notice";
 import { AppPageHead } from "@/ui/page-head";
 import { Section } from "@/ui/section";
 import { StateLabel } from "@/ui/state-label";
+import { TableFrame } from "@/ui/table-frame";
 
 export default async function EntityWorkspacePage({ params, searchParams }: { params: Promise<{ organizationId: string }>; searchParams: Promise<{ created?: string; updated?: string; error?: string }> }) {
   const { organizationId } = await params;
@@ -63,7 +64,7 @@ export default async function EntityWorkspacePage({ params, searchParams }: { pa
 
       <Section id="entities-candidates" rule size="small" title="申請した候補">
         {candidates.length ? (
-          <div className="table-wrap">
+          <TableFrame label="申請した候補">
             <table className="table">
               <thead>
                 <tr>
@@ -90,7 +91,7 @@ export default async function EntityWorkspacePage({ params, searchParams }: { pa
                 ))}
               </tbody>
             </table>
-          </div>
+          </TableFrame>
         ) : (
           <EmptyState>申請した候補はまだありません。</EmptyState>
         )}
@@ -121,7 +122,7 @@ export default async function EntityWorkspacePage({ params, searchParams }: { pa
       </Section>
 
       <Section id="entities-registered" rule size="small" title="登録済みの出演者・会場">
-        <div className="table-wrap">
+        <TableFrame label="登録済みの出演者">
           <table className="table">
             <thead>
               <tr>
@@ -153,8 +154,8 @@ export default async function EntityWorkspacePage({ params, searchParams }: { pa
               ))}
             </tbody>
           </table>
-        </div>
-        <div className="table-wrap">
+        </TableFrame>
+        <TableFrame label="登録済みの会場">
           <table className="table">
             <thead>
               <tr>
@@ -173,7 +174,7 @@ export default async function EntityWorkspacePage({ params, searchParams }: { pa
               ))}
             </tbody>
           </table>
-        </div>
+        </TableFrame>
       </Section>
     </main>
   );

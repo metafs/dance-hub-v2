@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 
 import {
@@ -10,6 +11,8 @@ import { reviewNotificationHref, reviewNotificationLabel } from "@/lib/review-no
 import { EmptyState } from "@/ui/empty-state";
 import { AppPageHead } from "@/ui/page-head";
 import { StateLabel } from "@/ui/state-label";
+
+export const metadata: Metadata = { title: "審査結果の通知" };
 
 export default async function ReviewNotificationsPage() {
   const { supabase, user } = await requireUser();

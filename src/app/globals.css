@@ -299,7 +299,9 @@ button, select, summary { cursor: pointer; }
 .dl-rows a { border-bottom: 1px solid var(--line-field); }
 .dl-rows a:hover { border-bottom-color: var(--ink); }
 
-.table-wrap { overflow-x: auto; border: 1px solid var(--line); background: var(--paper); }
+/* position: relative keeps visually hidden cell text inside the scrolling frame;
+   without it the text escapes the frame and widens the whole page. */
+.table-wrap { position: relative; overflow-x: auto; border: 1px solid var(--line); background: var(--paper); }
 /* A table keeps its columns and scrolls inside its frame on a narrow screen. */
 .table-wrap .table { min-width: 640px; }
 .table { width: 100%; border-collapse: collapse; font-size: 14px; }
@@ -343,7 +345,8 @@ label, .field-label { display: grid; gap: 6px; font-size: 13px; font-weight: 500
 .field-help { color: var(--ink-2); font-size: 13px; font-weight: 400; line-height: 1.7; }
 .field-error { display: flex; align-items: baseline; gap: 8px; font-size: 13px; font-weight: 600; line-height: 1.6; }
 .field-error::before {
-  content: "!";
+  /* The empty alternative keeps the mark out of the error the field announces. */
+  content: "!" / "";
   display: inline-grid;
   width: 16px;
   height: 16px;
@@ -372,7 +375,7 @@ input:focus, select:focus, textarea:focus { border-color: var(--ink); outline: 2
 input[aria-invalid="true"], select[aria-invalid="true"], textarea[aria-invalid="true"] { border: 1.5px solid var(--ink); }
 input[type="checkbox"], input[type="radio"] { width: 16px; min-height: 0; height: 16px; margin: 0; padding: 0; accent-color: var(--ink); }
 input[type="file"] { padding-block: 9px; }
-input::placeholder, textarea::placeholder { color: var(--ink-disabled); }
+input::placeholder, textarea::placeholder { color: var(--ink-3); }
 
 .choice { display: flex; align-items: center; gap: 10px; min-height: 32px; font-size: 14px; font-weight: 400; cursor: pointer; }
 .choice-group { display: grid; gap: 4px; }
@@ -424,9 +427,9 @@ input::placeholder, textarea::placeholder { color: var(--ink-disabled); }
 .app-main { flex-grow: 1; padding-block: 40px 80px; }
 .app-context { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 24px; border-bottom: 1px solid var(--line); background: var(--paper); }
 .app-context-inner { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 0 32px; }
-.app-context-org { display: flex; align-items: center; gap: 12px; padding-block: 12px; font-size: 14px; }
-.org-switch { display: block; }
-.app-context-org select { width: auto; min-height: 36px; padding: 0 10px; font-size: 14px; }
+.app-context-org { display: flex; min-width: 0; max-width: 100%; align-items: center; gap: 12px; padding-block: 12px; font-size: 14px; }
+.org-switch { display: block; min-width: 0; max-width: 100%; }
+.app-context-org select { width: auto; max-width: 100%; min-height: 36px; padding: 0 10px; font-size: 14px; }
 
 .app-inverse .app-header { border-bottom: 0; background: var(--ink); color: var(--paper); }
 .app-inverse .app-identity-sub, .app-inverse .app-account-email { color: #b4b4af; }
@@ -533,7 +536,7 @@ input::placeholder, textarea::placeholder { color: var(--ink-disabled); }
 .calendar { width: 100%; table-layout: fixed; border-collapse: collapse; }
 .calendar th { padding-bottom: 8px; color: var(--ink-3); font-size: 12px; font-weight: 400; }
 .calendar td { height: 7.5rem; border: 1px solid var(--line); padding: 8px; vertical-align: top; }
-.calendar td[data-in-month="false"] { background: var(--ground); color: var(--ink-disabled); }
+.calendar td[data-in-month="false"] { background: var(--ground); color: var(--ink-3); }
 .calendar-day { display: flex; align-items: baseline; gap: 6px; margin-bottom: 6px; font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; }
 .calendar-day-weekday { display: none; color: var(--ink-3); font-weight: 400; }
 .calendar-events { display: grid; gap: 6px; margin: 0; padding: 0; font-size: 12.5px; line-height: 1.45; list-style: none; }
