@@ -30,7 +30,7 @@ describe("validateEnvironment", () => {
   });
 
   it("ignores the optional site URL", () => {
-    expect(validateEnvironment({ ...validEnvironment, NEXT_PUBLIC_SITE_URL: "https://dancehub.example" }))
+    expect(validateEnvironment({ ...validEnvironment, NEXT_PUBLIC_SITE_URL: "https://p8ce.example" }))
       .toEqual({
         supabasePublishableKey: "publishable-key",
         supabaseUrl: "https://project.supabase.co",
@@ -59,16 +59,16 @@ describe("validateEnvironment", () => {
 
 describe("siteUrl", () => {
   it("returns the origin without a trailing slash or path", () => {
-    expect(siteUrl({ NEXT_PUBLIC_SITE_URL: "https://dancehub.example/" }))
-      .toBe("https://dancehub.example");
-    expect(siteUrl({ NEXT_PUBLIC_SITE_URL: "https://dancehub.example/events" }))
-      .toBe("https://dancehub.example");
+    expect(siteUrl({ NEXT_PUBLIC_SITE_URL: "https://p8ce.example/" }))
+      .toBe("https://p8ce.example");
+    expect(siteUrl({ NEXT_PUBLIC_SITE_URL: "https://p8ce.example/events" }))
+      .toBe("https://p8ce.example");
   });
 
   it("returns null rather than throwing when it is unset or unusable", () => {
     expect(siteUrl({})).toBeNull();
     expect(siteUrl({ NEXT_PUBLIC_SITE_URL: "  " })).toBeNull();
-    expect(siteUrl({ NEXT_PUBLIC_SITE_URL: "dancehub.example" })).toBeNull();
-    expect(siteUrl({ NEXT_PUBLIC_SITE_URL: "ftp://dancehub.example" })).toBeNull();
+    expect(siteUrl({ NEXT_PUBLIC_SITE_URL: "p8ce.example" })).toBeNull();
+    expect(siteUrl({ NEXT_PUBLIC_SITE_URL: "ftp://p8ce.example" })).toBeNull();
   });
 });

@@ -1,4 +1,4 @@
-# DANCE HUB - Pull-request Labels and Evidence
+# p8ce - Pull-request Labels and Evidence
 
 **Status:** Draft  
 **Last Updated:** 2026-09-03

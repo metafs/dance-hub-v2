@@ -1,4 +1,4 @@
-# DANCE HUB — Deployment
+# p8ce — Deployment
 
 **Status:** Accepted
 **Last Updated:** 2026-09-01

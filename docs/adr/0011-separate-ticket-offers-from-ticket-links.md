@@ -5,7 +5,7 @@
 
 ## Context
 
-An Event Revision can store external ticket-sales and registration URLs, but it cannot represent the announced price itself. Dance events use fixed and ranged prices as well as free, donation, pay-what-you-can, sliding-scale, dynamic, and pass-included models. DANCE HUB does not sell tickets or calculate prices.
+An Event Revision can store external ticket-sales and registration URLs, but it cannot represent the announced price itself. Dance events use fixed and ranged prices as well as free, donation, pay-what-you-can, sliding-scale, dynamic, and pass-included models. p8ce does not sell tickets or calculate prices.
 
 ## Decision
 
@@ -24,13 +24,13 @@ Ticket Offers inherit Event Revision access and lifecycle rules: Organization Me
 - Add price columns to `event_ticket_links`: rejected because a price may be announced before a sales URL exists, and multiple prices may share several external destinations.
 - Store one free-form price string on Event Revision: rejected because it prevents reliable price-type and currency-aware presentation while losing individual offers.
 - Relate Offers to Links or Schedules: deferred because neither mapping is required for MVP and both introduce unsupported editing and display semantics.
-- Model ticket sales and payment inside DANCE HUB: rejected as outside MVP scope.
+- Model ticket sales and payment inside p8ce: rejected as outside MVP scope.
 
 ## Consequences
 
 - Price changes are preserved through Event Revision history instead of mutating the stable Event.
 - Public rendering must format minor-unit amounts according to currency while preserving human labels and notes.
-- Dynamic Pricing is descriptive only; DANCE HUB neither calculates nor synchronizes current prices.
+- Dynamic Pricing is descriptive only; p8ce neither calculates nor synchronizes current prices.
 - Detailed seat categories, eligibility rules, Festival Pass sales, price tracking, and notifications remain outside the model.
 
 ## Revisit when

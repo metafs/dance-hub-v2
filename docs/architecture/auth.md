@@ -1,4 +1,4 @@
-# DANCE HUB — Authentication and Authorization
+# p8ce — Authentication and Authorization
 
 **Status:** Draft
 **Version:** 0.2

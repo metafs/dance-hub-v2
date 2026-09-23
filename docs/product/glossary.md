@@ -1,4 +1,4 @@
-# DANCE HUB — Glossary
+# p8ce — Glossary
 
 **Status:** Draft
 **Version:** 0.3

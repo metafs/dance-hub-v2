@@ -1,4 +1,4 @@
-# DANCE HUB — Architecture Overview
+# p8ce — Architecture Overview
 
 **Status:** Draft
 **Version:** 0.3
@@ -6,7 +6,7 @@
 
 ## Purpose
 
-This document is the high-level map of DANCE HUB. Detailed decisions live in `docs/adr/`; product behavior lives in `docs/product/requirements.md`.
+This document is the high-level map of p8ce. Detailed decisions live in `docs/adr/`; product behavior lives in `docs/product/requirements.md`.
 
 ## Principles
 

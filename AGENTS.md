@@ -1,8 +1,8 @@
-# DANCE HUB Agent Guide
+# p8ce Agent Guide
 
 ## Project
 
-DANCE HUB is a structured information platform for dance and performance events, artists, organizations, and venues.
+p8ce is a structured information platform for dance and performance events, artists, organizations, and venues.
 
 ## Source of truth
 

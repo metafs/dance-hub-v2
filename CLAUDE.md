@@ -1,4 +1,4 @@
-# DANCE HUB — Claude Code Instructions
+# p8ce — Claude Code Instructions
 
 Read `AGENTS.md` first. It contains the shared repository rules and source-of-truth map.
 

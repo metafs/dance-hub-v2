@@ -5,7 +5,7 @@
 
 ## Context
 
-DANCE HUB requires public SEO-friendly pages, organizer application flows, server-side data access, and a single TypeScript-oriented development environment suitable for Codex and Claude Code.
+p8ce requires public SEO-friendly pages, organizer application flows, server-side data access, and a single TypeScript-oriented development environment suitable for Codex and Claude Code.
 
 ## Decision
 

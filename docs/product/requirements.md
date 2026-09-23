@@ -1,4 +1,4 @@
-# DANCE HUB — Product Requirements
+# p8ce — Product Requirements
 
 **Status:** Draft
 **Version:** 0.5
@@ -6,7 +6,7 @@
 
 ## 1. Product Definition
 
-DANCE HUB は、ダンス・パフォーマンスの Event、Artist、Venue、Organization を構造化して蓄積し、現在の発見と将来のアーカイブ利用を両立する情報プラットフォームである。
+p8ce は、ダンス・パフォーマンスの Event、Artist、Venue、Organization を構造化して蓄積し、現在の発見と将来のアーカイブ利用を両立する情報プラットフォームである。
 
 ## 2. Product Goals
 

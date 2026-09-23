@@ -1,4 +1,4 @@
-# DANCE HUB — Initial release breakdown
+# p8ce — Initial release breakdown
 
 **Status:** Superseded for remaining work by `docs/plans/mvp-implementation-roadmap.md` v0.4
 **Last Updated:** 2026-09-21

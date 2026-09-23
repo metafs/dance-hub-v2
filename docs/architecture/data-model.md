@@ -1,4 +1,4 @@
-# DANCE HUB — Data Model
+# p8ce — Data Model
 
 **Status:** Draft
 **Version:** 0.3

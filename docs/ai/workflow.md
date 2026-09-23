@@ -1,4 +1,4 @@
-# DANCE HUB — AI Development Workflow
+# p8ce — AI Development Workflow
 
 **Status:** Draft
 
