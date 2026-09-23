@@ -112,16 +112,16 @@ npm に publish していないため実害は小さいが、`pnpm` のワーク
 
 ### ドキュメント
 
-- [ ] `README.md` — 読み「ペイス」と一行説明を併記する
-- [ ] `ARCHITECTURE.md`
-- [ ] `AGENTS.md` — エージェントが読む正本。優先度最高
-- [ ] `CLAUDE.md`
-- [ ] `docs/product/` — `requirements.md`、`scope.md`、`glossary.md`、`listing-policy.md`
-- [ ] `docs/architecture/` — `auth.md`、`code-structure.md`、`data-model.md`、`deployment.md`、`media.md`、`observability.md`、`security.md`、`testing.md`
-- [ ] `docs/plans/` — `mvp-implementation-roadmap.md`、`initial-release-breakdown.md`
-- [ ] `docs/ai/` — `paperthin.md`、`workflow.md`、`evals.md`
-- [ ] `docs/ops/` — `pull-request-labels.md`、`runbooks/README.md`（見出しのみ。バケット名は上記2に従い残す）
-- [ ] `docs/adr/` — 0001、0003、0010、0011、0012（native runtime validation）
+- [x] `README.md` — 読み「ペイス」と一行説明を併記する
+- [x] `ARCHITECTURE.md`
+- [x] `AGENTS.md` — エージェントが読む正本。優先度最高
+- [x] `CLAUDE.md`
+- [x] `docs/product/` — `requirements.md`、`scope.md`、`glossary.md`、`listing-policy.md`
+- [x] `docs/architecture/` — `auth.md`、`code-structure.md`、`data-model.md`、`deployment.md`、`media.md`、`observability.md`、`security.md`、`testing.md`
+- [x] `docs/plans/` — `mvp-implementation-roadmap.md`、`initial-release-breakdown.md`
+- [x] `docs/ai/` — `paperthin.md`、`workflow.md`、`evals.md`
+- [x] `docs/ops/` — `pull-request-labels.md`、`runbooks/README.md`（見出しのみ。バケット名は上記2に従い残す）
+- [x] `docs/adr/` — 0001、0003、0010、0011、0012（native runtime validation）
 
 ### ADR の扱い
 
@@ -139,9 +139,9 @@ UI と metadata の置換（M0-2）は、UI の作り直し（ADR-0022）と同�
 - [x] `src/features/events/components/public-event-page.tsx`
 - [x] `src/features/moderation/components/` — `application-review-queue.tsx`、`entity-review-page.tsx`、`event-review-queue.tsx`
 - [x] `src/features/shared-entities/components/` — `public-artist-page.tsx`、`public-venue-page.tsx`
-- [ ] `src/lib/env.test.ts` — `dancehub.example` → `p8ce.example`
-- [ ] `package.json` の `name`
-- [ ] `.env.example` のコメント
+- [x] `src/lib/env.test.ts` — `dancehub.example` → `p8ce.example`
+- [x] `package.json` の `name`
+- [x] `.env.example` のコメント
 
 `src/app/layout.tsx` のメタデータは公開 `<title>` と OGP に出る。置換後に表示を確認する。
 

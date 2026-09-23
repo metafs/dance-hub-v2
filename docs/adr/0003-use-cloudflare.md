@@ -5,7 +5,7 @@
 
 ## Context
 
-DANCE HUB will be public-content and media heavy. The project also wants an infrastructure setup that remains cost-conscious and works well for distributed content delivery.
+p8ce will be public-content and media heavy. The project also wants an infrastructure setup that remains cost-conscious and works well for distributed content delivery.
 
 ## Decision
 

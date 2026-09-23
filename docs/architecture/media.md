@@ -1,4 +1,4 @@
-# DANCE HUB - Media Architecture
+# p8ce - Media Architecture
 
 **Status:** Draft  
 **Last Updated:** 2026-09-20

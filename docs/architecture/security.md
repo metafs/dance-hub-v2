@@ -1,4 +1,4 @@
-# DANCE HUB — Security Rules
+# p8ce — Security Rules
 
 **Status:** Draft
 **Version:** 0.2

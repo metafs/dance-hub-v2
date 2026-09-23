@@ -1,4 +1,4 @@
-# DANCE HUB — Product Scope
+# p8ce — Product Scope
 
 **Status:** Draft
 **Version:** 0.3

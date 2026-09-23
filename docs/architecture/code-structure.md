@@ -1,4 +1,4 @@
-# DANCE HUB - Code Structure and Dependency Boundaries
+# p8ce - Code Structure and Dependency Boundaries
 
 **Status:** Draft  
 **Last Updated:** 2026-09-03  

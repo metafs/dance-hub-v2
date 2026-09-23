@@ -1,4 +1,4 @@
-# DANCE HUB — 掲載基準 / Listing Policy
+# p8ce — 掲載基準 / Listing Policy
 
 **Status:** Draft
 **Version:** 0.2

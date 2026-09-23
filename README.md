@@ -1,6 +1,6 @@
-# DANCE HUB
+# p8ce
 
-DANCE HUB is a structured information platform for dance and performance events, artists, organizations, and venues. Public Event data is released through reviewed revisions.
+p8ce (ペイス, read as "pace") is a structured information platform for dance and performance events, artists, organizations, and venues. Public Event data is released through reviewed revisions.
 
 ## Documentation
 

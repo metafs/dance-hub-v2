@@ -5,7 +5,7 @@
 
 ## Context
 
-DANCE HUB needs location filtering without conflating a physical Venue with a geographic classification. The MVP will start with Tokyo and Kanagawa.
+p8ce needs location filtering without conflating a physical Venue with a geographic classification. The MVP will start with Tokyo and Kanagawa.
 
 ## Decision
 

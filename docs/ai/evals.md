@@ -1,4 +1,4 @@
-# DANCE HUB — Agent Evaluation Log
+# p8ce — Agent Evaluation Log
 
 Use this file (or a future structured replacement) to compare Codex and Claude Code on actual project tasks rather than general impressions.
 

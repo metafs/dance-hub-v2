@@ -1,4 +1,4 @@
-# DANCE HUB - Observability
+# p8ce - Observability
 
 **Status:** Draft  
 **Last Updated:** 2026-09-23

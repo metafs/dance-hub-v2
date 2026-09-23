@@ -1,4 +1,4 @@
-# DANCE HUB — Testing Strategy
+# p8ce — Testing Strategy
 
 **Status:** Draft
 **Version:** 0.2

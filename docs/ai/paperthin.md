@@ -1,11 +1,11 @@
-# Paperthin Design Patterns for DANCE HUB
+# Paperthin Design Patterns for p8ce
 
 **Status:** Draft
 **Upstream:** [LilMGenius/paperthin](https://github.com/LilMGenius/paperthin)
 
 ## Purpose
 
-Paperthin is an upstream collection of agent skills. DANCE HUB does not install or
+Paperthin is an upstream collection of agent skills. p8ce does not install or
 copy those skills verbatim. This document selects six of their design patterns and
 adapts them to the repository's existing AI workflow.
 
@@ -54,7 +54,7 @@ an upstream Skill is installed or callable in the repository.
   “appropriately.”
 - **Do not use when:** Relevant repository context resolves the wording. Do not create
   confirmation questions merely to demonstrate that a check occurred.
-- **DANCE HUB example:** Before changing the Event–Artist relationship, distinguish
+- **p8ce example:** Before changing the Event–Artist relationship, distinguish
   Artist, Organization, and Credit using the glossary and list the affected requirement
   IDs; ask only about ambiguity that those sources cannot resolve.
 - **Behavior:** Read-only. The result can inform a plan but does not edit an artifact.
@@ -67,7 +67,7 @@ an upstream Skill is installed or callable in the repository.
   verification.
 - **Do not use when:** It would replace required validation with agent prose, an
   invented command, or an upstream-specific check.
-- **DANCE HUB example:** Inspect the diff, run the relevant focused checks, then use
+- **p8ce example:** Inspect the diff, run the relevant focused checks, then use
   `pnpm check` for fast validation and `pnpm verify` for full validation when those
   scripts exist.
 - **Behavior:** Primarily read/execute. It may expose defects that require a separate,
@@ -84,7 +84,7 @@ an upstream Skill is installed or callable in the repository.
   the current change.
 - **Do not use when:** Cleanup is unrelated to the feature PR, or “cleaner” would mean
   redesigning settled behavior.
-- **DANCE HUB example:** After several revisions to an Event publishing plan, remove
+- **p8ce example:** After several revisions to an Event publishing plan, remove
   obsolete alternatives from that plan while preserving the approved Organization
   approval requirement.
 - **Behavior:** Mutating and narrowly scoped. Establish the current authoritative
@@ -98,7 +98,7 @@ an upstream Skill is installed or callable in the repository.
   copies have already appeared.
 - **Do not use when:** Similar text serves distinct scopes, or authority is unclear.
   Never silently merge contradictory claims.
-- **DANCE HUB example:** If Artist ownership rules are re-explained in prompts, replace
+- **p8ce example:** If Artist ownership rules are re-explained in prompts, replace
   those copies with references to the product requirement and accepted ADR rather than
   choosing new wording in every prompt.
 - **Behavior:** Begin with a read-only audit that identifies copies, the proposed
@@ -114,7 +114,7 @@ an upstream Skill is installed or callable in the repository.
   Cloudflare/Supabase architecture, storage choice, or domain-model decision.
 - **Do not use when:** Reviewing routine implementation, generating a list of generic
   risks, or replacing the independent secondary-agent review.
-- **DANCE HUB example:** For a proposal to duplicate Venue names on Event rows, object
+- **p8ce example:** For a proposal to duplicate Venue names on Event rows, object
   that it breaks referential integrity and test the claimed performance need with one
   representative query before accepting denormalization.
 - **Behavior:** Read-only analysis. It recommends a minimal validation; it does not
@@ -123,14 +123,14 @@ an upstream Skill is installed or callable in the repository.
 ### `feynman` — test whether an ADR candidate can be explained
 
 - **Purpose:** Check that an architecture decision's problem, mechanism, alternatives,
-  trade-offs, and DANCE HUB-specific reason can be explained plainly before it becomes
+  trade-offs, and p8ce-specific reason can be explained plainly before it becomes
   an ADR.
 - **Use when:** Deliberately requested for a decision that may require a new or updated
   ADR.
 - **Do not use when:** A decision is already governed by an accepted ADR, or the only
   justification is “it feels right” or “it is common practice.” Those are gaps to
   resolve, not explanations to polish.
-- **DANCE HUB example:** Before recording a media storage choice, explain why the
+- **p8ce example:** Before recording a media storage choice, explain why the
   current workload needs it, how authorization and lifecycle work, what simpler option
   was rejected, and what evidence would cause reconsideration.
 - **Behavior:** Read-only analysis. ADR creation or architecture changes remain a

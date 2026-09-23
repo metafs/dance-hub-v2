@@ -4,7 +4,7 @@
 
 ## Context
 
-DANCE HUB requires its public Supabase URL and publishable key to be present and valid before serving requests. The application currently has no validation dependency, and this cross-cutting configuration check has two required scalar values.
+p8ce requires its public Supabase URL and publishable key to be present and valid before serving requests. The application currently has no validation dependency, and this cross-cutting configuration check has two required scalar values.
 
 ## Decision
 
