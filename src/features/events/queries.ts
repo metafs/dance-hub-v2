@@ -140,7 +140,7 @@ export async function getPublicEventPageData(eventId: string) {
       .order("starts_at"),
     supabase
       .from("event_artists")
-      .select("role, display_order, artist_id, artists(id, name)")
+      .select("role, display_order, artist_id, artists(id, name, artist_type)")
       .eq("event_revision_id", event.published_revision_id)
       .order("display_order"),
     supabase

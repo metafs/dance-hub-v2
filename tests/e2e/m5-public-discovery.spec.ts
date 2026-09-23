@@ -12,6 +12,7 @@ const festivalChild = "フィクスチャ フェスティバル参加公演";
 const pastEvent = "フィクスチャ 過去公演";
 const cancelledEvent = "フィクスチャ 中止公演";
 
+const multiVenueId = "e0000001-0000-4000-8000-000000000001";
 const festivalId = "e0000003-0000-4000-8000-000000000003";
 const cancelledId = "e0000006-0000-4000-8000-000000000006";
 const artistId = "cccccccc-cccc-4ccc-8ccc-cccccccccccc";
@@ -104,6 +105,42 @@ test("a Visitor reaches Events through Artist and Venue pages", async ({ page })
   // The Venue relationship is expressed through Schedules, so this Venue lists
   // the Event whose second Schedule is there.
   await expect(page.getByRole("link", { name: multiVenue })).toBeVisible();
+});
+
+test("search engines read the approved Event as structured data", async ({ page }) => {
+  // DH-26: one schema.org Event per Schedule, so each performance keeps its
+  // own date and Venue, with the approved price and credited Artists.
+  await page.goto(`/events/${multiVenueId}`);
+  const performances = JSON.parse(
+    await page.locator('script[type="application/ld+json"]').textContent() ?? "null",
+  );
+  expect(performances).toHaveLength(2);
+  for (const performance of performances) {
+    expect(performance).toMatchObject({
+      "@type": "Event",
+      name: multiVenue,
+      eventStatus: "https://schema.org/EventScheduled",
+      organizer: { name: "Fixture Dance Organization" },
+      offers: [{ price: "3500", priceCurrency: "JPY" }],
+      contributor: [{ name: "Fixture Dance Artist" }],
+    });
+  }
+  expect(performances.map((performance: { location: { address: { addressRegion: string } } }) =>
+    performance.location.address.addressRegion).sort()).toEqual(["東京都", "神奈川県"]);
+
+  // A cancelled Event keeps its markup and says so, instead of vanishing.
+  await page.goto(`/events/${cancelledId}`);
+  const cancelled = JSON.parse(
+    await page.locator('script[type="application/ld+json"]').textContent() ?? "null",
+  );
+  expect(cancelled).toMatchObject({ name: cancelledEvent, eventStatus: "https://schema.org/EventCancelled" });
+
+  // A Festival takes its dates from its children and lists them.
+  await page.goto(`/events/${festivalId}`);
+  const festivalData = JSON.parse(
+    await page.locator('script[type="application/ld+json"]').textContent() ?? "null",
+  );
+  expect(festivalData).toMatchObject({ name: festival, subEvent: [{ name: festivalChild }] });
 });
 
 test("nothing unapproved is reachable anonymously", async ({ page }) => {
