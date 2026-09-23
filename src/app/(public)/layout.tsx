@@ -13,6 +13,7 @@ const navigation: readonly NavItem[] = [
 const footerNavigation: readonly NavItem[] = [
   ...navigation,
   { href: "/workspace", label: "主催者の方へ" },
+  { href: "/listing-policy", label: "掲載基準" },
   { href: "/listing-requests", label: "掲載の削除・修正を依頼" },
 ];
 
