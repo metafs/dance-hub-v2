@@ -9,7 +9,7 @@
 	],
 	"observability": {
 		// Workers Logs keeps console output, including the one-line JSON record
-		// instrumentation.ts writes for every server request error (ADR-0023).
+		// src/instrumentation.ts writes for every server request error (ADR-0023).
 		"enabled": true,
 		"head_sampling_rate": 1
 	},
