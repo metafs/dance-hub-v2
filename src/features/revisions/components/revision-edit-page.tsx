@@ -14,7 +14,7 @@ import { AppPageHead } from "@/ui/page-head";
 import { Section } from "@/ui/section";
 import { StateLabel, type StateLabelTone } from "@/ui/state-label";
 
-import { EventRevisionForm } from "@/components/event-revision-form";
+import { EventRevisionForm } from "./event-revision-form";
 import { createNextEventRevisionDraft } from "@/features/revisions/commands";
 import {
   requestEventCancellation,

@@ -1,4 +1,4 @@
-import type { TicketOfferDraft } from "./ticket-offers";
+import type { TicketOfferDraft } from "./schema";
 
 export type EventRevisionField =
   | "title" | "description" | "eventType" | "applicationDeadline"

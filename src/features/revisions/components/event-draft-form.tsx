@@ -2,8 +2,8 @@
 
 import { useActionState, useRef } from "react";
 
-import { createEventDraft } from "@/app/workspace/[organizationId]/events/actions";
-import { eventRevisionFieldDefaults, initialEventRevisionActionState } from "@/lib/events/revision-action-state";
+import { createEventDraftWithState } from "@/features/revisions/commands";
+import { eventRevisionFieldDefaults, initialEventRevisionActionState } from "@/features/revisions/action-state";
 import { useFocusFirstError } from "@/ui/use-focus-first-error";
 
 import { EventFields } from "./event-fields";
@@ -16,7 +16,7 @@ type Props = {
 };
 
 export function EventDraftForm(props: Props) {
-  const [state, action, pending] = useActionState(createEventDraft, initialEventRevisionActionState);
+  const [state, action, pending] = useActionState(createEventDraftWithState, initialEventRevisionActionState);
   const defaults = state.values ? eventRevisionFieldDefaults(state.values) : undefined;
 
   const formRef = useRef<HTMLFormElement>(null);

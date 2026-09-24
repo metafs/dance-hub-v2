@@ -1,17 +1,6 @@
-import { formText } from "../forms/input";
+import { formText } from "@/lib/forms/input";
 
-export const ticketPriceTypes = [
-  "fixed",
-  "free",
-  "range",
-  "donation",
-  "pay_what_you_can",
-  "sliding_scale",
-  "dynamic",
-  "included",
-] as const;
-
-export type TicketPriceType = (typeof ticketPriceTypes)[number];
+import { ticketPriceTypes, type TicketPriceType } from "./schema";
 
 export type TicketOfferInput = {
   price_type: TicketPriceType;
@@ -22,17 +11,6 @@ export type TicketOfferInput = {
   max_amount_minor: string | number | null;
   notes: string | null;
   display_order: number;
-};
-
-export type TicketOfferDraft = {
-  key: string;
-  priceType: TicketPriceType;
-  label?: string | null;
-  currency?: string | null;
-  amountMinor?: string | number | null;
-  minAmountMinor?: string | number | null;
-  maxAmountMinor?: string | number | null;
-  notes?: string | null;
 };
 
 const priceTypeSet = new Set<string>(ticketPriceTypes);

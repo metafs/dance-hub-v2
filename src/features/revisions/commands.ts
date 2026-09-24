@@ -14,8 +14,8 @@ import {
   validateMainImageUpload,
 } from "@/features/media/schema";
 import { putMainImage } from "@/features/media/storage";
-import type { EventRevisionActionState } from "@/lib/events/revision-action-state";
-import { parseEventRevisionInput, readEventRevisionFormValues } from "@/lib/events/revision-input";
+import type { EventRevisionActionState } from "@/features/revisions/action-state";
+import { parseEventRevisionInput, readEventRevisionFormValues } from "@/features/revisions/input";
 
 type OrganizationSupabase = Awaited<
   ReturnType<typeof requireOrganizationCapability>

@@ -4,7 +4,7 @@ import { requireOrganizationCapability } from "@/features/organizations/policy";
 import { getRevisionListData } from "@/features/revisions/queries";
 import { AppPageHead } from "@/ui/page-head";
 
-import { EventDraftForm } from "@/components/event-draft-form";
+import { EventDraftForm } from "./event-draft-form";
 
 export default async function EventNewPage({
   params,
