@@ -7,6 +7,7 @@ import { formatTokyoDate } from "@/lib/datetime";
 import { EmptyState } from "@/ui/empty-state";
 import { AppPageHead } from "@/ui/page-head";
 import { Mark, StateLabel } from "@/ui/state-label";
+import { TableFrame } from "@/ui/table-frame";
 
 type RevisionRow = {
   id: string;
@@ -75,7 +76,7 @@ export default async function EventListPage({
       ))}
 
       {events.length ? (
-        <div className="table-wrap">
+        <TableFrame label="Event">
           <table className="table">
             <thead>
               <tr>
@@ -117,7 +118,7 @@ export default async function EventListPage({
               ))}
             </tbody>
           </table>
-        </div>
+        </TableFrame>
       ) : (
         <EmptyState>まだEventがありません。「新しいEventを作成」から下書きを作ります。</EmptyState>
       )}

@@ -12,6 +12,7 @@ import { Notice } from "@/ui/notice";
 import { AppPageHead } from "@/ui/page-head";
 import { Section } from "@/ui/section";
 import { StateLabel } from "@/ui/state-label";
+import { TableFrame } from "@/ui/table-frame";
 
 const errorMessages: Record<string, string> = {
   "organization-access-denied": "このOrganizationへアクセスする権限がありません。",
@@ -81,7 +82,7 @@ export default async function WorkspaceIndex({
 
       <Section id="workspace-applications" rule size="small" title="申請状況">
         {applications?.length ? (
-          <div className="table-wrap">
+          <TableFrame label="申請状況">
             <table className="table">
               <thead>
                 <tr>
@@ -104,7 +105,7 @@ export default async function WorkspaceIndex({
                 ))}
               </tbody>
             </table>
-          </div>
+          </TableFrame>
         ) : (
           <EmptyState>申請履歴はありません。</EmptyState>
         )}

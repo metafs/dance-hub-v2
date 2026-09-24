@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import CalendarPage from "@/features/discovery/components/calendar-page";
 
 export const metadata: Metadata = {
-  title: "Calendar",
+  title: "カレンダー",
   description: "東京都・神奈川県のダンスEventを開催日から探せます。",
 };
 

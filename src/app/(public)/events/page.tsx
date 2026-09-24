@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import EventListPage from "@/features/discovery/components/event-list-page";
 
 export const metadata: Metadata = {
-  title: "Event",
+  title: "探す",
   description: "東京都・神奈川県のダンスEventを日付、地域、種別で探せます。",
 };
 
