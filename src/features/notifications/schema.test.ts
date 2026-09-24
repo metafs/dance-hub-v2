@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { reviewNotificationHref, reviewNotificationLabel } from "./review-notifications";
+import { reviewNotificationHref, reviewNotificationLabel } from "./schema";
 
 describe("review notifications", () => {
   it("gives every outcome a user-facing label", () => {

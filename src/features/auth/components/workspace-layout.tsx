@@ -2,16 +2,13 @@ import Link from "next/link";
 
 import { logout } from "@/features/auth/commands";
 import { requireUser } from "@/features/auth/policy";
+import { countUnreadReviewNotifications } from "@/features/notifications/queries";
 import { Logotype } from "@/ui/logotype";
 
 /** The frame of every signed-in Organizer page, with the unread notice count. */
 export default async function WorkspaceLayout({ children }: { children: React.ReactNode }) {
   const { supabase, user } = await requireUser();
-  const { count: unreadCount, error } = await supabase
-    .from("review_notifications")
-    .select("id", { count: "exact", head: true })
-    .eq("recipient_user_id", user.id)
-    .is("read_at", null);
+  const { count: unreadCount, error } = await countUnreadReviewNotifications(supabase, user.id);
 
   if (error) {
     console.error("Unread review notification count could not be loaded.", error);
