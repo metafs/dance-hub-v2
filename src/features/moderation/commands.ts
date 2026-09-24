@@ -51,9 +51,12 @@ export async function reviewCandidate(formData: FormData) {
   const candidateId = String(formData.get("candidateId") ?? "");
   const reason = String(formData.get("reason") ?? "").trim();
   const survivorId = String(formData.get("survivorId") ?? "");
-  if (!candidateId || !reason || !["artist", "venue"].includes(kind)) {
+  if (!candidateId || !reason || !["artist", "venue"].includes(kind) || !["activate", "reject", "merge"].includes(action)) {
     redirect("/admin/entities?error=invalid-review");
   }
+  // Anything but activate or reject falls through to a merge below, so an
+  // unknown action or a merge without a survivor stops here.
+  if (action === "merge" && !survivorId) redirect("/admin/entities?error=invalid-review");
   const { supabase } = await requirePlatformAdmin();
   const { error } = kind === "artist"
     ? action === "activate"
