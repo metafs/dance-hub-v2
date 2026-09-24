@@ -28,7 +28,7 @@ importers:
         version: 4.5.4
     devDependencies:
       '@axe-core/playwright':
-        specifier: ^4
+        specifier: ^4.13.0
         version: 4.13.0(playwright-core@1.62.1)
       '@opennextjs/cloudflare':
         specifier: ^1.20.5
