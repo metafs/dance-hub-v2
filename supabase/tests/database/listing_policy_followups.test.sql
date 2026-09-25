@@ -62,7 +62,7 @@ select throws_ok(
 );
 
 insert into public.listing_requests (id, event_id, kind, requester_contact, message)
-values ('12121212-cccc-4ccc-8ccc-000000000001', '12121212-aaaa-4aaa-8aaa-000000000001', 'withdrawal', 'private@example.com', 'Do not expose this contact');
+values ('12121212-cccc-4ccc-8ccc-000000000001', 'e0000001-0000-4000-8000-000000000001', 'withdrawal', 'private@example.com', 'Do not expose this contact');
 set local role authenticated;
 select set_config('request.jwt.claim.sub', '11111111-1111-4111-8111-111111111111', true);
 select is(
