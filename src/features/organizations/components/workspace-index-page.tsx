@@ -23,7 +23,7 @@ const errorMessages: Record<string, string> = {
 export default async function WorkspaceIndex({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string; submitted?: string }>;
+  searchParams: Promise<{ error?: string; submitted?: string; passwordSet?: string }>;
 }) {
   const params = await searchParams;
   const { supabase, user } = await requireUser();
@@ -50,6 +50,9 @@ export default async function WorkspaceIndex({
       ) : null}
       {params.submitted ? (
         <Notice tone="success">Organization申請を提出しました。</Notice>
+      ) : null}
+      {params.passwordSet ? (
+        <Notice tone="success">パスワードを保存しました。次回からこのパスワードでログインできます。</Notice>
       ) : null}
 
       <Section

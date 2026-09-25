@@ -1,0 +1,7 @@
+<!-- Password reset (ADR-0025). Copy the same text into the hosted project's Email Templates. -->
+<p>p8ce（ペイス）のパスワードの再設定を受け付けました。</p>
+<p>次のリンクから、新しいパスワードを決めてください。</p>
+<p><a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&amp;type=recovery">パスワードを決め直す</a></p>
+<p>リンクには有効期限があります。切れた場合は、ログイン画面からもう一度依頼してください。</p>
+<p>再設定を依頼していない場合は、このメールを破棄してください。パスワードは変わりません。</p>
+<p>p8ce ／ ペイス<br>東京都・神奈川県のダンスとパフォーマンスを探す</p>

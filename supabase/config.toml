@@ -10,3 +10,16 @@ major_version = 17
 enabled = true
 site_url = "http://localhost:3000"
 additional_redirect_urls = ["http://127.0.0.1:3000"]
+# During the closed beta an account is created only by a Platform Admin's
+# invitation (ADR-0025). Invitations work with sign-up disabled.
+enable_signup = false
+
+# Every account email links to /auth/confirm (ADR-0025). The hosted project
+# needs the same subjects and text in its Email Templates.
+[auth.email.template.invite]
+subject = "p8ce（ペイス）への招待"
+content_path = "./supabase/templates/invite.html"
+
+[auth.email.template.recovery]
+subject = "p8ce（ペイス）パスワードの再設定"
+content_path = "./supabase/templates/recovery.html"

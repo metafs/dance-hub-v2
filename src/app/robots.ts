@@ -4,9 +4,10 @@ import { siteUrl } from "@/lib/env";
 
 /**
  * Only the public discovery surface is crawlable. The Organizer workspace, the
- * Platform Admin queues, and the login route hold non-public review data, so
- * they are disallowed here in addition to being protected by server-side
- * authorization and RLS.
+ * Platform Admin queues, and the login route hold non-public review data, and
+ * the account pages (password reset, the email-link landing) have nothing to
+ * index, so they are disallowed here in addition to being protected by
+ * server-side authorization and RLS.
  */
 export default function robots(): MetadataRoute.Robots {
   const origin = siteUrl();
@@ -15,7 +16,7 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: "*",
       allow: "/",
-      disallow: ["/admin", "/workspace", "/login"],
+      disallow: ["/admin", "/workspace", "/login", "/account", "/password", "/auth"],
     },
     ...(origin ? { sitemap: `${origin}/sitemap.xml` } : {}),
   };
