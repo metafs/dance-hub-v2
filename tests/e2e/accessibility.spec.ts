@@ -177,3 +177,21 @@ test("field borders keep 3:1 against their surface", async ({ page }) => {
   await page.goto(`/workspace/${organizationId}/events/new`);
   expect(await fieldBorderContrast(page, "input[name=title]")).toBeGreaterThanOrEqual(3);
 });
+
+// Between phone and wide desktop, a row's fixed columns once left the title no
+// room at all, and it overlapped the venue beside it. A list too narrow for
+// them switches to the stacked arrangement (docs/design/ui.md).
+test("listing rows keep room for the title at every width", async ({ page }) => {
+  test.setTimeout(180_000);
+  const paths = ["/", "/events", "/open-calls", "/venues/dddddddd-dddd-4ddd-8ddd-dddddddddddd"];
+  for (const width of [760, 900, 1000, 1100, 1200]) {
+    await page.setViewportSize({ width, height: 900 });
+    for (const path of paths) {
+      await page.goto(path);
+      const narrowest = await page.evaluate(() => Math.min(
+        ...[...document.querySelectorAll(".row-main")].map((main) => main.getBoundingClientRect().width),
+      ));
+      expect(narrowest, `title column on ${path} at ${width}px`).toBeGreaterThanOrEqual(96);
+    }
+  }
+});
