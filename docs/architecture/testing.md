@@ -25,7 +25,7 @@ Once tooling is installed:
 
 - `pnpm check`: lint, typecheck, and unit tests.
 - `pnpm verify:app`: `check` and the production build.
-- `pnpm verify:database`: reset and test the running local database, then run critical E2E.
+- `pnpm verify:database`: reset and test the running local database, then run critical E2E. In CI the E2E run builds the application and tests `next start`, the production server; locally it starts `pnpm dev` or reuses a running server.
 - `pnpm verify`: the complete `verify:app` and `verify:database` contract.
 
 Database verification assumes local Supabase is running and the application environment points to it. CI installs the browser and exports the local Supabase URL and publishable key before invoking `verify:database`.

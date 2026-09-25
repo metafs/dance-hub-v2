@@ -137,9 +137,7 @@ select set_eq(
       and has_function_privilege('anon', procedure.oid, 'EXECUTE')
   $$,
   array[
-    'is_current_published_event_revision(uuid)',
-    'is_organization_member(uuid,uuid)',
-    'is_platform_admin(uuid)'
+    'is_current_published_event_revision(uuid)'
   ],
   'anon can call only the helpers the public read policies evaluate'
 );

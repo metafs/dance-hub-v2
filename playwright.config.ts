@@ -14,9 +14,11 @@ export default defineConfig({
     trace: "retain-on-failure",
   },
   webServer: {
-    command: "pnpm dev",
+    // CI tests the production build, which is what ships; locally the
+    // development server keeps the edit-and-rerun loop fast.
+    command: process.env.CI ? "pnpm build && pnpm start" : "pnpm dev",
     reuseExistingServer: !process.env.CI,
-    timeout: 120_000,
+    timeout: process.env.CI ? 300_000 : 120_000,
     url: "http://127.0.0.1:3000",
   },
   projects: [
