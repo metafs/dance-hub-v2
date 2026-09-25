@@ -1,14 +1,24 @@
 # p8ce — MVP Implementation Roadmap
 
 **Status:** Active
-**Version:** 0.6
-**Last Updated:** 2026-09-24
+**Version:** 0.7
+**Last Updated:** 2026-09-25
 
 ## MVP outcome
 
 p8ce の MVP は、東京都・神奈川県の Event を一般ユーザーが探索でき、承認済み Organization の Member が Event を下書き・審査提出し、Platform Admin の承認後に公開できる状態とする。公開後の変更と中止も審査対象とする。中止 Event は `cancelled` として公開を維持し、主催者からの取り下げ要請には `withdrawn` への遷移で応じる（ADR-0018）。掲載可否の条文は `docs/product/listing-policy.md` を正本とする。
 
 初期在庫は Organizer の自己申請に加え、運営による公開情報の代理入力（listing policy C-5〜C-8）で確保する。代理入力の開始には、取り下げ要請の受付窓口が先に稼働していることを条件とする。
+
+## Changes from v0.6
+
+- **状態表を `main` @ `eb110c4` に合わせた。** #75（DEC-R7）、#76（v0.6）、#77（DH-13）がマージされ、DH-13 が完了した。
+- **2026-09-24 にコードベースを監査した。** 判断の要らない修正を 5 本の PR（In review）にし、判断が要るものを DEC-R9〜R12 に加えた。
+- **2026-09-25 に DEC-R9・R10 を決定した。** アカウントは β の間は招待で作り、一般公開の前に自由登録を加える（ADR-0025、`feature/organizer-invitations`）。入力欄の枠は 3:1 に濃くし、本文へスキップを付ける（`docs/design/ui.md`、`fix/dh13-followups`）。一般公開までに要るものとして DH-34（自由登録）と DEC-R13（SMTP）を加えた。
+- ノート PC の幅で一覧の行のタイトルが潰れ、会場と重なっていた。`fix/dh13-followups` で直す。
+- **`main` の Cloudflare production build が失敗していた。** app が `src/` にあるのに `proxy.ts` と `instrumentation.ts` がリポジトリ直下にあり、Next.js はどちらも読んでいなかった。proxy が動かないため、Server Component で更新したセッションが保存されず、OpenNext の bundle も失敗していた。`fix/proxy-and-login-return` で `src/` へ移し、CI で Worker の bundle と workerd での起動を確かめる。DH-14 の前提である。
+- **Email 通知は MVP の範囲外のまま**（Deferred）。主催者への連絡は runbook に従う（M8）。
+- 監査で見つかり、まだ扱っていないもの：料金の入力を読む関数が 2 つあり（保存に使う `ticket-offers.ts` と、テストだけが使う `revisions/schema.ts`）、受け付ける金額の上限が違う。どちらを正とするかを決めてから片方を消す。
 
 ## Changes from v0.5
 
@@ -34,13 +44,13 @@ p8ce の MVP は、東京都・神奈川県の Event を一般ユーザーが探
 - **改名（ADR-0021）を M0 として最優先に置いた。** Event の恒久 URL と sitemap を公開する前に完了させる。
 - **法務・公開ページを M7、初期在庫とクローズドβを M8 として独立させた。** M6 の技術的な release gate と、運用上の公開条件を分けて追跡する。
 
-## Verified current state (2026-09-24, `main` @ `2921509`)
+## Verified current state (2026-09-24, `main` @ `eb110c4`)
 
 plan doc の Status 表記ではなく、コードを読んで確認した状態である。「In review」は未マージのブランチである。
 
 | 領域 | 状態 | 根拠 |
 | --- | --- | --- |
-| M1〜M4 | 完了 | `supabase/migrations/` 21 本、`supabase/tests/database/` 10 本、`tests/e2e/m2`〜`m4` |
+| M1〜M4 | 完了 | `supabase/migrations/` 22 本、`supabase/tests/database/` 11 本、`tests/e2e/m2`〜`m4` |
 | M4.1 Listing policy alignment | 完了 | `20260921000000_listing_policy_followups.sql` ほか 3 本、`/listing-requests`、`/admin/withdrawals`。DH-24 は取り下げ（DEC-R4） |
 | 代理入力の E2E | 完了 | #73（`tests/e2e/proxy-listing.spec.ts`） |
 | M5 Public discovery | 完了（本番ドメインでの構造化データ確認を除く） | `/events`、`/calendar`、`/open-calls`、`/artists/[id]`、`/venues/[id]`、`src/features/events/structured-data.ts`（#70） |
@@ -50,16 +60,24 @@ plan doc の Status 表記ではなく、コードを読んで確認した状態
 | Metadata / sitemap / robots | 完了 | `src/app/sitemap.ts`、`src/app/robots.ts` |
 | 改名 | 完了（M0-1 #71、M0-2 ADR-0022）。本番ドメインの設定は M0-3 | `docs/plans/rename-plan.md` |
 | 匿名ユーザーの権限（DH-16） | 完了（#72） | `20260923000000_restrict_anonymous_privileges.sql`、`anonymous_privileges.test.sql` |
-| ログイン済みユーザーからの審査メモ（DEC-R7） | In review | `fix/review-memo-members-only`（migration と `review_memo_visibility.test.sql`） |
+| ログイン済みユーザーからの審査メモ（DEC-R7） | 完了（#75） | `20260924000000_hide_review_memo_from_signed_in_users.sql`、`review_memo_visibility.test.sql` |
+| ログイン済みユーザーの権限全体 | In review | `fix/authenticated-privileges`（TRUNCATE 等の剥奪、`authenticated_privileges.test.sql`、membership helper が他人について答えない） |
+| セキュリティヘッダー・取り下げ要請の対象確認 | In review | `fix/public-surface-hardening`（`next.config.ts` の headers、公開 Event 以外への要請を DB で拒否） |
+| Accessibility QA（DH-13） | 完了（#77）。残り（入力欄の枠、本文へスキップ）は DEC-R10 で決定し In review | `tests/e2e/accessibility.spec.ts` |
+| Cloudflare production build | **`main` で失敗**。In review で修正 | `fix/proxy-and-login-return`（`src/proxy.ts`、`src/instrumentation.ts`、CI の Worker 起動確認） |
+| アカウント作成・パスワード再設定 | In review（DEC-R9、ADR-0025）。自由登録は DH-34 | `feature/organizer-invitations`（運営による招待、`/auth/confirm`、`/password/forgot`） |
+| 層構造（ADR-0013） | In review | `refactor/feature-boundaries`（`src/components/`・`src/lib/auth/` の撤去、app 層の DB 直呼びを feature へ、lint 境界の追加） |
+| CI | In review | `ci/production-e2e`（E2E を本番ビルドで実行、Node 24 の actions） |
+| DH-13 の残り（入力欄の枠・本文へスキップ・一覧の行の幅） | In review | `fix/dh13-followups`（DEC-R10） |
 | 掲載基準の公開ページ（DH-33） | 完了（#69） | `/listing-policy` |
 | 利用規約・プライバシーポリシー・運営者情報 | 未着手。記載要件は整理済み | `docs/product/legal-requirements.md`（#69） |
-| Error tracking（DH-28） | 完了（#68、ADR-0023 Accepted）。Workers Logs への出力は staging で確認 | `instrumentation.ts`、`src/lib/observability/` |
+| Error tracking（DH-28） | 完了（#68、ADR-0023 Accepted）。ただし `main` では instrumentation が Worker で読み込めない（上記）。Workers Logs への出力は staging で確認 | `instrumentation.ts`（In review で `src/` へ移動）、`src/lib/observability/` |
 | Runbooks | 完了（未リハーサル） | `docs/ops/runbooks/` 4 本 |
 | staging 環境 | 未着手 | `wrangler.jsonc` に `env` 定義なし |
 
 ## Decisions required before implementation
 
-エージェントが一般論で埋めてはならない。決定は ADR または該当 product doc に記録してから実装に入る。2026-09-24 時点で DEC-R8 以外は決定済みである。
+エージェントが一般論で埋めてはならない。決定は ADR または該当 product doc に記録してから実装に入る。2026-09-25 時点で DEC-R8、R11〜R13 が未決である。
 
 | ID | 決定事項 | ブロックするもの |
 | --- | --- | --- |
@@ -71,6 +89,12 @@ plan doc の Status 表記ではなく、コードを読んで確認した状態
 | DEC-R6 | **決定（2026-09-24）**：代理入力は週 20 件の審査上限に含めない（listing policy G-2） | — |
 | DEC-R7 | **決定（2026-09-24）**：審査メモはログイン済みの他団体メンバーに見せない。`fix/review-memo-members-only` で閉じる。公開実績のある Organization の全列を読める状態（DH-19 残件）は未判断 | — |
 | DEC-R8 | ADR 番号 0012 の重複を改番するか | なし（新規 ADR は 0025 から採番） |
+| DEC-R9 | **決定（2026-09-25）**：β の間は運営の招待でアカウントを作り、Supabase Auth の新規登録は止める。パスワード再設定は誰でも依頼できる。一般公開の前に自由登録（メール確認つき）を加える（DH-34）。ADR-0025 | — |
+| DEC-R10 | **決定（2026-09-25）**：入力欄の枠を 3:1 に濃くする（`--line-field` `#8e8e89`）。本文へスキップのリンクを付ける。`docs/design/ui.md` | — |
+| DEC-R11 | sitemap の範囲。DH-12 は公開 Event とトップのみと決めている。一覧・カレンダー・公募・掲載基準・Artist・Venue を加えるか | なし |
+| DEC-R12 | HSTS を subdomain と preload に広げるか。`script-src` の CSP を nonce 付きで入れるか（全ページが動的描画になる） | なし（現状はホスト単位の HSTS、nonce 不要な CSP のみ） |
+| DEC-R13 | 招待・パスワード再設定のメールを送る SMTP の提供元（ADR-0025）。Supabase 標準の送信は試験用 | DH-14 の Organizer journey、M8 のクローズドβ |
+| — | ファビコン：ロゴタイプから作った 4 案（正・反転 × 余白 2 種）から選ぶ | M0 の残り（rename plan の favicon） |
 
 ## Milestones
 
@@ -134,12 +158,12 @@ DH-20・DH-21・DH-23・DH-25 は相互に独立し、並列に着手できる�
 
 ### M6 — Release candidate
 
-**Status:** In progress — DH-16 (#72) and DH-28 (#68) complete; DH-13, DH-14, DH-29, DH-17 remain — detailed plan: `docs/plans/m6-release-candidate.md`
+**Status:** In progress — DH-13 (#77), DH-16 (#72) and DH-28 (#68) complete; DH-14, DH-29, DH-17 remain. DH-14 needs the Cloudflare build fix (`fix/proxy-and-login-return`) first — detailed plan: `docs/plans/m6-release-candidate.md`
 
 | ID | 内容 | area | 依存 |
 | --- | --- | --- | --- |
 | DH-13 | accessibility・keyboard / focus・form error・responsive QA と欠陥修正 | `frontend` | M4.1 |
-| DH-14 | Cloudflare staging 環境の定義とデプロイ。R2 bucket と edge cache header の検証。Organizer・Admin・Visitor の critical journey を staging で実行 | `infra` | M0-3 |
+| DH-14 | Cloudflare staging 環境の定義とデプロイ。R2 bucket と edge cache header の検証。Organizer・Admin・Visitor の critical journey を staging で実行。proxy によるセッション更新と instrumentation の出力を Worker 上で確認する（OpenNext は Node.js proxy を experimental としている） | `infra` | M0-3 |
 | DH-16 | 公開情報漏洩テストの拡張。anon の権限面全体（表・列・関数）を固定するテストと、見つかった露出の修正 | `db` `auth` | — |
 | DH-28 | Error tracking の最小構成と、`observability.md` の更新（Workers Logs への出力確認は DH-14） | `infra` | — |
 | DH-29 | runbook のリハーサル（deploy、migration rollback、media recovery、moderation）と結果の記録 | `infra` `docs` | DH-14 |
@@ -174,7 +198,8 @@ DH-20・DH-21・DH-23・DH-25 は相互に独立し、並列に着手できる�
 2. 代理入力した Event の主催者へ通知する（C-6）。MVP では runbook に従った手動連絡とし、自動 Email 通知は導入しない。
 3. 招待した Organizer 3〜5 団体でクローズドβを行い、申請から公開までの所要時間と G-1（3 営業日）の遵守を確認する。
 4. 週あたり審査件数を記録し、G-2 の上限（週 20 件）を超える広報を行わない。代理入力は上限に含めない（DEC-R6）。
-5. 一般公開。
+5. DH-34：誰でも登録できる画面（メールアドレスの確認つき）を加え、Supabase Auth の新規登録を再開する（ADR-0025 Decision 4）。
+6. 一般公開。
 
 **Done when:** β 期間中の審査がすべて G-1 内に処理され、一般公開時点の公開 Event 在庫と、以後の週次審査計画が記録されている。
 
@@ -183,12 +208,13 @@ DH-20・DH-21・DH-23・DH-25 は相互に独立し、並列に着手できる�
 ```text
 M0-3 ドメイン取得・DNS ─┬─ DH-26 を本番ドメインで確認
                          └─ DH-14 staging ─ DH-28 確認 / DH-29 ─┐
-DH-13 accessibility ─────────────────────────────────────────────┼─ DH-17 ─ M8 β ─ 一般公開
+DEC-R13 SMTP ────────────────────────────────────────────────────┼─ DH-17 ─ M8 β ─ DH-34 ─ 一般公開
 M7 DH-30〜32 条文（法的助言） ────────────────────────────────────┘
 ```
 
 - クリティカルパスは M0-3 → DH-14 → DH-17 → M8。
-- DH-13 と M7 の条文は、ドメインと独立に進められる。1 Issue = 1 Branch = 1 Worktree で扱う。
+- DEC-R13 と M7 の条文は、ドメインと独立に進められる。1 Issue = 1 Branch = 1 Worktree で扱う。
+- DH-14 は、Cloudflare build の修正（`fix/proxy-and-login-return`）のマージを待つ。
 - 代理入力（M8 の 1）は DH-21 の完了を待つ。M7 の完了を待たずに内部で入力を進めてよいが、公開は M7 完了後とする。
 
 各マイルストーンで `pnpm check` と Cloudflare production build を維持する。Organization Role の操作範囲は `docs/architecture/auth.md`、公開必須項目と日付規則は `docs/product/requirements.md` を正本とする。
