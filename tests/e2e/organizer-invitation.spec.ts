@@ -57,6 +57,10 @@ test("an invited Organizer chooses a password, and can reset it later", async ({
   // does not reveal whether an address has an account.
   await page.goto("/login");
   await page.getByRole("link", { name: "パスワードを忘れた場合" }).click();
+  // The login page has an email field too; fill the reset form only once it
+  // has replaced the login form, or the address lands in the old one.
+  await expect(page).toHaveURL(/\/password\/forgot$/);
+  await expect(page.getByRole("heading", { name: "パスワードの再設定" })).toBeVisible();
   const requestedAt = new Date();
   await page.getByLabel("メールアドレス").fill(email);
   await page.getByRole("button", { name: "再設定のリンクを送る" }).click();
