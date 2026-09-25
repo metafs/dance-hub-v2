@@ -32,7 +32,7 @@ MVP ロードマップ v0.4 の M7（DH-30〜DH-32）で公開する利用規約
 
 | 情報 | 取得する場面 | 保存先 | 公開 | 出典 |
 | --- | --- | --- | --- | --- |
-| メールアドレス、パスワード（ハッシュ） | 主催者・運営のログイン | Supabase Auth | しない | `src/features/auth/commands.ts` |
+| メールアドレス、パスワード（ハッシュ） | 運営からの招待、主催者・運営のログイン、パスワードの再設定 | Supabase Auth | しない | `src/features/auth/commands.ts`、ADR-0025 |
 | 責任者、連絡先、活動確認 URL | Organization 申請 | Supabase（`organization_applications`） | しない | `20260921000000_listing_policy_followups.sql`、listing-policy E-1〜E-3 |
 | 団体名 | Organization 申請 | Supabase（`organizations`） | 公開 Event を持つ団体の名称のみ | `20260919000000_public_organization_read.sql` |
 | 問い合わせ先（URL またはメール） | Event 申請 | Supabase（`event_revisions`） | 承認後に公開 | listing-policy B-5 |
@@ -41,7 +41,7 @@ MVP ロードマップ v0.4 の M7（DH-30〜DH-32）で公開する利用規約
 | 画像 | Event 申請 | Cloudflare R2（非公開バケット） | 承認後に配信経路からのみ | ADR-0016 |
 | エラー記録（メソッド、パス、エラー内容） | サーバーエラー発生時 | Cloudflare Workers Logs | しない | ADR-0023 |
 
-委託先として名前が挙がるもの: Supabase（データベース・認証）、Cloudflare（配信・画像保存・Turnstile・ログ）。
+委託先として名前が挙がるもの: Supabase（データベース・認証）、Cloudflare（配信・画像保存・Turnstile・ログ）、招待とパスワード再設定のメールを送る SMTP の提供元（未決、ADR-0025）。
 
 ## 運営者情報（DH-32）
 

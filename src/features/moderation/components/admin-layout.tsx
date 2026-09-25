@@ -10,6 +10,7 @@ const queues: readonly TabItem[] = [
   { href: "/admin/applications", label: "Organization申請" },
   { href: "/admin/entities", label: "出演者・会場" },
   { href: "/admin/withdrawals", label: "依頼・取り下げ" },
+  { href: "/admin/invitations", label: "招待" },
 ];
 
 /**

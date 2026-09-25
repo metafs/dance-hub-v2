@@ -35,6 +35,7 @@ GitHub Actions には deploy workflow が無い。`.github/workflows/` にある
 | `NEXT_PUBLIC_SITE_URL` | 任意 | 起動はする。sitemap と絶対 URL が出ない |
 | `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | Turnstile受付を有効にする場合は必須 | 未設定だと公開の掲載要請フォームを無効化 |
 | `TURNSTILE_SECRET_KEY` | `NEXT_PUBLIC_TURNSTILE_SITE_KEY` と同時に必須 | 未設定だと要請検証に失敗 |
+| `SUPABASE_SERVICE_ROLE_KEY` | 必須（サーバー専用） | 主催者の招待（ADR-0025）と、掲載の削除・修正依頼の受付が失敗する |
 
 掲載削除・修正要請フォームを有効にする場合、Turnstile の公開キーと秘密キーは必ず
 同じ環境の組として設定する。片方だけを設定してはならない。`.env.example` をテンプレートに
@@ -43,6 +44,17 @@ GitHub Actions には deploy workflow が無い。`.github/workflows/` にある
 
 `NEXT_PUBLIC_SITE_URL` は任意だが、未設定のまま公開すると sitemap が機能しない。初回
 デプロイでは必ず設定する。
+
+## Supabase Auth の設定
+
+本番の Supabase プロジェクトの Authentication で、次を設定する（ADR-0025）。ローカルは `supabase/config.toml` が同じ内容を持つ。
+
+- **Allow new users to sign up を off にする。** クローズドβの間、アカウントは運営の招待でのみ作る。on のままだと、公開されている publishable key で誰でもアカウントを作れる。
+- **Site URL を `https://p8ce.dance` にする。** 招待とパスワード再設定のメールのリンクは、この URL を起点に作られる。
+- **Email Templates の Invite user と Reset password に、`supabase/templates/invite.html`・`recovery.html` と同じ件名と本文を設定する。** リンクは `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=…` の形でなければならない。既定の文面のままだと、アプリが受け取れない形のリンクが届く。
+- **独自の SMTP を設定する。** Supabase 標準の送信は試験用で、送れる数が厳しく制限される。提供元は未決（ロードマップ）。
+
+確認：運営の画面から自分宛てに招待を送り、届いたリンクから `/account/password` に進めること。
 
 ## R2 バケット
 
