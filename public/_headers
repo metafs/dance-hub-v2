@@ -2,3 +2,8 @@
 # https://opennext.js.org/cloudflare/caching#static-assets-caching
 /_next/static/*
   Cache-Control: public,max-age=31536000,immutable
+
+# Static assets are served by the assets binding, not the Worker, so the
+# headers next.config.ts sets do not reach them (docs/architecture/security.md).
+/*
+  X-Content-Type-Options: nosniff
