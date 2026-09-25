@@ -25,7 +25,7 @@ GitHub Actions には deploy workflow が無い。`.github/workflows/` にある
 
 ## 必要な環境変数
 
-`instrumentation.ts` が起動時に `validateEnvironment()` を呼ぶ。欠けている場合は Worker
+`src/instrumentation.ts` が起動時に `validateEnvironment()` を呼ぶ。欠けている場合は Worker
 が起動時に落ちる。設定漏れはページ単位ではなくサービス全体の停止として現れる。
 
 | 変数 | 必須 | 欠けたときの挙動 |
@@ -79,7 +79,7 @@ GitHub Actions には deploy workflow が無い。`.github/workflows/` にある
 
 ## エラーの調べ方
 
-サーバー側で捕捉されなかったエラーは、`instrumentation.ts` の `onRequestError` が1行の JSON
+サーバー側で捕捉されなかったエラーは、`src/instrumentation.ts` の `onRequestError` が1行の JSON
 として console に書き、Workers Logs が保存する（ADR-0023）。
 
 - **ダッシュボード:** Workers & Pages → 対象 Worker → Observability。`event` が

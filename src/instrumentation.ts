@@ -1,7 +1,7 @@
 import type { Instrumentation } from "next";
 
-import { validateEnvironment } from "./src/lib/env";
-import { requestErrorRecord } from "./src/lib/observability/request-error";
+import { validateEnvironment } from "@/lib/env";
+import { requestErrorRecord } from "@/lib/observability/request-error";
 
 export async function register() {
   validateEnvironment();

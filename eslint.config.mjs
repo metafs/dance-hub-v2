@@ -42,6 +42,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Cloudflare Worker bundle and local wrangler state (pnpm cf:build).
+    ".open-next/**",
+    ".wrangler/**",
   ]),
   {
     files: ["src/**/*.{js,jsx,ts,tsx}"],

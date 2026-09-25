@@ -36,7 +36,7 @@ import it, directly or through an alias, or import an `@supabase/*` package. A r
 gets data or mutations through the owning feature's query, command, or component
 surface. Feature code may use the shared client boundary as needed by its domain behavior.
 
-`proxy.ts` is root-level authentication infrastructure, not App Router composition; it
+`src/proxy.ts` is authentication infrastructure, not App Router composition; it
 refreshes the session with the Supabase client before rendering. This narrow exception
 does not allow `src/app` to import the client.
 

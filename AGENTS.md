@@ -69,10 +69,10 @@ labeling map; details of manual label administration are in
 
 | Label | Paths / concerns |
 | --- | --- |
-| `area:frontend` | `src/app/**`, `src/features/**/components/**`, `src/ui/**`, `src/components/**`, `src/app/globals.css`, `tests/e2e/**` |
-| `area:backend` | `src/features/**/commands.ts`, `src/features/**/queries.ts`, `src/features/**/policy.ts`, `src/features/**/schema.ts`, `src/lib/datetime/**`, `src/lib/result.ts`, `instrumentation.ts` |
+| `area:frontend` | `src/app/**`, `src/features/**/components/**`, `src/ui/**`, `src/app/globals.css`, `tests/e2e/**` |
+| `area:backend` | `src/features/**/commands.ts`, `src/features/**/queries.ts`, `src/features/**/policy.ts`, `src/features/**/schema.ts`, `src/lib/datetime/**`, `src/lib/result.ts`, `src/instrumentation.ts` |
 | `area:db` | `supabase/**`, `src/lib/database.types.ts` |
-| `area:auth` | `src/features/auth/**`, `src/lib/auth/**`, `src/lib/supabase/**`, `proxy.ts`, authorization or RLS changes |
+| `area:auth` | `src/features/auth/**`, `src/lib/supabase/**`, `src/proxy.ts`, authorization or RLS changes |
 | `area:infra` | `.github/**`, `package.json`, `pnpm-lock.yaml`, ESLint, TypeScript, Next.js, Playwright, or Cloudflare configuration |
 | `area:docs` | `docs/**`, `README.md`, `ARCHITECTURE.md`, `AGENTS.md`, `CLAUDE.md` |
 
