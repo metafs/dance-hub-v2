@@ -25,6 +25,7 @@ import { Notice } from "@/ui/notice";
 import { AppPageHead } from "@/ui/page-head";
 import { Section } from "@/ui/section";
 import { StateLabel } from "@/ui/state-label";
+import { mainContentId } from "@/ui/skip-link";
 
 const errorMessages: Record<string, string> = {
   "invalid-review": "審査対象を特定できませんでした。",
@@ -67,7 +68,7 @@ export default async function EventReviewQueue({
   if (ticketOfferError) throw new Error("Ticket offers for the review queue could not be loaded.");
 
   return (
-    <main className="container-app app-main">
+    <main id={mainContentId} className="container-app app-main">
       <AppPageHead
         description={
           <>

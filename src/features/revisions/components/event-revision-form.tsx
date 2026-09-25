@@ -3,8 +3,8 @@
 import { useActionState, useRef } from "react";
 
 import { mutateEventDraftWithState } from "@/features/revisions/commands";
-import { eventRevisionFieldDefaults, initialEventRevisionActionState } from "@/lib/events/revision-action-state";
-import type { TicketOfferDraft } from "@/lib/events/ticket-offers";
+import { eventRevisionFieldDefaults, initialEventRevisionActionState } from "@/features/revisions/action-state";
+import type { TicketOfferDraft } from "@/features/revisions/schema";
 import { useFocusFirstError } from "@/ui/use-focus-first-error";
 
 import { EventFields } from "./event-fields";

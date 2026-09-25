@@ -63,6 +63,21 @@ const eslintConfig = defineConfig([
           },
           ...crossFeatureCommandZones,
           {
+            target: path.join(sourceRoot, "lib"),
+            from: [
+              path.join(sourceRoot, "features"),
+              path.join(sourceRoot, "app"),
+            ],
+            message:
+              "src/lib is shared infrastructure. Move domain code into its feature instead of importing features or routes.",
+          },
+          {
+            target: path.join(sourceRoot, "features"),
+            from: path.join(sourceRoot, "app"),
+            message:
+              "Features cannot import route modules. Import the owning feature's command, query, or component, and let src/app compose it.",
+          },
+          {
             target: path.join(sourceRoot, "ui"),
             from: [
               path.join(sourceRoot, "features"),

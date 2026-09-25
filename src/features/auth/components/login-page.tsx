@@ -3,6 +3,7 @@ import Link from "next/link";
 import { login } from "@/features/auth/commands";
 import { Logotype } from "@/ui/logotype";
 import { Notice } from "@/ui/notice";
+import { mainContentId } from "@/ui/skip-link";
 
 const errorMessages: Record<string, string> = {
   "invalid-credentials": "メールアドレスまたはパスワードを確認してください。",
@@ -26,7 +27,7 @@ export default async function LoginPage({
           </Link>
         </div>
       </header>
-      <main className="container auth-main">
+      <main id={mainContentId} className="container auth-main">
         <section aria-labelledby="login-title" className="auth-panel">
           <p className="page-meta"><span>主催者・運営</span></p>
           <h1 id="login-title">ログイン</h1>

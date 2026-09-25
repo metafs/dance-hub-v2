@@ -1,7 +1,7 @@
 # p8ce - Code Structure and Dependency Boundaries
 
 **Status:** Draft  
-**Last Updated:** 2026-09-03  
+**Last Updated:** 2026-09-24  
 **Decision basis:** [ADR-0013](../adr/0013-use-feature-modules-for-application-domains.md)
 
 ## Purpose
@@ -55,10 +55,9 @@ schema/type, or a separately defined application orchestration boundary instead.
 `src/features`. It does not import features or `src/lib`, including domain types. This
 keeps it reusable without exposing authorization, persistence, or domain semantics.
 
-R3 retains `src/components/*.tsx` and `src/lib/auth/authorization.ts` as thin
-compatibility re-exports of established feature entry points. They are not `src/ui` and
-must not acquire new domain logic. New domain-specific components belong with their
-feature; new domain-agnostic primitives belong in `src/ui`.
+The `src/components/*.tsx` and `src/lib/auth/authorization.ts` compatibility
+re-exports have been removed. Domain-specific components live with their feature under
+`src/features/<domain>/components`; new domain-agnostic primitives belong in `src/ui`.
 
 ## Server action result convention
 
@@ -82,6 +81,10 @@ actions to `ActionResult`.
 3. A feature command surface cannot import any other feature's command surface
    (`import/no-restricted-paths`).
 4. `src/ui/**` cannot import from `src/features/**` or `src/lib/**`
+   (`import/no-restricted-paths`).
+5. `src/lib/**` cannot import from `src/features/**` or `src/app/**`
+   (`import/no-restricted-paths`).
+6. `src/features/**` cannot import from `src/app/**`
    (`import/no-restricted-paths`).
 
 The TypeScript import resolver is configured so these checks apply equally to the

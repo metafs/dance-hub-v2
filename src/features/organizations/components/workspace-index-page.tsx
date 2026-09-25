@@ -13,6 +13,7 @@ import { AppPageHead } from "@/ui/page-head";
 import { Section } from "@/ui/section";
 import { StateLabel } from "@/ui/state-label";
 import { TableFrame } from "@/ui/table-frame";
+import { mainContentId } from "@/ui/skip-link";
 
 const errorMessages: Record<string, string> = {
   "organization-access-denied": "このOrganizationへアクセスする権限がありません。",
@@ -38,7 +39,7 @@ export default async function WorkspaceIndex({
   });
 
   return (
-    <main className="container-app app-main">
+    <main id={mainContentId} className="container-app app-main">
       <AppPageHead
         description="所属しているOrganizationを選ぶと、Eventの掲載と更新、出演者・会場の登録申請ができます。"
         title="Workspace"

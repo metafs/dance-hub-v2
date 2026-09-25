@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { requirePlatformAdmin } from "@/features/moderation/policy";
+import { formText } from "@/lib/forms/input";
 
 function reviewValues(formData: FormData) {
   return {
@@ -50,9 +51,12 @@ export async function reviewCandidate(formData: FormData) {
   const candidateId = String(formData.get("candidateId") ?? "");
   const reason = String(formData.get("reason") ?? "").trim();
   const survivorId = String(formData.get("survivorId") ?? "");
-  if (!candidateId || !reason || !["artist", "venue"].includes(kind)) {
+  if (!candidateId || !reason || !["artist", "venue"].includes(kind) || !["activate", "reject", "merge"].includes(action)) {
     redirect("/admin/entities?error=invalid-review");
   }
+  // Anything but activate or reject falls through to a merge below, so an
+  // unknown action or a merge without a survivor stops here.
+  if (action === "merge" && !survivorId) redirect("/admin/entities?error=invalid-review");
   const { supabase } = await requirePlatformAdmin();
   const { error } = kind === "artist"
     ? action === "activate"
@@ -182,4 +186,55 @@ export async function requestEventCancellationChanges(formData: FormData) {
   if (error) redirect("/admin/events?error=cancellation-review-failed");
   refreshEventReview(values.eventId);
   redirect("/admin/events?reviewed=cancellation-changes-requested");
+}
+
+/**
+ * listing-policy F is decided by a Platform Admin, so both directions are
+ * server actions over the trusted database functions rather than table writes.
+ * The functions themselves re-check the role and the reason; these checks only
+ * keep an obviously empty form from reaching the database.
+ */
+function withdrawalValues(formData: FormData) {
+  return {
+    eventId: formText(formData, "eventId"),
+    reason: formText(formData, "reason"),
+  };
+}
+
+function refreshWithdrawal(eventId: string) {
+  revalidatePath("/admin/withdrawals");
+  revalidatePath("/events");
+  revalidatePath(`/events/${eventId}`);
+}
+
+export async function withdrawEvent(formData: FormData) {
+  const { eventId, reason } = withdrawalValues(formData);
+  if (!eventId) redirect("/admin/withdrawals?error=event-required");
+  if (!reason) redirect("/admin/withdrawals?error=reason-required");
+
+  const { supabase } = await requirePlatformAdmin();
+  const { error } = await supabase.rpc("withdraw_event", {
+    target_event_id: eventId,
+    withdrawal_reason: reason,
+  });
+
+  if (error) redirect("/admin/withdrawals?error=withdrawal-failed");
+  refreshWithdrawal(eventId);
+  redirect("/admin/withdrawals?done=withdrawn");
+}
+
+export async function restoreEvent(formData: FormData) {
+  const { eventId, reason } = withdrawalValues(formData);
+  if (!eventId) redirect("/admin/withdrawals?error=event-required");
+  if (!reason) redirect("/admin/withdrawals?error=reason-required");
+
+  const { supabase } = await requirePlatformAdmin();
+  const { error } = await supabase.rpc("restore_event", {
+    target_event_id: eventId,
+    restoration_reason: reason,
+  });
+
+  if (error) redirect("/admin/withdrawals?error=restoration-failed");
+  refreshWithdrawal(eventId);
+  redirect("/admin/withdrawals?done=restored");
 }

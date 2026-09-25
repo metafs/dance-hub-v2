@@ -64,3 +64,21 @@ export function getReviewTicketOffers(
       .order("display_order")
     : Promise.resolve({ data: [], error: null });
 }
+
+export function getWithdrawnEvents(supabase: ModerationContext["supabase"]) {
+  return supabase
+    .from("events")
+    // Two foreign keys reach event_revisions from events, so the embed names
+    // the published-pointer one explicitly.
+    .select("id, withdrawn_at, withdrawal_reason, organizations(name), event_revisions!events_published_revision_fk(title)")
+    .not("withdrawn_at", "is", null)
+    .order("withdrawn_at", { ascending: false });
+}
+
+export function getOpenListingRequests(supabase: ModerationContext["supabase"]) {
+  return supabase
+    .from("listing_requests")
+    .select("id, event_id, kind, requester_contact, message, created_at, events!listing_requests_event_id_fkey(event_revisions!events_published_revision_fk(title))")
+    .is("resolved_at", null)
+    .order("created_at");
+}

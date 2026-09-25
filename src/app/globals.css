@@ -14,7 +14,8 @@
   --paper: #ffffff;
   --ground: #f6f6f4;
   --line: #e2e2de;
-  --line-field: #c8c8c3;
+  --line-field: #8e8e89;
+  --line-soft: #c8c8c3;
   --line-strong: #141414;
 
   --font-sans: var(--font-instrument-sans), "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", YuGothic, "Noto Sans JP", Meiryo, sans-serif;
@@ -57,6 +58,22 @@ a { color: inherit; text-decoration: none; }
 button, input, select, textarea { font: inherit; color: inherit; }
 button, select, summary { cursor: pointer; }
 :focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+
+/* First stop for the keyboard on every page: hidden until focused, then it
+   jumps past the header to the page's main landmark (docs/design/ui.md). */
+.skip-link {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 100;
+  padding: 10px 16px;
+  background: var(--ink);
+  color: var(--paper);
+  font-size: 14px;
+  font-weight: 500;
+  transform: translateY(calc(-100% - 16px));
+}
+.skip-link:focus { transform: none; }
 
 .visually-hidden {
   position: absolute;
@@ -103,7 +120,7 @@ button, select, summary { cursor: pointer; }
 .site-header-home { justify-self: start; }
 .site-nav { display: flex; justify-content: center; gap: 36px; font-size: 14px; }
 .site-nav a { padding-block: 4px; border-bottom: 1px solid transparent; }
-.site-nav a:hover { border-bottom-color: var(--line-field); }
+.site-nav a:hover { border-bottom-color: var(--line-soft); }
 .site-nav a[aria-current="page"] { border-bottom-color: var(--ink); }
 .site-header-aside { justify-self: end; color: var(--ink-2); font-size: 13px; }
 .site-header-aside a:hover { color: var(--ink); }
@@ -119,7 +136,7 @@ button, select, summary { cursor: pointer; }
 .site-footer-brand { display: grid; gap: 6px; }
 .site-footer-brand .logotype-mark { color: var(--ink); font-size: 20px; }
 .site-footer nav { display: flex; flex-wrap: wrap; gap: 8px 24px; }
-.site-footer nav a { text-decoration: underline; text-decoration-color: var(--line-field); text-underline-offset: .25em; }
+.site-footer nav a { text-decoration: underline; text-decoration-color: var(--line-soft); text-underline-offset: .25em; }
 .site-footer nav a:hover { color: var(--ink); }
 
 .site-main { flex-grow: 1; }
@@ -128,7 +145,7 @@ button, select, summary { cursor: pointer; }
 
 .text-link {
   text-decoration: underline;
-  text-decoration-color: var(--line-field);
+  text-decoration-color: var(--line-soft);
   text-decoration-thickness: 1px;
   text-underline-offset: .25em;
 }
@@ -154,12 +171,12 @@ button, select, summary { cursor: pointer; }
 .button:hover { background: var(--ground); }
 .button-primary { background: var(--ink); color: var(--paper); }
 .button-primary:hover { background: #2e2e2c; }
-.button-quiet { border-color: var(--line-field); }
+.button-quiet { border-color: var(--line-soft); }
 .button-danger { border-width: 1.5px; font-weight: 600; }
 .button-dashed { border-style: dashed; background: transparent; }
 .button-small { min-height: 34px; padding: 0 14px; font-size: 13px; }
 .button:disabled, .button[aria-disabled="true"] {
-  border-color: var(--line-field);
+  border-color: var(--line-soft);
   background: var(--ground);
   color: var(--ink-2);
   cursor: not-allowed;
@@ -202,7 +219,7 @@ button, select, summary { cursor: pointer; }
   white-space: nowrap;
 }
 .state-label-solid { background: var(--ink); color: var(--paper); }
-.state-label-quiet { border-color: var(--line-field); color: var(--ink-2); }
+.state-label-quiet { border-color: var(--line-soft); color: var(--ink-2); }
 .state-label-dashed { border-style: dashed; }
 
 .count-badge {
@@ -235,14 +252,14 @@ button, select, summary { cursor: pointer; }
 }
 .notice-title { font-weight: 600; }
 .notice-error { border-width: 1.5px; font-weight: 500; }
-.notice-success { border-color: var(--line-field); }
-.notice-info { border-color: var(--line-field); color: var(--ink-2); }
+.notice-success { border-color: var(--line-soft); }
+.notice-info { border-color: var(--line-soft); color: var(--ink-2); }
 .notice-plain { color: var(--ink); }
 /* A rule-set notice sits directly above a ruled block, which closes it. */
 .notice-rule { margin-bottom: 0; border-width: 1px 0 0; padding: 16px 0 24px; background: transparent; }
 
 .empty-state {
-  border: 1px dashed var(--line-field);
+  border: 1px dashed var(--line-soft);
   padding: 32px;
   color: var(--ink-2);
   font-size: 14px;
@@ -265,7 +282,7 @@ button, select, summary { cursor: pointer; }
 .day-groups-compact .day-group { grid-template-columns: 110px minmax(0, 1fr); gap: 20px; padding-block: 16px 20px; }
 .day-groups-compact .day-group-date { font-size: 26px; }
 
-.rows { display: grid; margin: 0; padding: 0; list-style: none; }
+.rows { display: grid; margin: 0; padding: 0; list-style: none; container: rows / inline-size; }
 .row {
   display: grid;
   grid-template-columns: 56px 112px minmax(0, 1fr) 220px;
@@ -284,11 +301,12 @@ button, select, summary { cursor: pointer; }
 .row-detail { color: var(--ink-2); font-size: 13px; }
 .row-aside { display: grid; align-content: start; gap: 2px; font-size: 14px; }
 .row-aside-sub { color: var(--ink-3); font-size: 12px; }
-.row-aside a { width: fit-content; border-bottom: 1px solid var(--line-field); }
+.row-aside a { width: fit-content; border-bottom: 1px solid var(--line-soft); }
 .row-aside a:hover { border-bottom-color: var(--ink); }
 .rows-compact .row { grid-template-columns: 96px 100px minmax(0, 1fr) 180px; padding-block: 12px; font-size: 14px; }
 .rows-compact .row-title { font-size: 16px; }
 .rows-lead-wide .row { grid-template-columns: 112px 112px minmax(0, 1fr) 220px; }
+.rows-lead-wide { container-name: rows-lead-wide; }
 
 /* ---------- Definitions, tables and panels ---------- */
 
@@ -296,7 +314,7 @@ button, select, summary { cursor: pointer; }
 .dl-rows dt, .dl-rows dd { margin: 0; border-top: 1px solid var(--line); padding-block: 12px; }
 .dl-rows dt { color: var(--ink-2); font-size: 14px; }
 .dl-rows dd { overflow-wrap: anywhere; }
-.dl-rows a { border-bottom: 1px solid var(--line-field); }
+.dl-rows a { border-bottom: 1px solid var(--line-soft); }
 .dl-rows a:hover { border-bottom-color: var(--ink); }
 
 /* position: relative keeps visually hidden cell text inside the scrolling frame;
@@ -404,7 +422,7 @@ input::placeholder, textarea::placeholder { color: var(--ink-3); }
 .ticket-offer-row { display: grid; gap: 12px; border: 1px solid var(--line); padding: 16px; }
 .ticket-offer-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 13px; font-weight: 600; }
 
-.dropzone { border: 1px dashed var(--line-field); padding: 16px; }
+.dropzone { border: 1px dashed var(--line-soft); padding: 16px; }
 
 /* ---------- Tabs ---------- */
 
@@ -484,6 +502,8 @@ input::placeholder, textarea::placeholder { color: var(--ink-3); }
 .discovery-layout .section-note { margin-bottom: 16px; }
 .discovery-layout .row { grid-template-columns: 52px 112px minmax(0, 1fr) 170px; gap: 12px 16px; }
 .discovery-layout .rows-lead-wide .row { grid-template-columns: 100px 112px minmax(0, 1fr) 170px; }
+.discovery-layout .rows { container-name: discovery-rows; }
+.discovery-layout .rows-lead-wide { container-name: discovery-rows-lead-wide; }
 .discovery-results-head h1 { font-size: 32px; font-weight: 600; }
 .discovery-summary { display: flex; flex-wrap: wrap; gap: 4px 20px; color: var(--ink-2); font-size: 13px; }
 .discovery-part-title { margin: 40px 0 12px; font-size: 15px; font-weight: 600; }
@@ -496,7 +516,7 @@ input::placeholder, textarea::placeholder { color: var(--ink-3); }
 .detail-aside { display: grid; align-content: start; gap: 32px; font-size: 14px; }
 .detail-aside-block { display: grid; gap: 6px; }
 .detail-aside-label { color: var(--ink-2); font-size: 12px; }
-.detail-aside-block a:not(.button) { width: fit-content; border-bottom: 1px solid var(--line-field); }
+.detail-aside-block a:not(.button) { width: fit-content; border-bottom: 1px solid var(--line-soft); }
 .detail-aside-block a:not(.button):hover { border-bottom-color: var(--ink); }
 .detail-aside-note { border-top: 1px solid var(--line); padding-top: 20px; color: var(--ink-2); font-size: 13px; line-height: 1.75; }
 .detail-aside-note a { color: var(--ink); }
@@ -505,7 +525,7 @@ input::placeholder, textarea::placeholder { color: var(--ink-3); }
 .prose { max-width: 40em; font-size: 16px; line-height: 1.95; white-space: pre-line; }
 .event-image { display: block; width: 100%; height: auto; margin-bottom: 40px; border: 1px solid var(--line); }
 .credit-line { color: var(--ink-2); font-size: 16px; }
-.credit-line a { border-bottom: 1px solid var(--line-field); color: var(--ink); }
+.credit-line a { border-bottom: 1px solid var(--line-soft); color: var(--ink); }
 .credit-line a:hover { border-bottom-color: var(--ink); }
 .offer-price { font-weight: 500; text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .offer-note { color: var(--ink-2); font-size: 13px; }
@@ -549,6 +569,39 @@ input::placeholder, textarea::placeholder { color: var(--ink-3); }
 .auth-panel { display: grid; width: min(100%, 440px); gap: 20px; }
 .auth-panel h1 { font-size: 28px; font-weight: 600; }
 .auth-panel p { color: var(--ink-2); font-size: 14px; }
+
+/* ---------- Narrow row lists ----------
+   A row's lead, kind and aside columns have fixed widths. Where a list is too
+   narrow for them to leave the title about 100px — beside the discovery
+   filters, or next to a day label on a laptop-width screen — the title column
+   used to shrink to nothing and overlap the aside. Such a list takes the
+   narrow-screen arrangement below instead: the lead on the left, everything
+   else stacked beside it. Each threshold is that list's fixed columns and gaps
+   plus 100px. Font sizes are left as they are. */
+
+@container rows (max-width: 547px) {
+  .row, .rows-compact .row, .year-group .row { grid-template-columns: 48px minmax(0, 1fr); gap: 2px 12px; }
+  .row > * { grid-column: 2; }
+  .row > .row-lead { grid-column: 1; grid-row: 1 / span 3; }
+}
+
+@container rows-lead-wide (max-width: 603px) {
+  .rows-lead-wide .row { grid-template-columns: 72px minmax(0, 1fr); gap: 2px 12px; }
+  .rows-lead-wide .row > * { grid-column: 2; }
+  .rows-lead-wide .row > .row-lead { grid-column: 1; grid-row: 1 / span 3; }
+}
+
+@container discovery-rows (max-width: 481px) {
+  .discovery-layout .row { grid-template-columns: 48px minmax(0, 1fr); gap: 2px 12px; }
+  .discovery-layout .row > * { grid-column: 2; }
+  .discovery-layout .row > .row-lead { grid-column: 1; grid-row: 1 / span 3; }
+}
+
+@container discovery-rows-lead-wide (max-width: 529px) {
+  .discovery-layout .rows-lead-wide .row { grid-template-columns: 72px minmax(0, 1fr); gap: 2px 12px; }
+  .discovery-layout .rows-lead-wide .row > * { grid-column: 2; }
+  .discovery-layout .rows-lead-wide .row > .row-lead { grid-column: 1; grid-row: 1 / span 3; }
+}
 
 /* ---------- Narrow screens ---------- */
 

@@ -1,9 +1,8 @@
 "use client";
 
 import { TicketOfferEditor } from "./ticket-offer-editor";
-import { eventTypeOptions, type EventTypeGroup } from "@/features/revisions/schema";
-import type { EventRevisionFieldErrors } from "@/lib/events/revision-action-state";
-import type { TicketOfferDraft } from "@/lib/events/ticket-offers";
+import { eventTypeOptions, type EventTypeGroup, type TicketOfferDraft } from "@/features/revisions/schema";
+import type { EventRevisionFieldErrors } from "@/features/revisions/action-state";
 
 type Props = {
   artists: { id: string; name: string }[];

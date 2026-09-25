@@ -7,6 +7,7 @@ import { Notice } from "@/ui/notice";
 import { AppPageHead } from "@/ui/page-head";
 import { Section } from "@/ui/section";
 import { StateLabel } from "@/ui/state-label";
+import { mainContentId } from "@/ui/skip-link";
 
 type Candidate = {
   id: string;
@@ -70,7 +71,7 @@ export default async function EntityReviewPage({ searchParams }: { searchParams:
   ] = await getEntityReviewData(supabase);
 
   return (
-    <main className="container-app app-main">
+    <main id={mainContentId} className="container-app app-main">
       <AppPageHead
         description="承認、却下、重複の統合は監査記録つきで行われます。統合すると、候補への参照は統合先に移ります。"
         title="出演者・会場候補の審査"

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { parseEventRevisionInput, readEventRevisionFormValues } from "./revision-input";
+import { parseEventRevisionInput, readEventRevisionFormValues } from "./input";
 
 function baseForm() {
   const formData = new FormData();

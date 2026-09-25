@@ -10,6 +10,7 @@ import { Notice } from "@/ui/notice";
 import { AppPageHead } from "@/ui/page-head";
 import { Section } from "@/ui/section";
 import { StateLabel } from "@/ui/state-label";
+import { mainContentId } from "@/ui/skip-link";
 
 const errorMessages: Record<string, string> = {
   "invalid-application": "申請を特定できませんでした。",
@@ -27,7 +28,7 @@ export default async function ApplicationReviewQueue({
   const { data: applications } = await getApplicationReviewQueue(supabase);
 
   return (
-    <main className="container-app app-main">
+    <main id={mainContentId} className="container-app app-main">
       <AppPageHead
         description="承認すると、Organizationと最初のOwnerが同時に作成されます。判断の基準は掲載基準Eです。"
         title="Organization申請の審査"
