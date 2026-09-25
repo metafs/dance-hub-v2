@@ -5,8 +5,10 @@ import "server-only";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
+import { normalizeEmail } from "@/features/auth/schema";
 import { requirePlatformAdmin } from "@/features/moderation/policy";
 import { formText } from "@/lib/forms/input";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
 function reviewValues(formData: FormData) {
   return {
@@ -237,4 +239,22 @@ export async function restoreEvent(formData: FormData) {
   if (error) redirect("/admin/withdrawals?error=restoration-failed");
   refreshWithdrawal(eventId);
   redirect("/admin/withdrawals?done=restored");
+}
+
+/**
+ * Invites an Organizer by email (ADR-0025). During the closed beta this is the
+ * only way an account is created. The address never goes into the redirect.
+ */
+export async function inviteOrganizer(formData: FormData) {
+  const email = normalizeEmail(formData.get("email"));
+  if (!email) redirect("/admin/invitations?error=invalid-email");
+
+  // The service role is used only once the caller is known to be an admin.
+  await requirePlatformAdmin();
+  const { error } = await createSupabaseAdminClient().auth.admin.inviteUserByEmail(email);
+  if (error) {
+    redirect(`/admin/invitations?error=${error.code === "email_exists" ? "already-registered" : "invite-failed"}`);
+  }
+
+  redirect("/admin/invitations?invited=1");
 }
