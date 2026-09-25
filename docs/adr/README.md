@@ -38,6 +38,7 @@ ADRs capture architectural decisions that should remain understandable to future
 | [0022](0022-editorial-ui-foundation.md) | 無彩色の UI 基盤と Instrument Sans の同梱 | Accepted |
 | [0023](0023-server-error-logging.md) | サーバーエラーを Workers Logs に構造化して記録する | Accepted |
 | [0024](0024-permanent-urls-use-uuid.md) | 恒久 URL に UUID を使う | Accepted |
+| [0025](0025-organizer-accounts-by-invitation.md) | 主催者のアカウントは、β の間は招待で作る | Accepted |
 
 ## Template
 
