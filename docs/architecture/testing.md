@@ -8,7 +8,7 @@
 
 - **Unit:** validation, revision transitions, Event Type date rules, Tokyo calendar boundaries.
 - **Integration:** migrations, RLS, server-side authorization, approval transactions, public-query visibility.
-- **E2E:** visitor discovery and the Organizer-to-Platform-Admin review journey.
+- **E2E:** visitor discovery, the Organizer-to-Platform-Admin review journey, and account creation by invitation and password reset (`tests/e2e/organizer-invitation.spec.ts`), which reads the emails from the local stack's Mailpit (`MAILPIT_URL`, default `http://127.0.0.1:54324`).
 - **Accessibility:** `tests/e2e/accessibility.spec.ts` runs axe (WCAG 2.2 A/AA rules) on the public, Organizer and Platform Admin pages at 1280px and 390px, checks 320px reflow, visible keyboard focus, focus on the first form error, the skip link, and 3:1 contrast for field borders. Any axe violation fails the run. The design rules it enforces are in `docs/design/ui.md` (アクセシビリティ).
 
 ## Critical journeys

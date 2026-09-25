@@ -25,6 +25,8 @@ const publicPages = [
   "/listing-requests?kind=withdrawal",
   "/login",
   "/login?error=invalid-credentials",
+  "/password/forgot",
+  "/password/forgot?sent=1",
   "/events/00000000-0000-4000-8000-000000000000",
 ];
 
@@ -37,9 +39,10 @@ const organizerPages = [
   `/workspace/${organizationId}/entities`,
   `/workspace/${organizationId}/settings`,
   "/workspace/notifications",
+  "/account/password",
 ];
 
-const adminPages = ["/admin/applications", "/admin/entities", "/admin/events", "/admin/withdrawals"];
+const adminPages = ["/admin/applications", "/admin/entities", "/admin/events", "/admin/withdrawals", "/admin/invitations"];
 
 async function expectNoViolations(page: Page, path: string) {
   await page.goto(path);

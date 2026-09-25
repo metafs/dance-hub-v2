@@ -1,8 +1,8 @@
 # p8ce — Authentication and Authorization
 
 **Status:** Draft
-**Version:** 0.2
-**Last Updated:** 2026-09-01
+**Version:** 0.3
+**Last Updated:** 2026-09-25
 
 ## Principles
 
@@ -10,6 +10,15 @@
 - Public readers see only a stable Event's approved `published_revision_id` and public canonical Artist / Venue records.
 - Every write is protected by server-side authorization and Row Level Security; UI visibility is not authorization.
 - Platform Admin is a platform role, separate from Organization membership.
+
+## Accounts
+
+[ADR-0025](../adr/0025-organizer-accounts-by-invitation.md) decides how an account comes to exist.
+
+- During the closed beta, a Platform Admin invites an Organizer from `/admin/invitations`; the invitation is the only way an account is created. Supabase Auth sign-up is disabled (`enable_signup = false` locally, the dashboard setting in production). Open sign-up with email confirmation is added before general launch.
+- Anyone can ask for a password reset from `/password/forgot`. The answer is the same whether or not the address has an account.
+- Every account email links to `/auth/confirm?token_hash=…&type=invite|recovery`. The route verifies the token, signs the person in, and continues to `/account/password`, which the application chooses by link type; the link carries no destination. The email text is in `supabase/templates/`.
+- The invitation calls the Auth admin API with the service role, only after `requirePlatformAdmin()`.
 
 ## Organization role matrix
 
