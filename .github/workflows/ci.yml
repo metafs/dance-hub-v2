@@ -22,6 +22,28 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm verify:app
+      # The Worker is what gets deployed (ADR-0003), and `next build` passing
+      # does not mean it bundles or boots: a proxy or instrumentation file
+      # outside src/ once broke both without failing anything above.
+      # OpenNext runs its own `next build` (it needs the standalone trace a
+      # plain build does not write), so this builds the app a second time.
+      - name: Bundle the Cloudflare Worker
+        run: pnpm cf:build
+      # instrumentation.ts refuses to start without the Supabase variables, so
+      # the Worker gets placeholders; the page rendered needs no database.
+      - name: Boot the Worker in workerd and render a page
+        timeout-minutes: 5
+        run: |
+          pnpm exec wrangler dev --port 8788 --ip 127.0.0.1 \
+            --var NEXT_PUBLIC_SUPABASE_URL:http://127.0.0.1:54321 \
+            --var NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY:ci-placeholder \
+            > wrangler.log 2>&1 &
+          for attempt in $(seq 1 60); do
+            if curl -sf -o /dev/null http://127.0.0.1:8788/listing-policy; then exit 0; fi
+            sleep 2
+          done
+          cat wrangler.log
+          exit 1
 
   database:
     runs-on: ubuntu-latest

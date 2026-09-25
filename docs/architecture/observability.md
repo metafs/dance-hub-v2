@@ -5,13 +5,13 @@
 
 ## Current implementation
 
-`instrumentation.ts` validates required runtime environment configuration when Next.js
+`src/instrumentation.ts` validates required runtime environment configuration when Next.js
 registers instrumentation. GitHub Actions reports CI status, and Playwright uses the
 GitHub reporter when running in CI.
 
 ### Server request errors (ADR-0023)
 
-`instrumentation.ts` exports `onRequestError`, which Next.js calls for every uncaught
+`src/instrumentation.ts` exports `onRequestError`, which Next.js calls for every uncaught
 error in a page render, Route Handler, Server Action, or proxy. It writes one JSON line
 built by `src/lib/observability/request-error.ts`:
 
