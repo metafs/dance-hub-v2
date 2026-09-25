@@ -13,6 +13,7 @@ import { Notice } from "@/ui/notice";
 import { AppPageHead } from "@/ui/page-head";
 import { Section } from "@/ui/section";
 import { StateLabel, type StateLabelTone } from "@/ui/state-label";
+import { mainContentId } from "@/ui/skip-link";
 
 import { EventRevisionForm } from "./event-revision-form";
 import { createNextEventRevisionDraft } from "@/features/revisions/commands";
@@ -76,7 +77,7 @@ export default async function EventEditPage({ params, searchParams }: { params: 
         : null;
 
   return (
-    <main className="container-app app-main container-narrow">
+    <main id={mainContentId} className="container-app app-main container-narrow">
       <AppPageHead
         actions={event?.published_revision_id ? (
           <Link className="text-link" href={`/events/${eventId}`}>公開ページを見る</Link>

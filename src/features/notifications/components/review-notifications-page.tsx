@@ -11,6 +11,7 @@ import { formatTokyoDateTime } from "@/lib/datetime";
 import { EmptyState } from "@/ui/empty-state";
 import { AppPageHead } from "@/ui/page-head";
 import { StateLabel } from "@/ui/state-label";
+import { mainContentId } from "@/ui/skip-link";
 
 export default async function ReviewNotificationsPage() {
   const { supabase, user } = await requireUser();
@@ -20,7 +21,7 @@ export default async function ReviewNotificationsPage() {
   const hasUnread = notifications.some((notification) => notification.read_at === null);
 
   return (
-    <main className="container-app app-main container-narrow">
+    <main id={mainContentId} className="container-app app-main container-narrow">
       <AppPageHead
         actions={hasUnread ? (
           <form action={markAllReviewNotificationsRead}>

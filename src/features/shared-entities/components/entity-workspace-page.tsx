@@ -20,6 +20,7 @@ import { AppPageHead } from "@/ui/page-head";
 import { Section } from "@/ui/section";
 import { StateLabel } from "@/ui/state-label";
 import { TableFrame } from "@/ui/table-frame";
+import { mainContentId } from "@/ui/skip-link";
 
 export default async function EntityWorkspacePage({ params, searchParams }: { params: Promise<{ organizationId: string }>; searchParams: Promise<{ created?: string; updated?: string; error?: string }> }) {
   const { organizationId } = await params;
@@ -54,7 +55,7 @@ export default async function EntityWorkspacePage({ params, searchParams }: { pa
   ];
 
   return (
-    <main className="container-app app-main">
+    <main id={mainContentId} className="container-app app-main">
       <AppPageHead
         description="Eventで選べる出演者と会場は、全Organizationで共有されています。一覧にないものは登録を申請し、運営の確認後に使えるようになります。"
         title="出演者・会場"

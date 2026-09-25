@@ -12,6 +12,7 @@ import { Notice } from "@/ui/notice";
 import { AppPageHead } from "@/ui/page-head";
 import { Section } from "@/ui/section";
 import { StateLabel } from "@/ui/state-label";
+import { mainContentId } from "@/ui/skip-link";
 
 const errorMessages: Record<string, string> = {
   "event-required": "対象のEvent IDを入力してください。",
@@ -49,7 +50,7 @@ export default async function WithdrawalQueue({
   if (requestsError) throw new Error("Listing requests could not be loaded.");
 
   return (
-    <main className="container-app app-main">
+    <main id={mainContentId} className="container-app app-main">
       <AppPageHead
         description="取り下げは削除ではなく非公開化です。一覧・検索・直URLのいずれからも到達できなくなり、記録と承認履歴は残ります。判断の基準は掲載基準Fです。"
         title="掲載の依頼と取り下げ"

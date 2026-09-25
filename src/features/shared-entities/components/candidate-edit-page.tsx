@@ -12,6 +12,7 @@ import {
 } from "@/features/shared-entities/queries";
 import { artistTypeOptions, prefectureOptions } from "@/features/shared-entities/schema";
 import { AppPageHead } from "@/ui/page-head";
+import { mainContentId } from "@/ui/skip-link";
 
 function Breadcrumb({ organizationId, label }: { organizationId: string; label: string }) {
   return (
@@ -31,7 +32,7 @@ export default async function CandidateEditPage({ params }: { params: Promise<{ 
     const { data } = await getPendingArtistCandidate(supabase, organizationId, candidateId);
     if (!data) notFound();
     return (
-      <main className="container-app app-main container-narrow">
+      <main id={mainContentId} className="container-app app-main container-narrow">
         <AppPageHead
           breadcrumb={<Breadcrumb label="出演者の申請を編集" organizationId={organizationId} />}
           description="審査待ちのあいだだけ編集できます。"
@@ -54,7 +55,7 @@ export default async function CandidateEditPage({ params }: { params: Promise<{ 
     const { data } = await getPendingVenueCandidate(supabase, organizationId, candidateId);
     if (!data) notFound();
     return (
-      <main className="container-app app-main container-narrow">
+      <main id={mainContentId} className="container-app app-main container-narrow">
         <AppPageHead
           breadcrumb={<Breadcrumb label="会場の申請を編集" organizationId={organizationId} />}
           description="審査待ちのあいだだけ編集できます。"

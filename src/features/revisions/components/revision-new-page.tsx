@@ -3,6 +3,7 @@ import Link from "next/link";
 import { requireOrganizationCapability } from "@/features/organizations/policy";
 import { getRevisionListData } from "@/features/revisions/queries";
 import { AppPageHead } from "@/ui/page-head";
+import { mainContentId } from "@/ui/skip-link";
 
 import { EventDraftForm } from "./event-draft-form";
 
@@ -18,7 +19,7 @@ export default async function EventNewPage({
   const base = `/workspace/${organizationId}/events`;
 
   return (
-    <main className="container-app app-main container-narrow">
+    <main id={mainContentId} className="container-app app-main container-narrow">
       <AppPageHead
         breadcrumb={<><Link href={base}>Event</Link><span>/</span><span>新規作成</span></>}
         description="まず下書きとして保存します。画像は下書きを作成したあとに追加できます。公開には運営の審査が必要です。"

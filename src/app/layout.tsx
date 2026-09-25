@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 
 import { siteUrl } from "@/lib/env";
+import { SkipLink } from "@/ui/skip-link";
 
 import "./globals.css";
 
@@ -42,7 +43,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="ja" className={instrumentSans.variable}>
-      <body>{children}</body>
+      <body>
+        <SkipLink />
+        {children}
+      </body>
     </html>
   );
 }

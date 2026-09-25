@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Logotype } from "@/ui/logotype";
 import { SiteFooter } from "@/ui/site-footer";
 import { SiteHeader, type NavItem } from "@/ui/site-header";
+import { mainContentId } from "@/ui/skip-link";
 
 const navigation: readonly NavItem[] = [
   { href: "/events", label: "探す" },
@@ -28,7 +29,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
         items={navigation}
         navLabel="メイン"
       />
-      <main className="site-main">{children}</main>
+      <main id={mainContentId} className="site-main">{children}</main>
       <SiteFooter
         brand={<Logotype reading="／ ペイス" />}
         description="東京都・神奈川県のダンスとパフォーマンスを探す"

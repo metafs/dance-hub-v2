@@ -8,6 +8,7 @@ import {
 import { Notice } from "@/ui/notice";
 import { AppPageHead } from "@/ui/page-head";
 import { Section } from "@/ui/section";
+import { mainContentId } from "@/ui/skip-link";
 
 const errorMessages: Record<string, string> = {
   "insufficient-role": "この操作にはOwner権限が必要です。",
@@ -33,7 +34,7 @@ export default async function OrganizationWorkspacePage({
   const { organization, role } = await requireOrganizationMembership(organizationId);
 
   return (
-    <main className="container-app app-main">
+    <main id={mainContentId} className="container-app app-main">
       <AppPageHead
         description={`あなたは${organizationRoleLabel(role)}です。操作できる範囲はサーバー側で確認されます。`}
         title={organization.name}

@@ -1,6 +1,7 @@
 import { requireOrganizationCapability } from "@/features/organizations/policy";
 import { EmptyState } from "@/ui/empty-state";
 import { AppPageHead } from "@/ui/page-head";
+import { mainContentId } from "@/ui/skip-link";
 
 export default async function OrganizationSettingsPage({
   params,
@@ -11,7 +12,7 @@ export default async function OrganizationSettingsPage({
   const { organization } = await requireOrganizationCapability(organizationId, "manageMembers");
 
   return (
-    <main className="container-app app-main container-narrow">
+    <main id={mainContentId} className="container-app app-main container-narrow">
       <AppPageHead
         description="MemberとRoleの管理はOwnerだけが行えます。"
         title={`${organization.name} の設定`}

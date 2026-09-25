@@ -4,6 +4,7 @@ import { requireUser } from "@/features/auth/policy";
 import { submitOrganizationApplication } from "@/features/organizations/commands";
 import { Notice } from "@/ui/notice";
 import { AppPageHead } from "@/ui/page-head";
+import { mainContentId } from "@/ui/skip-link";
 
 const errorMessages: Record<string, string> = {
   "already-submitted": "審査中の申請がすでにあります。",
@@ -23,7 +24,7 @@ export default async function OrganizationApplicationPage({
   const params = await searchParams;
 
   return (
-    <main className="container-app app-main container-narrow">
+    <main id={mainContentId} className="container-app app-main container-narrow">
       <AppPageHead
         breadcrumb={<><Link href="/workspace">Workspace</Link><span>/</span><span>Organizationを申請</span></>}
         description="運営が確認して承認すると、あなたが最初のOwnerになります。承認されるまで、Eventの作成や掲載はできません。確認の基準は掲載基準Eです。"

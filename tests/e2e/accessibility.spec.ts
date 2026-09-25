@@ -43,6 +43,8 @@ const adminPages = ["/admin/applications", "/admin/entities", "/admin/events", "
 
 async function expectNoViolations(page: Page, path: string) {
   await page.goto(path);
+  // The skip link on every page needs a main landmark to land on.
+  await expect(page.locator("main#main-content"), `main landmark on ${path}`).toHaveCount(1);
   const { violations } = await new AxeBuilder({ page })
     .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"])
     // The Next.js development indicator is not part of the product.
@@ -129,4 +131,49 @@ test("keyboard focus is visible and returns to the first error", async ({ page }
   await expect(title).toBeFocused();
   await expect(title).toHaveAttribute("aria-invalid", "true");
   await expect(title).toHaveAccessibleDescription("Event名を入力してください。");
+});
+
+test("the skip link is the first stop and moves past the header", async ({ page }) => {
+  await page.goto("/events");
+  const skip = page.getByRole("link", { name: "本文へスキップ" });
+  await expect(skip).not.toBeInViewport();
+
+  await page.keyboard.press("Tab");
+  await expect(skip).toBeFocused();
+  await expect(skip).toBeInViewport();
+
+  await page.keyboard.press("Enter");
+  await expect(page).toHaveURL(/#main-content$/);
+  await page.keyboard.press("Tab");
+  const inMain = await page.evaluate(() => Boolean(document.activeElement?.closest("main")));
+  expect(inMain).toBe(true);
+});
+
+// WCAG 1.4.11: an empty field is identified only by its border, so the border
+// keeps 3:1 against the surface it sits on, on the public and the workspace ground.
+async function fieldBorderContrast(page: Page, selector: string) {
+  return page.locator(selector).first().evaluate((field) => {
+    const channels = (color: string) => (color.match(/[\d.]+/g) ?? []).slice(0, 3).map(Number);
+    const luminance = (color: string) => {
+      const [r, g, b] = channels(color).map((value) => {
+        const c = value / 255;
+        return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+      });
+      return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    };
+    let surface = field.parentElement;
+    while (surface && getComputedStyle(surface).backgroundColor === "rgba(0, 0, 0, 0)") surface = surface.parentElement;
+    const border = luminance(getComputedStyle(field).borderTopColor);
+    const ground = luminance(surface ? getComputedStyle(surface).backgroundColor : "rgb(255, 255, 255)");
+    return (Math.max(border, ground) + 0.05) / (Math.min(border, ground) + 0.05);
+  });
+}
+
+test("field borders keep 3:1 against their surface", async ({ page }) => {
+  await page.goto("/login");
+  expect(await fieldBorderContrast(page, "input[name=email]")).toBeGreaterThanOrEqual(3);
+
+  await login(page, "owner@example.com");
+  await page.goto(`/workspace/${organizationId}/events/new`);
+  expect(await fieldBorderContrast(page, "input[name=title]")).toBeGreaterThanOrEqual(3);
 });

@@ -8,6 +8,7 @@ import { EmptyState } from "@/ui/empty-state";
 import { AppPageHead } from "@/ui/page-head";
 import { Mark, StateLabel } from "@/ui/state-label";
 import { TableFrame } from "@/ui/table-frame";
+import { mainContentId } from "@/ui/skip-link";
 
 type RevisionRow = {
   id: string;
@@ -56,7 +57,7 @@ export default async function EventListPage({
   const base = `/workspace/${organizationId}/events`;
 
   return (
-    <main className="container-app app-main">
+    <main id={mainContentId} className="container-app app-main">
       <AppPageHead
         actions={<Link className="button button-primary" href={`${base}/new`}>新しいEventを作成</Link>}
         description="公開には運営の審査が必要です。審査で確認するのは記載の形式と権利だけで、内容の良し悪しは判断しません。"
