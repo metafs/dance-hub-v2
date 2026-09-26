@@ -10,9 +10,11 @@ test("pages link the p8ce icons, and each one is served", async ({ page, request
   expect(svg).toMatch(/^\/icon\.svg/);
   expect(apple).toMatch(/^\/apple-icon\.png/);
 
-  for (const [path, type] of [[svg!, "image/svg+xml"], [apple!, "image/png"], ["/favicon.ico", "image/x-icon"]] as const) {
+  // next start calls an .ico image/x-icon; Workers static assets, the same
+  // file image/vnd.microsoft.icon.
+  for (const [path, type] of [[svg!, /image\/svg\+xml/], [apple!, /image\/png/], ["/favicon.ico", /image\/(x-icon|vnd\.microsoft\.icon)/]] as const) {
     const response = await request.get(path);
     expect(response.status(), path).toBe(200);
-    expect(response.headers()["content-type"], path).toContain(type);
+    expect(response.headers()["content-type"], path).toMatch(type);
   }
 });
