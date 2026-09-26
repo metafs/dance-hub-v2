@@ -1,8 +1,8 @@
 # DANCE HUB → p8ce — 改名作業計画 / Rename Plan
 
 **Status:** Active
-**Version:** 0.3
-**Last Updated:** 2026-09-21
+**Version:** 0.4
+**Last Updated:** 2026-09-26
 
 決定は ADR-0021（ADR-0019 を supersede）。名称・読み・一行説明の規則は `docs/brand/identity.md`。本文書は実施の範囲と手順のみを定める。
 
@@ -147,13 +147,13 @@ UI と metadata の置換（M0-2）は、UI の作り直し（ADR-0022）と同�
 
 - [x] ロゴ正本 SVG をリポジトリに追加する（`docs/brand/logo/`）
 - [ ] 透過版と横長版を作る
-- [ ] favicon とアプリアイコン。40px 未満はロゴタイプのみ（曲線を落とす）
+- [x] favicon とアプリアイコン。40px 未満はロゴタイプのみ（曲線を落とす）。2026-09-26、正・標準の余白の案（`src/app/icon.svg`、`favicon.ico`、`apple-icon.png`）
 
 ロゴの追加は改名の置換とは独立に行ってよい。ただし公開ページのロゴ差し替えは、名称の置換と同じ変更で行う。
 
 ### リポジトリ
 
-- [ ] GitHub repository 名を `metafs/dance-hub-v2` → `metafs/p8ce` に変更
+- [x] GitHub repository 名を `metafs/dance-hub-v2` → `metafs/p8ce` に変更（2026-09-26 に確認）
 - [ ] 各 worktree のリモート URL を更新
 - [ ] リポジトリの description
 
