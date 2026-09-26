@@ -16,6 +16,9 @@ const footerNavigation: readonly NavItem[] = [
   { href: "/workspace", label: "主催者の方へ" },
   { href: "/listing-policy", label: "掲載基準" },
   { href: "/listing-requests", label: "掲載の削除・修正を依頼" },
+  { href: "/terms", label: "利用規約" },
+  { href: "/privacy", label: "プライバシーポリシー" },
+  { href: "/operator", label: "運営者情報" },
 ];
 
 /** The frame every page a Visitor can open without signing in shares. */
