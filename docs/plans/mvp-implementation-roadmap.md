@@ -1,14 +1,22 @@
 # p8ce — MVP Implementation Roadmap
 
 **Status:** Active
-**Version:** 0.7
-**Last Updated:** 2026-09-25
+**Version:** 0.8
+**Last Updated:** 2026-09-26
 
 ## MVP outcome
 
 p8ce の MVP は、東京都・神奈川県の Event を一般ユーザーが探索でき、承認済み Organization の Member が Event を下書き・審査提出し、Platform Admin の承認後に公開できる状態とする。公開後の変更と中止も審査対象とする。中止 Event は `cancelled` として公開を維持し、主催者からの取り下げ要請には `withdrawn` への遷移で応じる（ADR-0018）。掲載可否の条文は `docs/product/listing-policy.md` を正本とする。
 
 初期在庫は Organizer の自己申請に加え、運営による公開情報の代理入力（listing policy C-5〜C-8）で確保する。代理入力の開始には、取り下げ要請の受付窓口が先に稼働していることを条件とする。
+
+## Changes from v0.7
+
+- **状態表を `main` @ `d415544` に合わせた。** v0.7 で In review だった PR がすべてマージされた：#78（v0.7）、#79（招待とパスワード再設定）、#80（DH-13 の残り）、#81（CI）、#82（層構造）、#83（セキュリティヘッダー）、#84（ログイン済みユーザーの権限）、#85（proxy と Cloudflare build）。
+- **Cloudflare production build が `main` で通るようになった。** DH-14 は M0-3（ドメイン）と staging の環境作りを待つだけになった。
+- **2026-09-26：ファビコンは案 A（正・標準の余白）に決めた**（`docs/brand/identity.md`、`feature/favicon`）。
+- **GitHub のリポジトリ名が `metafs/p8ce` になった**（rename plan）。
+- **M7 の 3 文書のページを、条文のない下書きとして用意した**（`feature/legal-page-skeleton`）。フッターから常にリンクし、確定までは「準備中」と `noindex`。条文は法的助言を待つ。
 
 ## Changes from v0.6
 
@@ -44,13 +52,13 @@ p8ce の MVP は、東京都・神奈川県の Event を一般ユーザーが探
 - **改名（ADR-0021）を M0 として最優先に置いた。** Event の恒久 URL と sitemap を公開する前に完了させる。
 - **法務・公開ページを M7、初期在庫とクローズドβを M8 として独立させた。** M6 の技術的な release gate と、運用上の公開条件を分けて追跡する。
 
-## Verified current state (2026-09-24, `main` @ `eb110c4`)
+## Verified current state (2026-09-26, `main` @ `d415544`)
 
 plan doc の Status 表記ではなく、コードを読んで確認した状態である。「In review」は未マージのブランチである。
 
 | 領域 | 状態 | 根拠 |
 | --- | --- | --- |
-| M1〜M4 | 完了 | `supabase/migrations/` 22 本、`supabase/tests/database/` 11 本、`tests/e2e/m2`〜`m4` |
+| M1〜M4 | 完了 | `supabase/migrations/` 24 本、`supabase/tests/database/` 13 本、`tests/e2e/m2`〜`m4` |
 | M4.1 Listing policy alignment | 完了 | `20260921000000_listing_policy_followups.sql` ほか 3 本、`/listing-requests`、`/admin/withdrawals`。DH-24 は取り下げ（DEC-R4） |
 | 代理入力の E2E | 完了 | #73（`tests/e2e/proxy-listing.spec.ts`） |
 | M5 Public discovery | 完了（本番ドメインでの構造化データ確認を除く） | `/events`、`/calendar`、`/open-calls`、`/artists/[id]`、`/venues/[id]`、`src/features/events/structured-data.ts`（#70） |
@@ -58,26 +66,25 @@ plan doc の Status 表記ではなく、コードを読んで確認した状態
 | Media upload / delivery | 実装済み・staging 未検証 | `src/features/media/`、`/events/[eventId]/image`、ADR-0016 |
 | Withdrawal | 完了 | `20260919020000_event_withdrawal.sql`、`/admin/withdrawals`、ADR-0018 |
 | Metadata / sitemap / robots | 完了 | `src/app/sitemap.ts`、`src/app/robots.ts` |
-| 改名 | 完了（M0-1 #71、M0-2 ADR-0022）。本番ドメインの設定は M0-3 | `docs/plans/rename-plan.md` |
+| 改名 | 完了（M0-1 #71、M0-2 ADR-0022、リポジトリ名 `metafs/p8ce`）。ファビコンは In review（`feature/favicon`）。本番ドメインの設定は M0-3 | `docs/plans/rename-plan.md` |
 | 匿名ユーザーの権限（DH-16） | 完了（#72） | `20260923000000_restrict_anonymous_privileges.sql`、`anonymous_privileges.test.sql` |
 | ログイン済みユーザーからの審査メモ（DEC-R7） | 完了（#75） | `20260924000000_hide_review_memo_from_signed_in_users.sql`、`review_memo_visibility.test.sql` |
-| ログイン済みユーザーの権限全体 | In review | `fix/authenticated-privileges`（TRUNCATE 等の剥奪、`authenticated_privileges.test.sql`、membership helper が他人について答えない） |
-| セキュリティヘッダー・取り下げ要請の対象確認 | In review | `fix/public-surface-hardening`（`next.config.ts` の headers、公開 Event 以外への要請を DB で拒否） |
-| Accessibility QA（DH-13） | 完了（#77）。残り（入力欄の枠、本文へスキップ）は DEC-R10 で決定し In review | `tests/e2e/accessibility.spec.ts` |
-| Cloudflare production build | **`main` で失敗**。In review で修正 | `fix/proxy-and-login-return`（`src/proxy.ts`、`src/instrumentation.ts`、CI の Worker 起動確認） |
-| アカウント作成・パスワード再設定 | In review（DEC-R9、ADR-0025）。自由登録は DH-34 | `feature/organizer-invitations`（運営による招待、`/auth/confirm`、`/password/forgot`） |
-| 層構造（ADR-0013） | In review | `refactor/feature-boundaries`（`src/components/`・`src/lib/auth/` の撤去、app 層の DB 直呼びを feature へ、lint 境界の追加） |
-| CI | In review | `ci/production-e2e`（E2E を本番ビルドで実行、Node 24 の actions） |
-| DH-13 の残り（入力欄の枠・本文へスキップ・一覧の行の幅） | In review | `fix/dh13-followups`（DEC-R10） |
+| ログイン済みユーザーの権限全体 | 完了（#84） | `20260925000000_restrict_authenticated_privileges.sql`、`authenticated_privileges.test.sql` |
+| セキュリティヘッダー・取り下げ要請の対象確認 | 完了（#83） | `next.config.ts` の headers、`public/_headers`、`20260925010000_listing_requests_require_public_event.sql` |
+| Accessibility QA（DH-13） | 完了（#77、#80） | `tests/e2e/accessibility.spec.ts`、`src/ui/skip-link.tsx` |
+| Cloudflare production build | 完了（#85）。CI が Worker を bundle し、workerd で起動を確かめる | `src/proxy.ts`、`src/instrumentation.ts`、`.github/workflows/ci.yml` |
+| アカウント作成・パスワード再設定 | 完了（#79、ADR-0025）。自由登録は DH-34。本番の Auth 設定と SMTP（DEC-R13）が残る | `/admin/invitations`、`/auth/confirm`、`/password/forgot`、`supabase/templates/` |
+| 層構造（ADR-0013） | 完了（#82） | `eslint.config.mjs` の境界、`docs/architecture/code-structure.md` |
+| CI | 完了（#81） | E2E を本番ビルドで実行、Node 24 の actions |
 | 掲載基準の公開ページ（DH-33） | 完了（#69） | `/listing-policy` |
-| 利用規約・プライバシーポリシー・運営者情報 | 未着手。記載要件は整理済み | `docs/product/legal-requirements.md`（#69） |
-| Error tracking（DH-28） | 完了（#68、ADR-0023 Accepted）。ただし `main` では instrumentation が Worker で読み込めない（上記）。Workers Logs への出力は staging で確認 | `instrumentation.ts`（In review で `src/` へ移動）、`src/lib/observability/` |
+| 利用規約・プライバシーポリシー・運営者情報 | ページの枠は In review（`feature/legal-page-skeleton`）。条文は法的助言待ち | `docs/product/legal-requirements.md`、`src/features/legal/documents.ts` |
+| Error tracking（DH-28） | 完了（#68、ADR-0023 Accepted）。Workers Logs への出力は staging で確認 | `src/instrumentation.ts`、`src/lib/observability/` |
 | Runbooks | 完了（未リハーサル） | `docs/ops/runbooks/` 4 本 |
 | staging 環境 | 未着手 | `wrangler.jsonc` に `env` 定義なし |
 
 ## Decisions required before implementation
 
-エージェントが一般論で埋めてはならない。決定は ADR または該当 product doc に記録してから実装に入る。2026-09-25 時点で DEC-R8、R11〜R13 が未決である。
+エージェントが一般論で埋めてはならない。決定は ADR または該当 product doc に記録してから実装に入る。2026-09-26 時点で DEC-R8、R11〜R13 が未決である。
 
 | ID | 決定事項 | ブロックするもの |
 | --- | --- | --- |
@@ -94,7 +101,7 @@ plan doc の Status 表記ではなく、コードを読んで確認した状態
 | DEC-R11 | sitemap の範囲。DH-12 は公開 Event とトップのみと決めている。一覧・カレンダー・公募・掲載基準・Artist・Venue を加えるか | なし |
 | DEC-R12 | HSTS を subdomain と preload に広げるか。`script-src` の CSP を nonce 付きで入れるか（全ページが動的描画になる） | なし（現状はホスト単位の HSTS、nonce 不要な CSP のみ） |
 | DEC-R13 | 招待・パスワード再設定のメールを送る SMTP の提供元（ADR-0025）。Supabase 標準の送信は試験用 | DH-14 の Organizer journey、M8 のクローズドβ |
-| — | ファビコン：ロゴタイプから作った 4 案（正・反転 × 余白 2 種）から選ぶ | M0 の残り（rename plan の favicon） |
+| — | ~~ファビコン~~ **決定（2026-09-26）**：案 A（正・標準の余白）。`docs/brand/identity.md` | — |
 
 ## Milestones
 
@@ -158,7 +165,7 @@ DH-20・DH-21・DH-23・DH-25 は相互に独立し、並列に着手できる�
 
 ### M6 — Release candidate
 
-**Status:** In progress — DH-13 (#77), DH-16 (#72) and DH-28 (#68) complete; DH-14, DH-29, DH-17 remain. DH-14 needs the Cloudflare build fix (`fix/proxy-and-login-return`) first — detailed plan: `docs/plans/m6-release-candidate.md`
+**Status:** In progress — DH-13 (#77, #80), DH-16 (#72, #84) and DH-28 (#68) complete; DH-14, DH-29, DH-17 remain. DH-14 waits for M0-3 and the staging accounts — detailed plan: `docs/plans/m6-release-candidate.md`
 
 | ID | 内容 | area | 依存 |
 | --- | --- | --- | --- |
@@ -173,7 +180,7 @@ DH-20・DH-21・DH-23・DH-25 は相互に独立し、並列に着手できる�
 
 ### M7 — Legal and public policy pages
 
-**Status:** In progress — DH-33 complete (#69). The requirements for DH-30〜32 are in `docs/product/legal-requirements.md`; the clauses themselves remain
+**Status:** In progress — DH-33 complete (#69). The pages for DH-30〜32 exist as drafts (`feature/legal-page-skeleton`); their clauses await legal advice
 
 **Goal:** 第三者の情報を掲載・受付するサービスとして公開できる状態にする。
 
@@ -214,7 +221,6 @@ M7 DH-30〜32 条文（法的助言） ─────────────�
 
 - クリティカルパスは M0-3 → DH-14 → DH-17 → M8。
 - DEC-R13 と M7 の条文は、ドメインと独立に進められる。1 Issue = 1 Branch = 1 Worktree で扱う。
-- DH-14 は、Cloudflare build の修正（`fix/proxy-and-login-return`）のマージを待つ。
 - 代理入力（M8 の 1）は DH-21 の完了を待つ。M7 の完了を待たずに内部で入力を進めてよいが、公開は M7 完了後とする。
 
 各マイルストーンで `pnpm check` と Cloudflare production build を維持する。Organization Role の操作範囲は `docs/architecture/auth.md`、公開必須項目と日付規則は `docs/product/requirements.md` を正本とする。
